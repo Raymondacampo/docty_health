@@ -9,7 +9,7 @@ export default function Home({ data }) {
       <div>
           <h1>Next.js + Django API</h1>
           <h2>Test prueba 3</h2>
-          <h4>Aver si se actualizo!!!!!!!!!!!!!</h4>
+          <h4>Aver si se actualizo!!!!!!!!!!!!!2222</h4>
           <p>{data.message}</p>
       </div>
   );
