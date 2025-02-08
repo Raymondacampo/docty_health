@@ -10,6 +10,7 @@ export default function Home({ data }) {
           <h1>Next.js + Django API</h1>
           <h2>Test prueba 3</h2>
           <h4>Aver si se actualizooooooo</h4>
+          <a href="/search/">Search</a>
           <p>{data.message}</p>
       </div>
   );
