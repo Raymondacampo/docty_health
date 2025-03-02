@@ -11,9 +11,7 @@ export async function getServerSideProps() {
 export default function Home({ data }) {
   return (
     <div class="w-full h-[3175px] relative bg-white  overflow-hidden">
-        <Head />
         <MainContent />
-        {/* <Footer /> */}
     </div>
   );
 }   
