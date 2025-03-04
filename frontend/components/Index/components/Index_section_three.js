@@ -1,8 +1,8 @@
 const Opinions = () => {
     return(
-        <div className="w-full py-[50px] bg-[#293241] justify-center items-center gap-[26px] inline-flex">
-            <button data-svg-wrapper className="relative">
-            <svg className="xs:hidden" width="45" height="44" viewBox="0 0 45 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <div className="w-full py-12 px-4 bg-[#293241] justify-center items-center gap-[26px] inline-flex">
+            <button data-svg-wrapper className="relative xs:hidden">
+            <svg width="45" height="44" viewBox="0 0 45 44" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M31.6666 3.66699L13.3333 22.0003L31.6666 40.3337" stroke="white" strokeWidth="2"/>
             </svg>
             </button>
@@ -30,7 +30,7 @@ const Opinions = () => {
                 </div>
             </div>
             <button data-svg-wrapper className="xs:hidden relative">
-            <svg className="hidden" width="45" height="44" viewBox="0 0 45 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg width="45" height="44" viewBox="0 0 45 44" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M13.3333 3.66699L31.6666 22.0003L13.3333 40.3337" stroke="white" strokeWidth="2"/>
             </svg>
             </button>

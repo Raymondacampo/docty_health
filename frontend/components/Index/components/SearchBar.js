@@ -14,24 +14,26 @@ export default function SearchBar(){
                 <div className="text-center w-[90%] max-w-4xl text-black text-sm font-thin font-['Inter'] tracking-[0.5px]
                 xl:text-lg lg:text-lg md:text-lg">Doctify is your doctor search and appointment booking web app designed to simplify access to healthcare in the Dominican Republic. </div>
             </div>
-            <div className="w-[100%] max-w-4xl h-auto rounded-[10px] border border-black justify-center flex-col items-start flex gap-4 p-4
-            xl:flex-row xl:gap-0 xl:p-0 xl:border-0 xl:w-[90%]
-            lg:flex-row lg:gap-0 lg:p-0 lg:border-0 lg:w-[90%]
-            md:flex-row md:gap-0 md:p-0 md:border-0
-            sm:flex-row sm:gap-0 sm:p-0 sm:border-0">
-                <input placeholder="Specialty" className="max-w-3xs p-4 w-full bg-white border rounded-[10px] border-black focus:outline-none text-black placeholder-gray-400 justify-start items-center gap-2.5 inline-flex
-                xl:rounded-tl-[10px] xl:rounded-bl-[10px] xl:rounded-tr-[0px] xl:rounded-br-[0px]
-                lg:rounded-tl-[10px] lg:rounded-bl-[10px] lg:rounded-tr-[0px] lg:rounded-br-[0px]
-                md:rounded-tl-[10px] md:rounded-bl-[10px] md:rounded-tr-[0px] md:rounded-br-[0px]
-                sm:rounded-tl-[10px] sm:rounded-bl-[10px] sm:rounded-tr-[0px] sm:rounded-br-[0px]">
+            <div className="w-[100%] max-w-4xl h-auto border-black justify-center flex-col items-start flex gap-4 p-4
+            xl:flex-row xl:gap-0 xl:p-0 xl:w-[90%]
+            lg:flex-row lg:gap-0 lg:p-0 lg:w-[90%]
+            md:flex-row md:gap-0 md:p-0 
+            sm:flex-row sm:gap-0 sm:p-0 sm:border  sm:rounded-full 
+            xs:rounded-lg xs:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.5)] xs:border-0">
+                <input placeholder="Specialty" className="max-w-3xs p-4 w-full bg-white rounded-[10px] focus:outline-none text-black placeholder-gray-400 justify-start items-center gap-2.5 inline-flex
+                sm:rounded-tl-full sm:rounded-bl-full sm:rounded-tr-[0px] sm:rounded-br-[0px] sm:p-4 sm:border-r sm:border-0
+                xs:p-3 xs:border xs:border-black/45">
                 </input>
-                <input placeholder="City" className=" p-4 w-full border border-black rounded-[10px] focus:outline-none text-black placeholder-gray-400 bg-white justify-start items-center gap-2.5 inline-flex
+                <input placeholder="City" className=" p-4 w-full rounded-[10px] focus:outline-none text-black placeholder-gray-400 bg-white justify-start items-center gap-2.5 inline-flex
                 xl:rounded-[0px]
                 lg:rounded-[0px]
                 md:rounded-[0px]
-                sm:rounded-[0px]">
+                sm:rounded-[0px] sm:p-4 sm:border-0
+                xs:p-3 xs:border xs:border-black/45">
                 </input>
-                <button className="h-[100%] p-4 w-full bg-[#293241] rounded-tr-[10px] rounded-br-[10px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] border border-black justify-center items-center gap-2.5 inline-flex">
+                <button className="h-[100%] w-full bg-[#293241] shadow-[-2px_2px_4px_0px_rgba(0,0,0,0.5)] border border-black justify-center items-center gap-2.5 inline-flex
+                sm:py-4 
+                xs:py-2 xs:rounded-full">
                 Search
                 </button>
             </div>
