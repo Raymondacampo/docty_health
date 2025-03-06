@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "@/context/auth";
 import { getProfile } from "@/utils/api";
-import ProtectedRoute from "@/components/ProtectedRoute";
 import LogoutButton from "@/components/LogoutButton";
 import { isAuthenticated } from "@/utils/auth";
 import axios from 'axios';

@@ -2,11 +2,11 @@ import Head from '@/components/Head';
 import Footer from '@/components/Footer';
 import MainContent from '@/components/Index/MainContent';
 
-export async function getServerSideProps() {
-  const res = await fetch("http://174.138.66.50/api/data/");
-  const data = await res.json();
-  return { props: { data } };
-}
+// export async function getServerSideProps() {
+//   const res = await fetch("127.0.0.1:8000/api/data/");
+//   const data = await res.json();
+//   return { props: { data } };
+// }
 
 export default function Home({ data }) {
   return (
