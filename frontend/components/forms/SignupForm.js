@@ -56,7 +56,7 @@ export default function SignupForm (){
   
       try {
         const { data } = await axios.post(
-          'http://localhost:8000/api/signup/',
+          'https://174.138.66.50/api/signup/',
           formData
         );
   
