@@ -98,6 +98,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
+    "https://174.138.66.50",
     "http://localhost:3000",  # Allow Next.js frontend
 ]
 REST_FRAMEWORK = {
