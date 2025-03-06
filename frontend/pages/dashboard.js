@@ -1,7 +1,7 @@
 import ProtectedRoute from '../components/ProtectedRoute';
 import { useAuth } from '../context/auth';
 
-function Dashboard() {
+export default function Dashboard() {
   const { user } = useAuth();
 
   return (

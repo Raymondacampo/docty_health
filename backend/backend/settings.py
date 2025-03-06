@@ -27,9 +27,9 @@ load_dotenv()
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['174.138.66.50', '127.0.0.1','localhost']
+ALLOWED_HOSTS = ['174.138.66.50']
 
 
 # Application definition
@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'dj_rest_auth.registration',
     'corsheaders',  # Enables cross-origin requests (CORS)
     'api',
-    
+
     "allauth",
     'allauth.account',
     "allauth.socialaccount",
@@ -56,7 +56,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
-
 # ALLAUTH
 
 SITE_ID = 1
@@ -66,10 +65,7 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",  # ✅ Required for social login
 ]
 
-SOCIALACCOUNT_LOGIN_REDIRECT_URL = "http://localhost:3000/auth/callback/"  # ✅ Redirect to Next.js after login
-ACCOUNT_SIGNUP_REDIRECT_URL = "http://localhost:3000/auth/callback/"  # ✅ Redirect new users to password setup
-ACCOUNT_LOGOUT_REDIRECT_URL = "http://localhost:3000/login/"  # ✅ Redirect after logout
-
+SOCIALACCOUNT_LOGIN_REDIRECT_URL = "http://localhost:3000/auth/callback/"  # ✅ Redirect to Next.js >ACCOUNT_SIGNUP_REDIRECT_URL = "http://localhost:3000/auth/callback/"  # ✅ Redirect new users to pas>ACCOUNT_LOGOUT_REDIRECT_URL = "http://localhost:3000/login/"  # ✅ Redirect after logout
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 
@@ -104,8 +100,6 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Allow Next.js frontend
 ]
-
-
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -140,15 +134,22 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = True
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'test_project_db',
+        'USER': 'jefe',
+        'PASSWORD': 'rabomonito',
+        'HOST': 'localhost',
+        'PORT': '5432',
+        }
 }
 
 
@@ -189,6 +190,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 MEDIA_URL = "/media/"  # URL to access media files
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")  # Directory to store uploaded files
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
