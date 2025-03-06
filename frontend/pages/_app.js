@@ -1,3 +1,4 @@
+'use client';
 import PageLayout from "@/components/PageLayout";
 import "@/styles/globals.css";
 import { AuthProvider } from "@/context/auth";
