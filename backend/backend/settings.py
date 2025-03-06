@@ -11,30 +11,44 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
+import os
+from datetime import timedelta
+from django.urls import reverse_lazy
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+load_dotenv()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-b)j#+!=k1x392$^^uq#mz3bvrqe#1*#3xrm@ayxw01gn%i3*fj'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['174.138.66.50', '127.0.0.1']
+ALLOWED_HOSTS = ['174.138.66.50', '127.0.0.1','localhost']
 
 
 # Application definition
 
 INSTALLED_APPS = [
     'rest_framework',
+    "rest_framework_simplejwt",
+    'rest_framework.authtoken',
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
     'corsheaders',  # Enables cross-origin requests (CORS)
     'api',
+    
+    "allauth",
+    'allauth.account',
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",  # ✅ Google OAuth
 
+    "django.contrib.sites",  # Required for Allauth
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -43,7 +57,40 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 ]
 
+# ALLAUTH
+
+SITE_ID = 1
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",  # ✅ Required for social login
+]
+
+SOCIALACCOUNT_LOGIN_REDIRECT_URL = "http://localhost:3000/auth/callback/"  # ✅ Redirect to Next.js after login
+ACCOUNT_SIGNUP_REDIRECT_URL = "http://localhost:3000/auth/callback/"  # ✅ Redirect new users to password setup
+ACCOUNT_LOGOUT_REDIRECT_URL = "http://localhost:3000/login/"  # ✅ Redirect after logout
+
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+
+
+ACCOUNT_LOGIN_METHODS = {"email"}  # ✅ Use this instead
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': os.environ.get('GOOGLE_CLIENT_ID'),
+            'secret': os.environ.get('GOOGLE_CLIENT_SECRET'),
+            'key': ''
+        },
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+    }
+}
+
+
 MIDDLEWARE = [
+    'allauth.account.middleware.AccountMiddleware',
+
     'corsheaders.middleware.CorsMiddleware',  # Allows frontend to access API
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -58,10 +105,19 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Allow Next.js frontend
 ]
 
+
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
-    ]
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "BLACKLIST_AFTER_ROTATION": True,  # ✅ Blacklist old refresh tokens
+    "ROTATE_REFRESH_TOKENS": True,  # ✅ Issue a new refresh token when refreshing
 }
 
 ROOT_URLCONF = 'backend.urls'
@@ -131,6 +187,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+MEDIA_URL = "/media/"  # URL to access media files
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")  # Directory to store uploaded files
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
