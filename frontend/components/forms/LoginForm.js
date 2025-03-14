@@ -18,7 +18,7 @@ const LoginForm = () => {
       
       try {
         const { data } = await axios.post(
-          'http://juanpabloduarte.com/api/login/',
+          'https://juanpabloduarte.com/api/login/',
           credentials
         );
         
