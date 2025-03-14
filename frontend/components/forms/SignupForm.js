@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useRouter } from "next/router";
 import GoogleButton from "../GoogleButton"
 import { useAuth } from "@/context/auth";
 import axios from 'axios';
@@ -56,7 +55,7 @@ export default function SignupForm (){
   
       try {
         const { data } = await axios.post(
-          'https://174.138.66.50/api/signup/',
+          'https://juanpabloduarte.com/api/signup/',
           formData
         );
   
