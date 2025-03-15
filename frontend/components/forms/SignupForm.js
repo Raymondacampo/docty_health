@@ -7,7 +7,7 @@ const FormField = ({title, type, name, placeholder, onChange, err}) => {
     return(
         <div class="self-stretch flex-col justify-start items-start gap-[5px] flex">
             <div class="self-stretch text-[#3d5a80] text-base font-normal font-['Inter'] tracking-wide">{title}</div>
-            <input type={type} name={name} placeholder={placeholder} onChange={onChange} class="text-sm self-stretch px-4 py-3 text-black rounded-[5px] border border-black justify-start items-center gap-2.5 inline-flex">
+            <input type={type} name={name} placeholder={placeholder} onChange={onChange} class="text-sm self-stretch px-4 py-3 focus:outline-none text-black rounded-[5px] border border-black justify-start items-center gap-2.5 inline-flex">
             </input>
             {err && <span className="text-red-500 text-sm">{err}</span>}
         </div>

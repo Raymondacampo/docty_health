@@ -48,12 +48,12 @@ const LoginForm = () => {
                     <div class="self-stretch flex-col justify-start items-start gap-4 flex">
                     <div class="self-stretch flex-col justify-start items-start gap-[5px] flex">
                         <div class="self-stretch text-[#3d5a80] text-base font-normal font-['Inter'] tracking-wide">Email</div>
-                        <input type='text' name='email' placeholder='yourmail@example.com' value={credentials.email} onChange={(e) => setCredentials({...credentials, email: e.target.value})} class="text-black self-stretch  px-4 py-3 rounded-[5px] border border-black justify-start items-center gap-2.5 inline-flex">
+                        <input type='text' name='email' placeholder='yourmail@example.com' value={credentials.email} onChange={(e) => setCredentials({...credentials, email: e.target.value})} class="text-black self-stretch  px-4 py-3 focus:outline-none rounded-[5px] border border-black justify-start items-center gap-2.5 inline-flex">
                         </input>
                     </div>
                     <div class="self-stretch flex-col justify-start items-start gap-[5px] flex">
                         <div class="self-stretch text-[#3d5a80] text-base font-normal font-['Inter'] tracking-wide">Password</div>
-                        <input type='password' name='password' placeholder='Your password' value={credentials.password} onChange={(e) => setCredentials({...credentials, password: e.target.value})} class="text-black self-stretch  px-4 py-3 rounded-[5px] border border-black justify-start items-center gap-2.5 inline-flex">
+                        <input type='password' name='password' placeholder='Your password' value={credentials.password} onChange={(e) => setCredentials({...credentials, password: e.target.value})} class="text-black self-stretch focus:outline-none px-4 py-3 rounded-[5px] border border-black justify-start items-center gap-2.5 inline-flex">
                         </input>
                     </div>
                         {error && <p className="text-red-500 mb-4">{error}</p>}
