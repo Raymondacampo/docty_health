@@ -72,7 +72,7 @@ export default function MyAccountConfig() {
                 return;
             }
 
-            const { data } = await axios.get("http://127.0.0.1:8000/api/auth/me/", {
+            const { data } = await axios.get("http://juanpabloduarte.com/api/auth/me/", {
             headers: { Authorization: `Bearer ${accessToken}` },
             });
             console.log(data) 
