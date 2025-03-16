@@ -13,29 +13,50 @@ const LoginForm = () => {
     const [loading, setLoading] = useState(false);
   
     const handleSubmit = async (e) => {
-      e.preventDefault();
-      setLoading(true);
+        e.preventDefault();
+        e.stopPropagation();
+        setLoading(true);
+        
+        try {
+          const { data } = await axios.post(
+            'https://juanpabloduarte.com/api/login/',
+            credentials
+          );
+          
+          localStorage.setItem('access_token', data.access);
+          localStorage.setItem('refresh_token', data.refresh);
+          login(data.user);
+          props.router.push('/profile');
+        } catch (err) {
+          setError('Invalid username or password');
+          setLoading(false);
+        }
+      };
+
+    // const handleSubmit = async (e) => {
+    //   e.preventDefault();
+    //   setLoading(true);
       
-      try {
-        const { data } = await axios.post(
-          'https://juanpabloduarte.com/api/login/',
-          credentials
-        );
+    //   try {
+    //     const { data } = await axios.post(
+    //       'https://juanpabloduarte.com/api/login/',
+    //       credentials
+    //     );
         
-        // Store tokens and user data
-        localStorage.setItem('access_token', data.access);
-        localStorage.setItem('refresh_token', data.refresh);
+    //     // Store tokens and user data
+    //     localStorage.setItem('access_token', data.access);
+    //     localStorage.setItem('refresh_token', data.refresh);
         
-        // Update auth context
-        login(data.access, data.refresh, data.user);
+    //     // Update auth context
+    //     login(data.access, data.refresh, data.user);
         
-        // Redirect to profile
-        window.location.href = '/profile';
-      } catch (err) {
-        setError('Invalid username or password');
-        setLoading(false);
-      }
-    };
+    //     // Redirect to profile
+    //     window.location.href = '/profile';
+    //   } catch (err) {
+    //     setError('Invalid username or password');
+    //     setLoading(false);
+    //   }
+    // };
     return (
         <div class="border-black/25 border py-8 bg-white rounded-[15px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] flex-col justify-center items-center gap-6 inline-flex 
         sm:w-[418px] sm:px-8
