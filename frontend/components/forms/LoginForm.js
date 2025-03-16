@@ -25,10 +25,10 @@ const LoginForm = () => {
           
           localStorage.setItem('access_token', data.access);
           localStorage.setItem('refresh_token', data.refresh);
-          login(data.user);
+          login(data.access, data.refresh, data.user);
           props.router.push('/profile');
         } catch (err) {
-          setError('Invalid username or password');
+          setError('Invalid email or password');
           setLoading(false);
         }
       };
