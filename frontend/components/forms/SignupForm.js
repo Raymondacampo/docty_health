@@ -100,31 +100,31 @@ export default function SignupForm (){
                     <div class="self-stretch  flex-col justify-start items-start gap-4 flex">
                     <div class="self-stretch flex-col justify-start items-start gap-[5px] flex">
                         <div class="self-stretch text-[#3d5a80] text-base font-normal font-['Inter'] tracking-wide">Email</div>
-                        <input type='text' name='email' required placeholder='your name' onChange={handleChange} class="text-sm self-stretch px-4 py-3 text-black rounded-[5px] border border-black justify-start items-center gap-2.5 inline-flex">
+                        <input type='text' name='email' placeholder='your name' onChange={handleChange} class="text-black self-stretch  px-4 py-3 focus:outline-none rounded-[5px] border border-black justify-start items-center gap-2.5 inline-flex">
                         </input>
                         {errors.email && <span className="text-red-500 text-sm">{errors.email}</span>}
                     </div>
                     <div class="self-stretch flex-col justify-start items-start gap-[5px] flex">
                         <div class="self-stretch text-[#3d5a80] text-base font-normal font-['Inter'] tracking-wide">First name</div>
-                        <input type='text' name='first_name' required placeholder='Your first name' onChange={handleChange} class="text-sm self-stretch px-4 py-3 text-black rounded-[5px] border border-black justify-start items-center gap-2.5 inline-flex">
+                        <input type='text' name='first_name' placeholder='Your first name' onChange={handleChange} class="text-black self-stretch  px-4 py-3 focus:outline-none rounded-[5px] border border-black justify-start items-center gap-2.5 inline-flex">
                         </input>
                         {errors.first_name && <span className="text-red-500 text-sm">{errors.first_name}</span>}
                     </div>
                     <div class="self-stretch flex-col justify-start items-start gap-[5px] flex">
                         <div class="self-stretch text-[#3d5a80] text-base font-normal font-['Inter'] tracking-wide">Last name</div>
-                        <input type='text' name='last_name' required placeholder='your last name' onChange={handleChange} class="text-sm self-stretch px-4 py-3 text-black rounded-[5px] border border-black justify-start items-center gap-2.5 inline-flex">
+                        <input type='text' name='last_name' placeholder='your last name' onChange={handleChange} class="text-black self-stretch  px-4 py-3 focus:outline-none rounded-[5px] border border-black justify-start items-center gap-2.5 inline-flex">
                         </input>
                         {errors.last_name && <span className="text-red-500 text-sm">{errors.last_name}</span>}
                     </div>
                     <div class="self-stretch flex-col justify-start items-start gap-[5px] flex">
                         <div class="self-stretch text-[#3d5a80] text-base font-normal font-['Inter'] tracking-wide">Password</div>
-                        <input type='password' name='password' required placeholder='Password' onChange={handleChange} class="text-sm self-stretch px-4 py-3 text-black rounded-[5px] border border-black justify-start items-center gap-2.5 inline-flex">
+                        <input type='password' name='password' placeholder='Password' onChange={handleChange} class="text-black self-stretch  px-4 py-3 focus:outline-none rounded-[5px] border border-black justify-start items-center gap-2.5 inline-flex">
                         </input>
                         {errors.password && <span className="text-red-500 text-sm">{errors.password}</span>}
                     </div>
                     <div class="self-stretch flex-col justify-start items-start gap-[5px] flex">
                         <div class="self-stretch text-[#3d5a80] text-base font-normal font-['Inter'] tracking-wide">Repeat assword</div>
-                        <input type='password' name='password2' required placeholder='Repeat password' onChange={handleChange} class="text-sm self-stretch px-4 py-3 text-black rounded-[5px] border border-black justify-start items-center gap-2.5 inline-flex">
+                        <input type='password' name='password2' placeholder='Repeat password' onChange={handleChange} class="text-black self-stretch  px-4 py-3 focus:outline-none rounded-[5px] border border-black justify-start items-center gap-2.5 inline-flex">
                         </input>
                         {errors.password2 && <span className="text-red-500 text-sm">{errors.password2}</span>}
                     </div>
