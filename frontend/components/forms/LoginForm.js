@@ -26,7 +26,7 @@ const LoginForm = () => {
           localStorage.setItem('access_token', data.access);
           localStorage.setItem('refresh_token', data.refresh);
           login(data.access, data.refresh, data.user);
-          props.router.push('/profile');
+          window.location.href = '/profile';
         } catch (err) {
           setError('Invalid email or password');
           setLoading(false);
