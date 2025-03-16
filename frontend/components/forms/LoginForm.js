@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { useAuth } from '@/context/auth';
 import axios from 'axios';
 import GoogleButton from '../GoogleButton';
+import { useRouter } from 'next/router';
 
 const LoginForm = () => {
     const { login } = useAuth();
+    const router = useRouter();
     const [credentials, setCredentials] = useState({
       email: '',
       password: ''
@@ -26,7 +28,7 @@ const LoginForm = () => {
           localStorage.setItem('access_token', data.access);
           localStorage.setItem('refresh_token', data.refresh);
           login(data.access, data.refresh, data.user);
-          window.location.href = '/profile';
+          router.push('/profile');
         } catch (err) {
           setError('Invalid email or password');
           setLoading(false);
