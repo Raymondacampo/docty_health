@@ -43,6 +43,7 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
+
     // Clear tokens
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
@@ -51,7 +52,7 @@ export function AuthProvider({ children }) {
     setUser(null);
     
     // Optional: Invalidate tokens on backend
-    axios.post('/api/auth/logout/').catch(console.error);
+    axios.post('/api/auth/logout/', {refresh: localStorage.getItem('access_token')}).catch(console.error);
     
     // // Redirect to login
     // window.location.href = '/login';
