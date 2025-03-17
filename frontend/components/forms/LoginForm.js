@@ -5,7 +5,7 @@ import GoogleButton from '../GoogleButton';
 import { useRouter } from 'next/router';
 
 const LoginForm = () => {
-    const { login } = useAuth();
+    // const { login } = useAuth();
     const router = useRouter();
     const [credentials, setCredentials] = useState({
       email: '',
