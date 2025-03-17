@@ -18,7 +18,7 @@ export function AuthProvider({ children }) {
   const login = async (googleToken) => {
     try {
       // 1. Send Google token to your Django endpoint
-      const { data } = await axios.post('http://juanpabloduarte.com/api/auth/google/', {
+      const { data } = await axios.post('https://juanpabloduarte.com/api/auth/google/', {
         token: googleToken
       });
   
