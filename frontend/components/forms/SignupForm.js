@@ -2,6 +2,7 @@ import { useState } from "react";
 import GoogleButton from "../GoogleButton";
 import { useAuth } from "@/context/auth";
 import axios from 'axios';
+import { useRouter } from 'next/router';
 
 const FormField = ({ title, type, name, placeholder, onChange, err }) => {
   return (
@@ -20,6 +21,7 @@ const FormField = ({ title, type, name, placeholder, onChange, err }) => {
 };
 
 export default function SignupForm() {
+const router = useRouter();
   const { login } = useAuth();
   const [formData, setFormData] = useState({
     first_name: '',
@@ -119,7 +121,8 @@ export default function SignupForm() {
       login(data.access, data.refresh, data.user);
 
       // Redirect to profile
-      window.location.href = '/profile';
+      router.push('/profile');
+
     } catch (err) {
       if (err.response?.data) {
         setErrors(err.response.data);
@@ -176,7 +179,7 @@ export default function SignupForm() {
             <FormField
               title="Repeat password"
               type="password"
-              name="confirm_password" // Changed to match formData key
+              name="password2" // Changed to match formData key
               placeholder="Repeat password"
               onChange={handleChange}
               err={errors.confirm_password} // Fixed to match name
