@@ -37,6 +37,7 @@ ALLOWED_HOSTS = ['174.138.66.50', 'juanpabloduarte.com']
 INSTALLED_APPS = [
     'rest_framework',
     "rest_framework_simplejwt",
+    'rest_framework_simplejwt.token_blacklist',
     'rest_framework.authtoken',
     'dj_rest_auth',
     'dj_rest_auth.registration',
