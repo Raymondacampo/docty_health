@@ -42,23 +42,61 @@ export function AuthProvider({ children }) {
 
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      // 1. Retrieve tokens before clearing them
+      const accessToken = localStorage.getItem('access_token');
+      const refreshToken = localStorage.getItem('refresh_token');
 
-    // Clear tokens
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    
-    // Clear user state
-    setUser(null);
-    
-    // Optional: Invalidate tokens on backend
-    axios.post('/api/auth/logout/', 
-    {headers: {Authorization: `Bearer ${localStorage.getItem('access_token')}` } 
-    }).catch(console.error);
-    
-    // // Redirect to login
-    // window.location.href = '/login';
+      // 2. Check if tokens exist
+      if (!accessToken || !refreshToken) {
+        console.warn('No tokens found, proceeding with client-side logout');
+      } else {
+        // 3. Send logout request to backend with tokens
+        await axios.post(
+          'https://juanpabloduarte.com/api/auth/logout/', // Correct absolute URL
+          { refresh: refreshToken }, // Send refresh token in body
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`, // Send access token in header
+            },
+          }
+        );
+      }
+
+      // 4. Clear tokens and user state after successful logout
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      setUser(null);
+
+      // 5. Redirect to login page
+      router.push('/login'); // Use router.push instead of window.location.href for Next.js
+    } catch (error) {
+      console.error('Logout failed:', error.response?.data || error.message);
+      // Proceed with client-side logout even if backend fails
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      setUser(null);
+      router.push('/login');
+    }
   };
+  // const logout = () => {
+
+  //   // Clear tokens
+  //   localStorage.removeItem('access_token');
+  //   localStorage.removeItem('refresh_token');
+    
+  //   // Clear user state
+  //   setUser(null);
+    
+  //   // Optional: Invalidate tokens on backend
+  //   axios.post('/api/auth/logout/', 
+  //   {headers: {Authorization: `Bearer ${localStorage.getItem('access_token')}` } 
+  //   }).catch(console.error);
+    
+  //   // // Redirect to login
+  //   // window.location.href = '/login';
+  // };
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>
