@@ -53,8 +53,8 @@ export function AuthProvider({ children }) {
     // Optional: Invalidate tokens on backend
     axios.post('/api/auth/logout/').catch(console.error);
     
-    // Redirect to login
-    window.location.href = '/login';
+    // // Redirect to login
+    // window.location.href = '/login';
   };
 
   return (
