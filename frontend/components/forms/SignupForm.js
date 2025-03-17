@@ -28,7 +28,7 @@ const router = useRouter();
     last_name: '',
     email: '',
     password: '',
-    confirm_password: '', // Changed to match input name
+    password2: '', // Changed to match input name
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -97,7 +97,7 @@ const router = useRouter();
       validationErrors.password = 'Password must be at least 8 characters long';
     }
 
-    if (formData.confirm_password && formData.confirm_password !== formData.password) {
+    if (formData.password2 && formData.password2 !== formData.password) {
       validationErrors.confirm_password = 'Passwords do not match';
     }
 
