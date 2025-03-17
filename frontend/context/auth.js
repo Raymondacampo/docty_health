@@ -52,7 +52,9 @@ export function AuthProvider({ children }) {
     setUser(null);
     
     // Optional: Invalidate tokens on backend
-    axios.post('/api/auth/logout/', {refresh: localStorage.getItem('access_token')}).catch(console.error);
+    axios.post('/api/auth/logout/', 
+    {headers: {Authorization: `Bearer ${localStorage.getItem('access_token')}` } 
+    }).catch(console.error);
     
     // // Redirect to login
     // window.location.href = '/login';
