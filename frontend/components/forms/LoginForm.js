@@ -30,6 +30,7 @@ const LoginForm = () => {
           login(data.access, data.refresh, data.user);
           router.push('/profile');
         } catch (err) {
+            console.log(err)
           setError('Invalid email or password');
           setLoading(false);
         }
