@@ -1,7 +1,7 @@
-import { GoogleOAuthProvider} from '@react-oauth/google';
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/context/auth';
-import GoogleButton from './GoogleLogin';
+
 export default function GoogleButton() {
     const { login } = useAuth();
     return (
