@@ -27,7 +27,6 @@ const LoginForm = () => {
           
           localStorage.setItem('access_token', data.access);
           localStorage.setItem('refresh_token', data.refresh);
-          login(data.access, data.refresh, data.user);
           router.push('/profile');
         } catch (err) {
             console.log(err)
