@@ -5,10 +5,10 @@ from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView, To
 
 urlpatterns = [
     path('data/', get_data),
-    path("login/", LoginView.as_view(), name="login"),
-    path("signup/", SignupView.as_view(), name="signup"),
-    path("logout/", LogoutView.as_view(), name="logout"),
 
+    path("auth/login/", LoginView.as_view(), name="login"),
+    path("auth/signup/", SignupView.as_view(), name="signup"),
+    path("auth/logout/", LogoutView.as_view(), name="logout"),
     path("auth/me/", UserProfileView.as_view(), name="user_profile"),
     path('auth/google/', GoogleLogin.as_view(), name='google-login'),
 

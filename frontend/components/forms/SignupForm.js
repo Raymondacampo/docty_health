@@ -55,7 +55,7 @@ export default function SignupForm (){
   
       try {
         const { data } = await axios.post(
-          'https://juanpabloduarte.com/api/signup/',
+          'https://juanpabloduarte.com/api/auth/signup/',
           formData
         );
   
