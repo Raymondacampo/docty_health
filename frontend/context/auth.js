@@ -15,33 +15,23 @@ export function AuthProvider({ children }) {
     username:null
   });
 
-  const login = async (googleToken) => { // Parameter matches what GoogleButton passes
-    console.log('Google Token:', googleToken);
+  const login = async (accessToken) => { // Simplified for callback usage
+    // If needed, fetch user data with the access token
     try {
-      // Send Google token to the correct endpoint
-      const { data } = await axios.post('https://juanpabloduarte.com/api/auth/google/', {
-        token: googleToken, // Use the passed googleToken
+      const { data } = await axios.get('https://juanpabloduarte.com/api/auth/me/', {
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
-
-      // Store JWT tokens from response
-      localStorage.setItem('access_token', data.access);
-      localStorage.setItem('refresh_token', data.refresh);
-
-      // Set user data from Django response
       setUser({
         email: data.email,
-        id: data.user_id,
+        id: data.id,
         username: data.username,
       });
-
-      // Redirect to profile page
-      router.push('/profile'); // Changed from '/' to '/profile' for consistency
+      router.push('/profile');
     } catch (error) {
       console.error('Login failed:', error.response?.data || error.message);
-      logout(); // Clear state on failure
+      logout();
     }
   };
-
   const logout = async () => {
     try {
       // 1. Retrieve tokens before clearing them
