@@ -28,7 +28,7 @@ const router = useRouter();
     last_name: '',
     email: '',
     password: '',
-    password2: '', // Changed to match input name
+    confirm_password: '', // Changed to match input name
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -66,9 +66,9 @@ const router = useRouter();
       }
     }
 
-    if (name === 'password2' && value.trim() !== '') {
+    if (name === 'confirm_password' && value.trim() !== '') {
       if (value !== formData.password) {
-        newErrors.password2 = 'Passwords do not match';
+        newErrors.confirm_password = 'Passwords do not match';
       }
     }
 
@@ -97,8 +97,8 @@ const router = useRouter();
       validationErrors.password = 'Password must be at least 8 characters long';
     }
 
-    if (formData.password2 && formData.password2 !== formData.password) {
-      validationErrors.password2 = 'Passwords do not match';
+    if (formData.confirm_password && formData.confirm_password !== formData.password) {
+      validationErrors.confirm_password = 'Passwords do not match';
     }
 
     if (Object.keys(validationErrors).length > 0) {
@@ -179,10 +179,10 @@ const router = useRouter();
             <FormField
               title="Repeat password"
               type="password"
-              name="password2" // Changed to match formData key
+              name="confirm_password" // Changed to match formData key
               placeholder="Repeat password"
               onChange={handleChange}
-              err={errors.password2} // Fixed to match name
+              err={errors.confirm_password} // Fixed to match name
             />
           </div>
           <div className="w-full flex-col justify-start items-center gap-4 flex">

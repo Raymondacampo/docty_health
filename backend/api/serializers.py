@@ -25,11 +25,11 @@ class SignupSerializer(serializers.ModelSerializer):
         required=True,
         validators=[validate_password]
     )
-    password2 = serializers.CharField(write_only=True, required=True)
+    confirm_password = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'email', 'password', 'password2')
+        fields = ('first_name', 'last_name', 'email', 'password', 'confirm_password')
         extra_kwargs = {
             'first_name': {'required': True},
             'last_name': {'required': True},
@@ -42,7 +42,7 @@ class SignupSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, attrs):
-        if attrs['password'] != attrs['password2']:
+        if attrs['password'] != attrs['confirm_password']:
             raise serializers.ValidationError({"password": "Password fields didn't match."})
         return attrs
 
