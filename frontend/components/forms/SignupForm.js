@@ -66,9 +66,9 @@ const router = useRouter();
       }
     }
 
-    if (name === 'confirm_password' && value.trim() !== '') {
+    if (name === 'password2' && value.trim() !== '') {
       if (value !== formData.password) {
-        newErrors.confirm_password = 'Passwords do not match';
+        newErrors.password2 = 'Passwords do not match';
       }
     }
 
@@ -98,7 +98,7 @@ const router = useRouter();
     }
 
     if (formData.password2 && formData.password2 !== formData.password) {
-      validationErrors.confirm_password = 'Passwords do not match';
+      validationErrors.password2 = 'Passwords do not match';
     }
 
     if (Object.keys(validationErrors).length > 0) {
@@ -182,7 +182,7 @@ const router = useRouter();
               name="password2" // Changed to match formData key
               placeholder="Repeat password"
               onChange={handleChange}
-              err={errors.confirm_password} // Fixed to match name
+              err={errors.password2} // Fixed to match name
             />
           </div>
           <div className="w-full flex-col justify-start items-center gap-4 flex">
