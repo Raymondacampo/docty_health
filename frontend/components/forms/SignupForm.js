@@ -1,8 +1,8 @@
 import { useState } from "react";
-import GoogleButton from "../GoogleButton.js";
 import { useAuth } from "@/context/auth";
 import axios from 'axios';
 import { useRouter } from 'next/router';
+import GoogleButton from "../GoogleLogin";
 
 const FormField = ({ title, type, name, placeholder, onChange, err }) => {
   return (
