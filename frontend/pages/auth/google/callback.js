@@ -10,32 +10,27 @@ export default function GoogleCallback() {
 
   useEffect(() => {
     const handleCallback = async () => {
-      const { code } = router.query; // Extract authorization code from URL
+      const { code } = router.query;
       if (code) {
         try {
-          // Send the code to your backend to exchange for tokens
-          const { data } = await axios.post('https://juanpabloduarte.com/api/auth/google/', {
-            code, // Send the authorization code instead of token
-          });
-
-          // Store tokens and user data
+          const { data } = await axios.post('https://juanpabloduarte.com/api/auth/google/', { code });
+          console.log('Response from backend:', data);
+          if (!data.access) {
+            console.error('No access token received');
+            router.push('/login');
+            return;
+          }
           localStorage.setItem('access_token', data.access);
           localStorage.setItem('refresh_token', data.refresh);
-
-          // Update auth context
-          login(data.access); // Pass access token (adjust if needed)
-
-          // Redirect to profile
-          router.push('/profile');
+          await login(data.access);
         } catch (error) {
           console.error('Google callback failed:', error.response?.data || error.message);
-          router.push('/login'); // Redirect to login on failure
+          router.push('/login');
         }
       }
     };
-
     handleCallback();
   }, [router.query, login, router]);
 
-  return <div>Authenticating...</div>; // Loading state while processing
+  return <div>Authenticating...</div>;
 }

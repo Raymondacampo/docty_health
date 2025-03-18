@@ -83,7 +83,7 @@ class GoogleLogin(APIView):
             return Response({'error': 'Authorization code is required'}, status=400)
 
         try:
-            # Set up the OAuth flow
+            # Set up the OAuth flow with full scope URLs
             flow = Flow.from_client_config(
                 {
                     "web": {
@@ -94,14 +94,18 @@ class GoogleLogin(APIView):
                         "redirect_uris": ["https://juanpabloduarte.com/auth/google/callback"],
                     }
                 },
-                scopes=['openid', 'email', 'profile'],
+                scopes=[
+                    'https://www.googleapis.com/auth/userinfo.email',
+                    'https://www.googleapis.com/auth/userinfo.profile',
+                    'openid'
+                ],
             )
             flow.redirect_uri = 'https://juanpabloduarte.com/auth/google/callback'
 
             # Exchange the code for tokens
             flow.fetch_token(code=code)
             credentials = flow.credentials
-            id_info = id_token.verify_oauth2_token(credentials.id_token, requests.Request(), os.getenv('GOOGLE_CLIENT_ID'))
+            id_info = flow.credentials.id_token  # Extract ID token directly
 
             # Get or create user
             user, created = User.objects.get_or_create(
@@ -124,7 +128,7 @@ class GoogleLogin(APIView):
             })
         except Exception as e:
             return Response({'error': str(e)}, status=400)
-
+        
 # Logout Api
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]  # ✅ Only logged-in users can logout
