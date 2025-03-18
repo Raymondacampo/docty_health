@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/context/auth';
 import axios from 'axios';
-import GoogleButton from '../GoogleButton';
+import GoogleButton from '../GoogleButton.js';
 import { useRouter } from 'next/router';
 
 const LoginForm = () => {

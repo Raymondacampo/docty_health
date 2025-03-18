@@ -1,5 +1,5 @@
 import { useState } from "react";
-import GoogleButton from "../GoogleButton";
+import GoogleButton from "../GoogleButton.js";
 import { useAuth } from "@/context/auth";
 import axios from 'axios';
 import { useRouter } from 'next/router';
