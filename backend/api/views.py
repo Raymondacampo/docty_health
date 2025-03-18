@@ -13,7 +13,6 @@ from django.contrib.auth import get_user_model
 
 from google.oauth2 import id_token
 from google.auth.transport import requests
-from google_auth_oauthlib.flow import Flow
 import os
 import uuid
 
@@ -78,41 +77,21 @@ class LoginView(APIView):
 # Google Auth
 class GoogleLogin(APIView):
     def post(self, request):
-        code = request.data.get('code')
-        if not code:
-            return Response({'error': 'Authorization code is required'}, status=400)
-
+        token = request.data.get('token')
         try:
-            # Set up the OAuth flow
-            flow = Flow.from_client_config(
-                {
-                    "web": {
-                        "client_id": os.getenv('GOOGLE_CLIENT_ID'),
-                        "client_secret": os.getenv('GOOGLE_CLIENT_SECRET'),
-                        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                        "token_uri": "https://oauth2.googleapis.com/token",
-                        "redirect_uris": ["https://juanpabloduarte.com/auth/google/callback"],
-                    }
-                },
-                scopes=['openid', 'email', 'profile'],
-            )
-            flow.redirect_uri = 'https://juanpabloduarte.com/auth/google/callback'
-
-            # Exchange the code for tokens
-            flow.fetch_token(code=code)
-            credentials = flow.credentials
-            id_info = id_token.verify_oauth2_token(credentials.id_token, requests.Request(), os.getenv('GOOGLE_CLIENT_ID'))
-
+            # Validate the Google ID token
+            id_info = id_token.verify_oauth2_token(token, requests.Request(), os.getenv('GOOGLE_CLIENT_ID'))
+            
             # Get or create user
             user, created = User.objects.get_or_create(
                 email=id_info['email'],
                 defaults={
-                    'username': f"{id_info.get('given_name', '')}_{uuid.uuid4().hex[:10]}",
+                    'username': f"{id_info.get('given_name', '')}_{uuid.uuid4().hex[:10]}",  # 10-character UUID
                     'first_name': id_info.get('given_name', ''),
                     'last_name': id_info.get('family_name', '')
                 }
             )
-
+            
             # Generate JWT
             refresh = RefreshToken.for_user(user)
             return Response({
@@ -120,10 +99,10 @@ class GoogleLogin(APIView):
                 'access': str(refresh.access_token),
                 'user_id': user.id,
                 'email': user.email,
-                'username': user.username
-            })
-        except Exception as e:
-            return Response({'error': str(e)}, status=400)
+                'username':user.username            
+                })
+        except ValueError:
+            return Response({'error': 'Invalid token'}, status=400)
 
 # Logout Api
 class LogoutView(APIView):
