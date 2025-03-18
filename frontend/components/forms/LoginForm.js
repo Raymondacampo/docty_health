@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { useAuth } from '@/context/auth';
 import axios from 'axios';
-import GoogleButton from '../GoogleLogin';
 import { useRouter } from 'next/router';
+import GoogleButton from '../GoogleLogin';
 
-const LoginForm = () => {
+export default function LoginForm (){
     // const { login } = useAuth();
     const router = useRouter();
     const [credentials, setCredentials] = useState({
@@ -35,30 +34,6 @@ const LoginForm = () => {
         }
       };
 
-    // const handleSubmit = async (e) => {
-    //   e.preventDefault();
-    //   setLoading(true);
-      
-    //   try {
-    //     const { data } = await axios.post(
-    //       'https://juanpabloduarte.com/api/login/',
-    //       credentials
-    //     );
-        
-    //     // Store tokens and user data
-    //     localStorage.setItem('access_token', data.access);
-    //     localStorage.setItem('refresh_token', data.refresh);
-        
-    //     // Update auth context
-    //     login(data.access, data.refresh, data.user);
-        
-    //     // Redirect to profile
-    //     window.location.href = '/profile';
-    //   } catch (err) {
-    //     setError('Invalid username or password');
-    //     setLoading(false);
-    //   }
-    // };
     return (
         <div class="border-black/25 border py-8 bg-white rounded-[15px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] flex-col justify-center items-center gap-6 inline-flex 
         sm:w-[418px] sm:px-8
@@ -96,4 +71,3 @@ const LoginForm = () => {
     );
 }
 
-export default LoginForm;
