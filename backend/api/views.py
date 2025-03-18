@@ -83,7 +83,7 @@ class GoogleLogin(APIView):
             return Response({'error': 'Authorization code is required'}, status=400)
 
         try:
-            # Set up the OAuth flow with full scope URLs
+            # Set up the OAuth flow
             flow = Flow.from_client_config(
                 {
                     "web": {
@@ -105,7 +105,13 @@ class GoogleLogin(APIView):
             # Exchange the code for tokens
             flow.fetch_token(code=code)
             credentials = flow.credentials
-            id_info = flow.credentials.id_token  # Extract ID token directly
+
+            # Decode the ID token to get user info
+            id_info = id_token.verify_oauth2_token(
+                credentials.id_token,
+                requests.Request(),
+                os.getenv('GOOGLE_CLIENT_ID')
+            )
 
             # Get or create user
             user, created = User.objects.get_or_create(
