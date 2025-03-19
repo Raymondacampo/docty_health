@@ -117,8 +117,8 @@ const router = useRouter();
       localStorage.setItem('access_token', data.access);
       localStorage.setItem('refresh_token', data.refresh);
 
-      // Update auth context (assuming login accepts tokens and user data)
-      login(data.access, data.refresh, data.user);
+      // // Update auth context (assuming login accepts tokens and user data)
+      // login(data.access, data.refresh, data.user);
 
       // Redirect to profile
       router.push('/profile');

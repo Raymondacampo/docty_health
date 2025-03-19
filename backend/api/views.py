@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from rest_framework import status
 
 from rest_framework.generics import RetrieveUpdateAPIView
-from .serializers import UserProfileSerializer, SignupSerializer
+from .serializers import UserProfileSerializer, SignupSerializer, DoctorSignupSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view
 from django.contrib.auth import get_user_model
@@ -33,6 +33,25 @@ class SignupView(APIView):
     
     def post(self, request):
         serializer = SignupSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email
+                }
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class DoctorSignupView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        serializer = DoctorSignupSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
             refresh = RefreshToken.for_user(user)

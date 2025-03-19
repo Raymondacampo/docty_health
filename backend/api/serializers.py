@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
 import uuid
+from .models import Doctor
 User = get_user_model()
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -60,6 +61,66 @@ class SignupSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             password=validated_data['password']
         )
+        return user
+    
+class DoctorSignupSerializer(serializers.Serializer):
+    first_name = serializers.CharField(max_length=150, required=True)
+    last_name = serializers.CharField(max_length=150, required=True)
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+    confirm_password = serializers.CharField(write_only=True, required=True)
+    exequatur = serializers.CharField(max_length=20, required=True)
+    experience = serializers.IntegerField(required=True)
+    specialties = serializers.ListField(child=serializers.IntegerField(), required=False)
+    clinics = serializers.ListField(child=serializers.IntegerField(), required=False)
+
+    def validate(self, attrs):
+        # Ensure passwords match
+        if attrs['password'] != attrs['confirm_password']:
+            raise serializers.ValidationError({"password": "Password fields didn't match."})
+        
+        # Check for unique email
+        if User.objects.filter(email__iexact=attrs['email']).exists():
+            raise serializers.ValidationError({"email": "This email is already in use"})
+        
+        # Check for unique exequatur
+        if Doctor.objects.filter(exequatur=attrs['exequatur']).exists():
+            raise serializers.ValidationError({"exequatur": "This exequatur is already in use"})
+        
+        return attrs
+
+    def create(self, validated_data):
+        # Remove confirm_password as it's not needed for user creation
+        validated_data.pop('confirm_password')
+        
+        # Extract doctor-specific fields
+        exequatur = validated_data.pop('exequatur')
+        experience = validated_data.pop('experience')
+        specialties = validated_data.pop('specialties', [])
+        clinics = validated_data.pop('clinics', [])
+
+        # Create the User object
+        user = User.objects.create_user(
+            username=f"user_{uuid.uuid4().hex[:10]}",
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
+            email=validated_data['email'],
+            password=validated_data['password']
+        )
+
+        # Create the Doctor object linked to the user
+        doctor = Doctor.objects.create(
+            user=user,
+            exequatur=exequatur,
+            experience=experience
+        )
+
+        # Add specialties and clinics if provided
+        if specialties:
+            doctor.specialties.set(specialties)
+        if clinics:
+            doctor.clinics.set(clinics)
+
         return user
 
 class MinimalUserSerializer(serializers.ModelSerializer):

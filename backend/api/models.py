@@ -11,7 +11,7 @@ class User(AbstractUser):
     username = models.CharField(max_length=150, unique=True, blank=True, null=True)
     email = models.EmailField(unique=True)
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['username']
 
      # ✅ Fix reverse accessor clashes by setting `related_name="+"`
     groups = models.ManyToManyField(
