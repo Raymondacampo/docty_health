@@ -49,8 +49,9 @@ class SignupView(APIView):
 
 class DoctorSignupView(APIView):
     permission_classes = []
-    print('comenzo')
+    
     def post(self, request):
+        print('comenzo')
         serializer = DoctorSignupSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
