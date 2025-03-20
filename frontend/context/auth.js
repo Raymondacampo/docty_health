@@ -19,7 +19,7 @@ export function AuthProvider({ children }) {
     console.log('Google Token:', googleToken);
     try {
       // Send Google token to the correct endpoint
-      const { data } = await axios.post('https://juanpabloduarte.com/api/auth/google/', {
+      const { data } = await axios.post('http://localhost:8000/api/auth/google/', {
         token: googleToken, // Use the passed googleToken
       });
 
@@ -54,7 +54,7 @@ export function AuthProvider({ children }) {
       } else {
         // 3. Send logout request to backend with tokens
         await axios.post(
-          'https://juanpabloduarte.com/api/auth/logout/', // Correct absolute URL
+          'http://localhost:8000/api/auth/logout/', // Correct absolute URL
           { refresh: refreshToken }, // Send refresh token in body
           {
             headers: {

@@ -29,7 +29,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['174.138.66.50', 'juanpabloduarte.com']
+ALLOWED_HOSTS = ['localhost']
 
 
 # Application definition
@@ -99,6 +99,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "https://174.138.66.50",
+    "https://juanpabloduarte.com",
     "http://localhost:3000",  # Allow Next.js frontend
 ]
 REST_FRAMEWORK = {
@@ -135,25 +136,34 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+SECURE_SSL_REDIRECT = False
 
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'test_project_db',
+#         'USER': 'jefe',
+#         'PASSWORD': 'rabomonito',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#         }
+# }
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'test_project_db',
-        'USER': 'jefe',
-        'PASSWORD': 'rabomonito',
-        'HOST': 'localhost',
-        'PORT': '5432',
-        }
+        'NAME': os.getenv('DB_NAME', 'test_project_db'),
+        'USER': os.getenv('DB_USER', 'jefe'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'rabomonito'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
+    }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

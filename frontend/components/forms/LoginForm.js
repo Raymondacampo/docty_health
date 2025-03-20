@@ -20,7 +20,7 @@ export default function LoginForm (){
         
         try {
           const { data } = await axios.post(
-            'https://juanpabloduarte.com/api/auth/login/',
+            'http://localhost:8000/api/auth/login/',
             credentials
           );
           
