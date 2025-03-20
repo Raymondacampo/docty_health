@@ -31,6 +31,9 @@ class User(AbstractUser):
             self.username = f"user_{uuid.uuid4().hex[:8]}"  # ✅ Generate unique username
         super().save(*args, **kwargs)
 
+    class Meta:
+        db_table = 'auth_user'
+
     def __str__(self):
         return self.email
 
