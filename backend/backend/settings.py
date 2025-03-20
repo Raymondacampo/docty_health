@@ -27,9 +27,9 @@ load_dotenv()
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['174.138.66.50', 'juanpabloduarte']
+ALLOWED_HOSTS = ['174.138.66.50', 'juanpabloduarte.com']
 
 
 # Application definition
@@ -137,7 +137,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-SECURE_SSL_REDIRECT = False
+SECURE_SSL_REDIRECT = True
 
 
 # Database
