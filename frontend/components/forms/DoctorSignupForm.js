@@ -112,7 +112,7 @@ export default function DoctorSignupForm() {
 
     try {
       const { data } = await axios.post(
-        'http://localhost:8000/api/auth/doctor_signup/',
+        'https://juanpabloduarte.com/api/auth/doctor_signup/',
         formData
       );
       localStorage.setItem('access_token', data.access);

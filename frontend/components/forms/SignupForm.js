@@ -109,7 +109,7 @@ const router = useRouter();
 
     try {
       const { data } = await axios.post(
-        'http://localhost:8000/api/auth/signup/',
+        'https://juanpabloduarte.com/api/auth/signup/',
         formData
       );
 
