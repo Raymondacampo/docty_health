@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import get_data, LoginView, UserProfileView, SignupView, LogoutView, GoogleLogin, DoctorSignupView
+from .views import get_data, LoginView, UserProfileView, SignupView, LogoutView, GoogleLogin, DoctorSignupView, PasswordResetRequestView, PasswordChangeView, ValidateTokenView
 from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView, TokenObtainPairView
 
 
@@ -12,6 +12,9 @@ urlpatterns = [
     path("auth/logout/", LogoutView.as_view(), name="logout"),
     path("auth/me/", UserProfileView.as_view(), name="user_profile"),
     path('auth/google/', GoogleLogin.as_view(), name='google-login'),
+    path('auth/password_reset/', PasswordResetRequestView.as_view(), name='password_reset_request'),
+    path('auth/password_change/', PasswordChangeView.as_view(), name='password_change'),
+    path('auth/validate_token/', ValidateTokenView.as_view(), name='validate_token'),
 
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),  # Login (returns access & refresh tokens)
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),  # ✅ Refresh access token

@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 import uuid
+from django.utils import timezone
 
 # User Model
 class User(AbstractUser):
@@ -62,3 +63,16 @@ class Clinic(models.Model):
 
     def __str__(self):
         return self.name
+
+class PasswordResetToken(models.Model):
+    email = models.EmailField()
+    token = models.CharField(max_length=255, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    used = models.BooleanField(default=False)
+
+    def is_valid(self):
+        return not self.used and timezone.now() < self.expires_at
+
+    def __str__(self):
+        return f"Token for {self.email} - Used: {self.used}"
