@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django import forms
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
-from .models import Doctor, PasswordResetToken
+from .models import Doctor, PasswordResetToken, Specialty, Clinic
 User = get_user_model()
 
 class CustomUserCreationForm(forms.ModelForm):
@@ -72,3 +72,5 @@ class CustomUserAdmin(UserAdmin):
 admin.site.register(User, CustomUserAdmin)  # Register the custom admin
 admin.site.register(Doctor) 
 admin.site.register(PasswordResetToken) 
+admin.site.register(Specialty) 
+admin.site.register(Clinic) 

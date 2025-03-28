@@ -160,17 +160,14 @@ const UserProfileForm = ({ initialUser, finish }) => {
         }}
         error={fieldErrors.username}
       />
-      <EditableField
-        title="E-mail"
-        value={email}
-        onChange={(e) => {
-          setEmail(e.target.value);
-          if (fieldErrors.email) {
-            setFieldErrors({ ...fieldErrors, email: undefined });
-          }
-        }}
-        error={fieldErrors.email}
-      />
+      <div className="w-full justify-between items-center gap-4 flex">
+        <div className="text-[#3d5a80] font-normal font-['Inter'] sm:text-base xs:text-sm">
+          Email
+        </div>
+          <div className="w-[209px] text-right self-stretch text-black font-['Inter'] text-wrap break-all sm:text-sm xs:text-xs">
+              {email}
+          </div>   
+        </div>
       <EditableField
         title="Phone number"
         value={phoneNumber}

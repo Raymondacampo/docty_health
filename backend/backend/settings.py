@@ -96,7 +96,7 @@ SOCIALACCOUNT_PROVIDERS = {
 
 MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
-
+    'api.middleware.CustomXFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',  # Allows frontend to access API
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -106,6 +106,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# settings.py
+X_FRAME_OPTIONS = 'DENY'  # Default, but we'll override for media
 
 CORS_ALLOWED_ORIGINS = [
     "https://174.138.66.50",

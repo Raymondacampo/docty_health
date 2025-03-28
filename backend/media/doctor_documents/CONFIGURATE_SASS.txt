@@ -1,0 +1,38 @@
+CONFIGURATE SASS IN DJANGO PROJECT
+
+1-Install libsass compiler and compressor
+
+	1)pip install django-libsass django-compressor
+
+
+2-Configure Django to Use SASS
+	1)Add libsass to SETTINGS > INSTALLED_APPS = ['django_libsass','compressor']
+
+
+3-Create scss folder inside APP > STATIC (you can remove css folder)
+
+
+
+############setitngs.py########################
+
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+COMPRESS_PRECOMPILERS = (
+    ('text/x-scss', 'django_libsass.SassCompiler'),
+)
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'compressor.finders.CompressorFinder',
+]
+
+###########TEMPLATE############
+{% load static %}
+{% load compress %}
+
+{% compress css %}
+    <link rel="stylesheet" type="text/x-scss" href="{% static 'scss/style.scss' %}">
+{% endcompress %}

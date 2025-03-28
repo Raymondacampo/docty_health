@@ -43,10 +43,22 @@ class Doctor(models.Model):
     specialties = models.ManyToManyField("Specialty", related_name="doctors")  # Many doctors can have many specialties
     clinics = models.ManyToManyField("Clinic", related_name="doctors")  # Many doctors work in many clinics
     experience = models.PositiveIntegerField(help_text="Years of Experience")
-    documents = models.FileField(upload_to="doctor_documents/", blank=True, null=True)
 
     def __str__(self):
         return f"Dr. {self.user.first_name} {self.user.last_name} - {self.exequatur}"
+
+# DoctorDocument Upload Path Function
+def doctor_document_upload_path(instance, filename):
+    return f"doctor_documents/doctor_{instance.doctor.id}/{timezone.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
+
+class DoctorDocument(models.Model):
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name="documents")
+    file = models.FileField(upload_to="doctor_documents/")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    description = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.description or 'Document'} for {self.doctor}"
 
 # Specialty Model
 class Specialty(models.Model):

@@ -1,6 +1,15 @@
 import { useState, useEffect } from "react";
 import axios from 'axios'; 
 import UserProfileForm from "@/components/forms/UserProfileForm";
+import LogoutButton from "@/components/LogoutButton";
+import { useRouter } from 'next/router';
+import SpecialtySearch from "@/components/account/SpecialtySearch";
+import ClinicSearch from "@/components/account/ClinicSearch";
+import { SpecializationMenu } from "@/components/account/SpecializationMenu";
+import { ClinicMenu } from "@/components/account/ClinicMenu";
+import { DoctorDocumentUpload } from "@/components/account/DoctorDocumentUpload";
+import DocumentsSection from "@/components/account/DocumentsSection";
+
 const Pencil = () => {
     return(
         <svg
@@ -40,51 +49,101 @@ const Field = ({ title, value, setEdit }) => {
   );
 };
 
-const ProfessionalData = ({ data }) => {
+const ThreeDotButton = () => {
+  return(
+    <button className="p-2 rounded-sm hover:bg-gray-300">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={3}
+        stroke="black"
+        className="w-6 h-6">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M6.75 12h.008m5.992 0h.008m5.992 0h.008"
+        />
+      </svg>
+    </button>
+  )
+}
+
+const ProfessionalData = ({ data,onReload }) => {
   return (
     <div className="w-full rounded-[10px] flex-col justify-start items-start gap-6 inline-flex">
         <div className="w-full flex items-center justify-between">
-            <div className="self-stretch text-black font-normal font-['Inter'] sm:text-xl xs:text-lg">
+            <div className="self-stretch text-black font-normal font-['Inter'] sm:text-2xl xs:text-xl">
             Professional data
             </div>   
-            <button className="ml-auto text-[#4285f4] justify-end flex text-sm items-center gap-1"> <Pencil/> Edit info</button>              
         </div>
-        <div className="self-stretch h-[201px] p-4 rounded-[10px] flex-col justify-start items-start gap-6 flex">
-            <div className="self-stretch justify-between items-start gap-4 inline-flex">
-            <div className="w-[125px] text-[#3d5a80] font-normal font-['Inter'] sm:text-base xs:text-sm">
-                Specialization
-            </div>
-            <div className="text-black text-sm font-normal font-['Inter']">
-                {data.specialization}
-            </div>
-            </div>
-            <div className="self-stretch justify-between items-start gap-4 inline-flex">
-            <div className="w-[125px] text-[#3d5a80] font-normal font-['Inter'] sm:text-base xs:text-sm">
-                Exequatur
-            </div>
-            <div className="text-black text-sm font-normal font-['Inter']">
-                {data.exequatur}
-            </div>
-            </div>
-            <div className="self-stretch justify-between items-start gap-4 inline-flex">
-            <div className="w-[125px] text-[#3d5a80] font-normal font-['Inter'] sm:text-base xs:text-sm">
-                Experience
-            </div>
-            <div className="text-black text-sm font-normal font-['Inter']">
-                {data.experience}
-            </div>
-            </div>
-            <div className="self-stretch justify-between items-center gap-4 inline-flex">
-            <div className="w-[125px] text-[#3d5a80] font-normal font-['Inter'] sm:text-base xs:text-sm">
-                Location
-            </div>
-            <div className="p-2 bg-[#98c1d1]/25 rounded-[10px] justify-center items-center gap-2.5 flex">
-                <div className="text-black text-sm font-normal font-['Inter']">
-                {data.location}
+        <div className="self-stretch p-4 rounded-[10px] flex-col justify-start items-start gap-6 flex">
+            <div className="self-stretch flex-col justify-between items-start gap-8 inline-flex">
+
+              <div className="w-full flex-col flex gap-4">
+                <div className="self-stretch justify-between items-start gap-4 inline-flex">
+                  <div className="w-[125px] text-[#3d5a80] font-normal font-['Inter'] sm:text-base xs:text-sm">
+                      Exequatur
+                  </div>
+                  <div className="text-black text-sm font-normal font-['Inter']">
+                      {data.exequatur}
+                  </div>
                 </div>
-                {/* You can include your SVG icon here */}
-            </div>
-            </div>
+                <div className="self-stretch justify-between items-start gap-4 inline-flex">
+                  <div className="w-[125px] text-[#3d5a80] font-normal font-['Inter'] sm:text-base xs:text-sm">
+                      Experience
+                  </div>
+                  <div className="text-black text-sm font-normal font-['Inter']">
+                      {data.experience} Years
+                  </div>
+                </div>                
+              </div>
+
+            
+              <div className="w-full flex flex-col gap-2.5">
+                <div className="w-full text-[#3d5a80] font-normal font-['Inter'] sm:text-base xs:text-sm">
+                    Specialization
+                </div>
+                {data.specializations.length > 0 && data.specializations.map((specialization) => (
+                  <div
+                    key={specialization.id}
+                    className="w-full px-4 py-2 bg-[#98c1d1]/25 rounded-[10px] justify-between items-center gap-2.5 flex"
+                  >
+                    <div className="text-black text-sm font-normal font-['Inter']">
+                      {specialization.name}
+                    </div>
+                    <div>
+                      <SpecializationMenu specialization={specialization} onDelete={onReload} />
+                    </div>
+                  </div>
+                ))}
+
+                <SpecialtySearch onSpecialtyAdded={onReload}/>              
+              </div>
+
+              
+              <div className="w-full flex flex-col gap-2.5">
+                <div className="w-full text-[#3d5a80] font-normal font-['Inter'] sm:text-base xs:text-sm">
+                    Clinics
+                </div>
+                {data.clinics.length > 0 && data.clinics.map((clinic) => (
+                  <div
+                    key={clinic.id}
+                    className="w-full px-4 py-2 bg-[#98c1d1]/25 rounded-[10px] justify-between items-center gap-2.5 flex"
+                  >
+                    <div className="text-black text-sm font-normal font-['Inter']">
+                      {clinic.name}
+                    </div>
+                    <div>
+                      <ClinicMenu clinic={clinic} onDelete={onReload}/>
+                    </div>
+                  </div>                   
+                ))}
+   
+                <ClinicSearch onClinicAdded={onReload} />             
+              </div>
+
+          </div>  
         </div>
     </div>
   );
@@ -94,13 +153,13 @@ const Scheduling = ({ schedule }) => {
   return (
     <div className="w-full rounded-[10px] flex-col justify-start items-start gap-6 inline-flex">
     <div className="w-full flex items-center justify-between">
-        <div className="self-stretch text-black font-normal font-['Inter'] sm:text-xl xs:text-lg">
+        <div className="self-stretch text-black font-normal font-['Inter'] sm:text-2xl xs:text-xl">
         Scheduling
         </div>   
         <button className="ml-auto text-[#4285f4] justify-end flex text-sm items-center gap-1"> <Pencil/> Edit info</button>              
     </div>
       <div className="self-stretch flex-col justify-start items-center gap-2 flex">
-        <div className="self-stretch rounded-[10px] flex-col justify-start items-center gap-6 flex">
+        <div className="self-stretch rounded-[10px] flex-col justify-start items-center gap-6 flex px-4">
           <div className="self-stretch justify-start items-start gap-4 inline-flex">
             <div className="w-[125px] text-[#3d5a80] font-normal font-['Inter'] sm:text-lg xs:text-base">
               Taking dates
@@ -128,28 +187,6 @@ const Scheduling = ({ schedule }) => {
   );
 };
 
-const Documents = ({ documents }) => {
-  return (
-    <div className="w-full rounded-[10px] flex-col justify-start items-start gap-5 inline-flex">
-    <div className="w-full flex items-center justify-between">
-        <div className="self-stretch text-black font-normal font-['Inter'] sm:text-xl xs:text-lg">
-        Documents & certificates
-        </div>   
-        <button className="ml-auto text-[#4285f4] justify-end flex text-sm items-center gap-1"> <Pencil/> Edit info</button>              
-    </div>
-      <div className="self-stretch flex-col justify-start items-center gap-2 flex">
-        {documents && documents.map((doc, index) => (
-          <div key={index} className="self-stretch px-2 py-3 bg-[#98c1d1]/25 rounded-[10px] justify-start items-center gap-2.5 inline-flex">
-            <div className="text-black text-sm font-normal font-['Inter']">
-              {doc.name}
-            </div>
-          </div>
-        ))}
-        <button className="text-[#4285f4] text-sm font-normal font-['Inter']">Add +</button>
-      </div>
-    </div>
-  );
-};
 
 const ChangePasswordModal = ({ isOpen, onClose, onConfirm }) => {
     if (!isOpen) return null;
@@ -184,7 +221,7 @@ export default function Settings() {
     const [edit, setEdit] = useState(false)
     const [reload, setReload] = useState(0)
     const [showPasswordModal, setShowPasswordModal] = useState(false); // New state
-
+    const root = useRouter()
     useEffect(() => {
         const loadUser = async () => {
         try {
@@ -239,35 +276,13 @@ export default function Settings() {
     };
 
     return (
-        <div className="w-full flex-col justify-center items-center gap-2.5 inline-flex">
+        <div className="w-full justify-center items-start gap-2.5 inline-flex">
         <div className="py-4 bg-white rounded-[20px] justify-center items-start gap-4 inline-flex sm:px-0 sm:w-auto  xs:w-full">
-            <div className="w-[200px] py-8 flex-col justify-center items-start gap-2 md:inline-flex xs:hidden">
-            <div className="w-full flex-col justify-center items-end gap-1 flex">
-                <a href="" className="p-2 rounded-md self-stretch flex-col justify-center items-start gap-1 flex hover:bg-[#98c1d1]/25">
-                <div className="self-stretch text-black text-sm font-normal font-['Inter']">
-                    Settings
-                </div>
-                <div className="w-[90%] border-2 border-[#3d5a80]"></div>
-                </a>
-                <a href="" className="p-2 rounded-md self-stretch text-black text-sm font-normal font-['Inter'] hover:bg-[#98c1d1]/25">
-                Dates
-                </a>
-                <a href="" className="p-2 rounded-md self-stretch text-black text-sm font-normal font-['Inter'] hover:bg-[#98c1d1]/25">
-                Favourites
-                </a>
-            </div>
-            <a href="" className="p-2 rounded-md self-stretch justify-start items-start gap-2 inline-flex">
-                <div className="text-[#ff0000] text-sm font-normal font-['Inter']">Logout</div>
-                <div data-svg-wrapper className="relative">
-                {/* Logout SVG icon */}
-                </div>
-            </a>
-            </div>
-            <div className="  w-full self-stretch py-8 bg-white  border border-black/25 flex-col justify-center items-center gap-[55px] flex 
-            lg:px-20 md:px-10 sm:px-20 sm:max-w-[530px] sm:rounded-[20px] xs:px-4">
+            <div className=" w-full self-stretch py-8 bg-white  border border-black/25 justify-center items-start gap-20 flex flex-wrap
+            lg:px-20 md:px-10 sm:px-20 sm:rounded-[20px] sm:max-w-[900px] xs:px-4">
             <div className="w-full flex-col justify-start items-start gap-6 flex">
                 <div className="w-full flex items-center justify-between px-4">
-                    <div className="self-stretch text-black font-normal font-['Inter'] sm:text-xl xs:text-lg">
+                    <div className="self-stretch text-black font-normal font-['Inter'] sm:text-2xl xs:text-xl">
                     Personal data
                     </div>
                     {edit ?
@@ -298,15 +313,19 @@ export default function Settings() {
             </div>
             {user && user.is_doctor &&
             <>
-                <ProfessionalData data={user} />   
+                <ProfessionalData data={user} onReload={() => setReload(reload + 1)} />   
                 <Scheduling schedule={user.scheduling} />
-                <Documents documents={user.documents} />                          
+                <div className="w-full">
+                  <DocumentsSection data={user} onReload={() => setReload(reload + 1)} />
+                  <DoctorDocumentUpload onUpload={() => setReload(reload + 1)} />                
+                </div>
+                         
             </>
 
             }
             
             <div className="w-full flex-col justify-start items-start gap-2 flex">
-                <div className="self-stretch text-black font-normal font-['Inter'] sm:text-xl xs:text-lg">
+                <div className="self-stretch text-black font-normal font-['Inter'] sm:text-2xl xs:text-xl">
                     Security & privacy
                 </div>
                 <div className="self-stretch py-4 rounded-[10px] flex-col justify-start items-center gap-4 flex">
@@ -328,34 +347,19 @@ export default function Settings() {
                     onClose={() => setShowPasswordModal(false)}
                     onConfirm={handlePasswordChangeRequest}
                 />
-            </div>
-            <div className="w-full flex-col justify-start items-start gap-2 flex">
-                <div className="self-stretch text-black font-normal font-['Inter'] sm:text-xl xs:text-lg">
-                Security & privacy
-                </div>
-                <div className="self-stretch py-4 rounded-[10px] flex-col justify-start items-center gap-4 flex">
-                <a href="" className="w-full px-4 py-2 bg-[#98c1d1]/25 rounded-[10px] justify-start items-center gap-[30px] inline-flex">
-                    <div className="text-[#3d5a80] text-sm font-normal font-['Inter']">
-                    Change password
-                    </div>
-                    <div data-svg-wrapper>
-                    {/* Change password SVG */}
-                    </div>
-                </a>
                 <a href="">
                     <span className="text-[#4285f4] text-sm font-normal font-['Inter']">
                     Enable two factor authentication
                     </span>
                     <span className="text-[#4285f4] text-base font-normal font-['Inter']">+</span>
                 </a>
+                <LogoutButton/>
                 <a href="" className="justify-start items-center gap-2 inline-flex">
                     <div className="text-[#ff0000] text-sm font-normal font-['Inter']">Delete account</div>
                     <div data-svg-wrapper>
-                    {/* Delete account SVG */}
                     </div>
                 </a>
-                </div>
-            </div>
+              </div>
             </div>
         </div>
         </div>
