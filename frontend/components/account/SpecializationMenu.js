@@ -69,10 +69,10 @@ export const SpecializationMenu = ({ specialization, onDelete }) => {
         <ThreeDotsIcon />
       </button>
       {isMenuOpen && (
-        <div className="absolute right-0 bottom-full z-10 bg-red-700 border border-gray-300 p-1.5 rounded-md">
+        <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-300 rounded shadow-lg z-10">
           <button
             onClick={handleDelete}
-            className="border-none text-white cursor-pointer" 
+            className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
             aria-label={`Delete specialization ${specialization.name}`}
           >
             Delete

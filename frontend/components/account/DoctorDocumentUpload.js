@@ -69,7 +69,7 @@ export const DoctorDocumentUpload = ({ onUpload }) => {
   };
 
   return (
-    <div className="w-full flex flex-col gap-4">
+    <div className="w-full flex flex-col gap-4 px-4">
       <label className="text-[#3d5a80] text-sm font-normal font-['Inter']">
         Upload Document (Images or PDFs only)
       </label>

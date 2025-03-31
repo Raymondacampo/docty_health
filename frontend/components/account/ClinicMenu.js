@@ -19,7 +19,6 @@ export const ClinicMenu = ({ clinic, onDelete }) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setIsMenuOpen(false);
       }
-      console.log(clinic)
     };
 
     // Add event listener when menu is open
@@ -61,26 +60,19 @@ export const ClinicMenu = ({ clinic, onDelete }) => {
   };
 
   return (
-    <div ref={menuRef} style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+    <div ref={menuRef} style={{ position: 'relative', display: 'inline-block'}}>
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        style={{
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          height: '16px', // Match SVG height for consistent alignment
-        }}
+        style={{ background: 'none', border: 'none', cursor: 'pointer' }}
         aria-label="Clinic options"
       >
         <ThreeDotsIcon />
       </button>
       {isMenuOpen && (
-        <div className="absolute right-0 bottom-full z-10 bg-red-700 border border-gray-300 p-1.5 rounded-md">
+        <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-300 rounded shadow-lg z-10">
           <button
             onClick={handleDelete}
-            className="border-none text-white cursor-pointer"
+            className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
             aria-label={`Delete clinic ${clinic}`}
           >
             Delete

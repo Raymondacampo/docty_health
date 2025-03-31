@@ -43,7 +43,8 @@ class Doctor(models.Model):
     specialties = models.ManyToManyField("Specialty", related_name="doctors")  # Many doctors can have many specialties
     clinics = models.ManyToManyField("Clinic", related_name="doctors")  # Many doctors work in many clinics
     experience = models.PositiveIntegerField(help_text="Years of Experience")
-
+    taking_dates = models.BooleanField(default=True)
+    
     def __str__(self):
         return f"Dr. {self.user.first_name} {self.user.last_name} - {self.exequatur}"
 
@@ -75,6 +76,36 @@ class Clinic(models.Model):
 
     def __str__(self):
         return self.name
+    
+# DATES SYSTEM
+class DayOfWeek(models.Model):
+    name = models.CharField(max_length=10, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class DoctorAvailability(models.Model):
+    doctor = models.ForeignKey('Doctor', on_delete=models.CASCADE)
+    clinic = models.ForeignKey('Clinic', on_delete=models.CASCADE)
+    specialization = models.ForeignKey('Specialty', on_delete=models.CASCADE)
+    days = models.ManyToManyField(DayOfWeek)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    slot_duration = models.PositiveIntegerField(default=30, help_text="Duration in minutes (30, 45, or 60)")
+
+    def __str__(self):
+        return f"{self.doctor} - {self.clinic} - {self.specialization}"
+
+class Appointment(models.Model):
+    doctor = models.ForeignKey('Doctor', on_delete=models.CASCADE)
+    patient = models.ForeignKey('User', on_delete=models.CASCADE, related_name='appointments')
+    date = models.DateField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Appointment with {self.doctor} on {self.date} at {self.start_time}"
 
 class PasswordResetToken(models.Model):
     email = models.EmailField()

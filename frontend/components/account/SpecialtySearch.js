@@ -58,7 +58,7 @@ export default function SpecialtySearch({ onSpecialtyAdded }) {
             setIsOpen(true);
             fetchSpecialties();
           }}
-          className="text-white text-sm font-normal font-['Inter'] bg-[#3d5a80] px-2.5 py-2 rounded-md"
+          className="text-white text-sm font-normal font-['Inter'] bg-[#ee6c4d] px-2.5 py-2 rounded-md"
         >
           Add +
         </button>
@@ -91,7 +91,7 @@ export default function SpecialtySearch({ onSpecialtyAdded }) {
           )}
           <button
             onClick={() => setIsOpen(false)}
-            className="mt-2 text-white bg-red-700 text-sm font-normal font-['Inter'] px-2.5 py-2 rounded-md"
+            className="mt-2 text-white bg-[#ee6c4d] hover:bg-[#ff7653] text-sm font-normal font-['Inter'] px-2.5 py-2 rounded-md"
           >
             Cancel
           </button>

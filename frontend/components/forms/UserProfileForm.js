@@ -195,7 +195,7 @@ const UserProfileForm = ({ initialUser, finish }) => {
       <button
         type="submit"
         disabled={loading}
-        className="px-4 py-2 bg-[#ee6c4d] text-white rounded hover:bg-orange-400 transition"
+        className="px-4 py-2 bg-[#ee6c4d] text-white rounded hover:bg-[#ff7653] transition"
       >
         {loading ? "Saving..." : "Save"}
       </button>

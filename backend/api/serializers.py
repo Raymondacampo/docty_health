@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
 import uuid
-from .models import Doctor
+from .models import Doctor, DoctorAvailability, Clinic, DayOfWeek, Specialty
 User = get_user_model()
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -130,12 +130,6 @@ class MinimalUserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['first_name', 'last_name', "email", "password", "confirm_password"]
         extra_kwargs = {"password": {"write_only": True}}
-        
-    # def validate(self, data):
-    #     """Ensure passwords match before saving"""
-    #     if data["password"] != data["confirm_password"]:
-    #         raise serializers.ValidationError({"password": "Passwords do not match."})
-    #     return data
 
     def create(self, validated_data):
         """Remove confirm_password before saving the user"""
@@ -147,3 +141,26 @@ class MinimalUserSerializer(serializers.ModelSerializer):
         user.set_password(validated_data["password"])  # Hash password
         user.save()
         return user
+    
+# DATE SYSTEM
+class DoctorAvailabilitySerializer(serializers.ModelSerializer):
+    days = serializers.PrimaryKeyRelatedField(many=True, queryset=DayOfWeek.objects.all())
+    clinic = serializers.PrimaryKeyRelatedField(queryset=Clinic.objects.all())
+    specialization = serializers.PrimaryKeyRelatedField(queryset=Specialty.objects.all())
+    slot_duration = serializers.IntegerField(default=30)
+
+    class Meta:
+        model = DoctorAvailability
+        fields = ['id', 'doctor', 'clinic', 'specialization', 'days', 'start_time', 'end_time', 'slot_duration']
+        read_only_fields = []
+
+    def create(self, validated_data):
+        days = validated_data.pop('days')
+        availability = DoctorAvailability.objects.create(**validated_data)
+        availability.days.set(days)
+        return availability
+    
+class DayOfWeekSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DayOfWeek
+        fields = ['id', 'name']

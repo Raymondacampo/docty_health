@@ -1,11 +1,22 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { useAuth } from "@/context/auth";
 import LoginForm from "@/components/forms/LoginForm";
-import { isAuthenticated } from "@/utils/auth";
-import axios from "axios";
+
+
+const isTokenExpired = (token) => {
+    if (!token) return true; // No token means it's "expired" or invalid
+    try {
+      const decodedToken = JSON.parse(atob(token.split(".")[1])); // Decode payload
+      const expirationTime = decodedToken.exp * 1000; // Convert to milliseconds
+      return Date.now() > expirationTime; // True if current time is past expiration
+    } catch (error) {
+      console.error("Invalid token format:", error);
+      return true; // Treat malformed tokens as expired/invalid
+    }
+  };
+
 export default function LoginPage() {
-    const root = useRouter()
+    const router = useRouter()
 
     useEffect(() => {
         const loadUser = async () => {
@@ -13,11 +24,10 @@ export default function LoginPage() {
                 const accessToken = localStorage.getItem("access_token");  // ✅ Ensure the correct token is used
                 console.log("Token being sent:", accessToken);
 
-                if (accessToken) {
-                    root.push('/profile')
-                    console.error("No access token found");
-                    return;
-                }
+                if (accessToken && !isTokenExpired(accessToken)) {
+                    router.push("/profile");
+                    return; // Exit early if redirected
+                  }
                         
             } catch (error) {
                 console.error("Error loading user:", error);
