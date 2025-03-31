@@ -1,3 +1,5 @@
+import { apiClient } from "./api";
+
 export async function getValidToken() {
     let token = localStorage.getItem("token");
     const refreshToken = localStorage.getItem("refresh_token");
@@ -8,21 +10,30 @@ export async function getValidToken() {
     }
   
     // ✅ Ensure this points to `/api/token/verify/`
-    const res = await fetch("https://juanpabloduarte.com/api/token/verify/", {
-      method: "POST",
+    const { res } = await apiClient.post('token/verify/', {
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token }),
+      body: JSON.stringify({ token }),     
     });
+
+    // const res = await fetch("https://juanpabloduarte.com/api/token/verify/", {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify({ token }),
+    // });
   
     if (res.status !== 200) {
       console.log("Token expired! Trying to refresh...");
   
       // Token expired, refresh it
-      const refreshRes = await fetch("https://juanpabloduarte.com/api/token/refresh/", {
-        method: "POST",
+      const {refreshRes} = await apiClient.post('token/refresh/', {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refresh: refreshToken }),
       });
+      // const refreshRes = await fetch("https://juanpabloduarte.com/api/token/refresh/", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ refresh: refreshToken }),
+      // });
   
       if (refreshRes.ok) {
         const data = await refreshRes.json();
@@ -46,8 +57,12 @@ export async function logoutUser() {
     return;
   }
 
-  await fetch("https://juanpabloduarte.com/api/logout/", {
-    method: "POST",
+  // await fetch("https://juanpabloduarte.com/api/logout/", {
+  //   method: "POST",
+  //   headers: { "Content-Type": "application/json" },
+  //   body: JSON.stringify({ refresh: refreshToken }),
+  // });
+  apiClient.post('logout/', {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ refresh: refreshToken }),
   });
