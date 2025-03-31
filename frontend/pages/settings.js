@@ -196,7 +196,7 @@ export default function Settings() {
               <div className="w-full justify-start items-center gap-[11px] inline-flex flex-col">
                 <div className="w-[75px] h-[75px] bg-[#d9d9d9] rounded-full"></div>
               </div>
-              {edit ? (
+              {edit == true ? (
                 <UserProfileForm initialUser={user} finish={handleEditFinish} />
               ) : (
                 <>

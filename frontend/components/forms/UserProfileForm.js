@@ -76,7 +76,12 @@ const UserProfileForm = ({ initialUser, finish }) => {
     };
 
     try {
-      const { data } = await apiClient.get('/auth/me/', updatedUser);
+      const accessToken = localStorage.getItem('access_token');
+      const { data } = await apiClient.put('/auth/me/', updatedUser, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // Send access token in header
+        },
+      });
       console.log("Profile updated:", data);
       if (finish) finish();
     } catch (err) {
