@@ -8,7 +8,7 @@ export async function getValidToken() {
     }
   
     // ✅ Ensure this points to `/api/token/verify/`
-    const res = await fetch("http://localhost:8000/api/token/verify/", {
+    const res = await fetch("https://juanpabloduarte.com/api/token/verify/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token }),
@@ -18,7 +18,7 @@ export async function getValidToken() {
       console.log("Token expired! Trying to refresh...");
   
       // Token expired, refresh it
-      const refreshRes = await fetch("http://localhost:8000/api/token/refresh/", {
+      const refreshRes = await fetch("https://juanpabloduarte.com/api/token/refresh/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refresh: refreshToken }),
@@ -46,7 +46,7 @@ export async function logoutUser() {
     return;
   }
 
-  await fetch("http://localhost:8000/api/logout/", {
+  await fetch("https://juanpabloduarte.com/api/logout/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ refresh: refreshToken }),
