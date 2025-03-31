@@ -76,7 +76,7 @@ const UserProfileForm = ({ initialUser, finish }) => {
     };
 
     try {
-      const { data } = await apiClient.put('/auth/me/', updatedUser);
+      const { data } = await apiClient.get('/auth/me/', updatedUser);
       console.log("Profile updated:", data);
       if (finish) finish();
     } catch (err) {

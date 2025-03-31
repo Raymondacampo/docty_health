@@ -1,7 +1,7 @@
 // utils/api.js
 
 // Default base URL (fallback for development)
-const DEFAULT_API_URL = "https://juanpabloduarte.com/api";
+const DEFAULT_API_URL = "http://localhostd:8000/api";
 
 // Function to get the base API URL
 export const getApiUrl = () => {
