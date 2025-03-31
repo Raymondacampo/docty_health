@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import CreateAvailabilityForm from './CreateAvailabilityForm';
 
 const DoctorAvailabilityManager = ({ user, onReload }) => {
-    console.log(user)
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   const handleOpenForm = () => {
@@ -16,8 +15,8 @@ const DoctorAvailabilityManager = ({ user, onReload }) => {
   };
 
   const handleCreate = (newAvailability) => {
-    onReload(); // Trigger parent reload after creation
-    setIsFormOpen(false); // Close form
+    onReload();
+    setIsFormOpen(false);
   };
 
   if (!user.is_doctor) return null;

@@ -1,7 +1,9 @@
-import { useState } from "react";
-import { useAuth } from "@/context/auth";
-import axios from 'axios';
+'use client';
+
+import { useState } from 'react';
+import { useAuth } from '@/context/auth';
 import { useRouter } from 'next/router';
+import { apiClient } from '@/utils/api'; // Import apiClient
 
 const FormField = ({ title, type, name, placeholder, onChange, err }) => {
   return (
@@ -36,10 +38,7 @@ export default function DoctorSignupForm() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData({ ...formData, [name]: value });
 
     let newErrors = { ...errors };
     if (value.trim() === '') {
@@ -111,10 +110,7 @@ export default function DoctorSignupForm() {
     }
 
     try {
-      const { data } = await axios.post(
-        'http://localhost:8000/api/auth/doctor_signup/',
-        formData
-      );
+      const { data } = await apiClient.post('/auth/doctor_signup/', formData);
       localStorage.setItem('access_token', data.access);
       localStorage.setItem('refresh_token', data.refresh);
       router.push('/profile');
@@ -134,62 +130,13 @@ export default function DoctorSignupForm() {
       <form className="self-stretch" onSubmit={handleSubmit}>
         <div className="self-stretch flex-col justify-center items-center gap-4 flex">
           <div className="self-stretch flex-col justify-start items-start gap-4 flex">
-            <FormField
-              title="Email"
-              type="text"
-              name="email"
-              placeholder="yourmail@example.com"
-              onChange={handleChange}
-              err={errors.email}
-            />
-            <FormField
-              title="First name"
-              type="text"
-              name="first_name"
-              placeholder="Your first name"
-              onChange={handleChange}
-              err={errors.first_name}
-            />
-            <FormField
-              title="Last name"
-              type="text"
-              name="last_name"
-              placeholder="Your last name"
-              onChange={handleChange}
-              err={errors.last_name}
-            />
-            <FormField
-              title="Exequatur"
-              type="text"
-              name="exequatur"
-              placeholder="0000-000"
-              onChange={handleChange}
-              err={errors.exequatur}
-            />
-            <FormField
-              title="Years of experience"
-              type="text"
-              name="experience"
-              placeholder="How long have you been a doctor?"
-              onChange={handleChange}
-              err={errors.experience}
-            />
-            <FormField
-              title="Password"
-              type="password"
-              name="password"
-              placeholder="Password"
-              onChange={handleChange}
-              err={errors.password}
-            />
-            <FormField
-              title="Repeat password"
-              type="password"
-              name="confirm_password"
-              placeholder="Repeat password"
-              onChange={handleChange}
-              err={errors.confirm_password}
-            />
+            <FormField title="Email" type="text" name="email" placeholder="yourmail@example.com" onChange={handleChange} err={errors.email} />
+            <FormField title="First name" type="text" name="first_name" placeholder="Your first name" onChange={handleChange} err={errors.first_name} />
+            <FormField title="Last name" type="text" name="last_name" placeholder="Your last name" onChange={handleChange} err={errors.last_name} />
+            <FormField title="Exequatur" type="text" name="exequatur" placeholder="0000-000" onChange={handleChange} err={errors.exequatur} />
+            <FormField title="Years of experience" type="text" name="experience" placeholder="How long have you been a doctor?" onChange={handleChange} err={errors.experience} />
+            <FormField title="Password" type="password" name="password" placeholder="Password" onChange={handleChange} err={errors.password} />
+            <FormField title="Repeat password" type="password" name="confirm_password" placeholder="Repeat password" onChange={handleChange} err={errors.confirm_password} />
           </div>
           <div className="w-full flex-col justify-end items-center gap-2.5 flex">
             <button
@@ -197,9 +144,7 @@ export default function DoctorSignupForm() {
               disabled={loading}
               className="p-2.5 px-4 self-stretch bg-[#ee6c4d] rounded-[10px] border border-[#ee6c4d] justify-center items-center gap-2.5 inline-flex"
             >
-              <div className="text-white text-base font-['Inter'] tracking-wide">
-                {loading ? 'Creating account...' : 'Sign Up'}
-              </div>
+              <div className="text-white text-base font-['Inter'] tracking-wide">{loading ? 'Creating account...' : 'Sign Up'}</div>
             </button>
           </div>
         </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import { apiClient } from '@/utils/api'; // Import apiClient
 import EditAvailabilityForm from './EditAvailabilityForm';
 import DoctorAvailabilityManager from './DoctorAvailabilityManager';
 
@@ -12,10 +12,7 @@ const DoctorAvailabilitySection = ({ user, onReload }) => {
 
   const handleDelete = async (availabilityId) => {
     try {
-      const accessToken = localStorage.getItem('access_token');
-      await axios.delete(`http://localhost:8000/api/auth/delete_availability/${availabilityId}/`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
+      await apiClient.delete(`/auth/delete_availability/${availabilityId}/`);
       onReload();
       setShowMenu(null);
     } catch (err) {
@@ -28,22 +25,20 @@ const DoctorAvailabilitySection = ({ user, onReload }) => {
   }
 
   useEffect(() => {
-      const handleClickOutside = (event) => {
-        if (menuRef.current && !menuRef.current.contains(event.target)) {
-          setShowMenu(false);
-        }
-      };
-  
-      // Add event listener when menu is open
-      if (showMenu) {
-        document.addEventListener('mousedown', handleClickOutside);
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(null);
       }
-  
-      // Cleanup event listener
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }, [showMenu]);
+    };
+
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMenu]);
 
   return (
     <div className="w-full rounded-[10px] flex-col justify-start items-start gap-6 inline-flex">
@@ -60,16 +55,17 @@ const DoctorAvailabilitySection = ({ user, onReload }) => {
                 ${availability.start_time.slice(0, 5)} to ${availability.end_time.slice(0, 5)} (${availability.slot_duration} min)`}
             </div>
             <div className="relative">
-                <button
-                    onClick={() => setShowMenu(showMenu === availability.id ? null : availability.id)}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-                    aria-label="Specialization options">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="3" cy="8" r="1.5" fill="black" />
-                        <circle cx="8" cy="8" r="1.5" fill="black" />
-                        <circle cx="13" cy="8" r="1.5" fill="black" />
-                    </svg>
-                </button>
+              <button
+                onClick={() => setShowMenu(showMenu === availability.id ? null : availability.id)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                aria-label="Availability options"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="3" cy="8" r="1.5" fill="black" />
+                  <circle cx="8" cy="8" r="1.5" fill="black" />
+                  <circle cx="13" cy="8" r="1.5" fill="black" />
+                </svg>
+              </button>
               {showMenu === availability.id && (
                 <div ref={menuRef} className="absolute right-0 mt-2 w-32 bg-white border border-gray-300 rounded shadow-lg z-10">
                   <button
@@ -89,7 +85,7 @@ const DoctorAvailabilitySection = ({ user, onReload }) => {
             </div>
           </div>
         ))}
-        <DoctorAvailabilityManager user={user} onReload={onReload}/>
+        <DoctorAvailabilityManager user={user} onReload={onReload} />
       </div>
       {editAvailability && (
         <EditAvailabilityForm

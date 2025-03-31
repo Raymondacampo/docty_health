@@ -1,16 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { apiClient } from '@/utils/api'; // Import apiClient
 
 const EditAvailabilityForm = ({ availability, onClose, onUpdate }) => {
-  // Initialize with doctor’s existing clinics and specializations from user data
-  const [clinics, sets] = useState(availability.user?.clinics || []);
-  const [specializations, setSpecializations] = useState(availability.user?.specializations || []);
+  const [clinics] = useState(availability.user?.clinics || []);
+  const [specializations] = useState(availability.user?.specializations || []);
   const [days, setDays] = useState([]);
-  // Set initial values directly from availability object
-  const [selectedClinic, setSelectedClinic] = useState(availability.clinic || '');
-  const [selectedSpecialization, setSelectedSpecialization] = useState(availability.specialization || '');
+  const [selectedClinic, setSelectedClinic] = useState(availability.clinic.id);
+  const [selectedSpecialization, setSelectedSpecialization] = useState(availability.specialization.id);
   const [selectedDays, setSelectedDays] = useState(availability.days.map(day => day.id));
   const [startTime, setStartTime] = useState(availability.start_time?.slice(0, 5) || '');
   const [endTime, setEndTime] = useState(availability.end_time?.slice(0, 5) || '');
@@ -19,14 +17,10 @@ const EditAvailabilityForm = ({ availability, onClose, onUpdate }) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setSelectedClinic(availability.clinic.id);
-    setSelectedSpecialization(availability.specialization.id);
     const fetchDays = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/auth/days_of_week/', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
-        });
-        setDays(response.data);
+        const { data } = await apiClient.get('/auth/days_of_week/');
+        setDays(data);
       } catch (err) {
         setError('Failed to load days of week');
         console.error(err);
@@ -51,20 +45,15 @@ const EditAvailabilityForm = ({ availability, onClose, onUpdate }) => {
     setError(null);
 
     try {
-      const accessToken = localStorage.getItem('access_token');
-      const response = await axios.put(
-        `http://localhost:8000/api/auth/update_availability/${availability.id}/`,
-        {
-          clinic: selectedClinic,
-          specialization: selectedSpecialization,
-          days: selectedDays,
-          start_time: startTime,
-          end_time: endTime,
-          slot_duration: slotDuration,
-        },
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      );
-      onUpdate(response.data);
+      const { data } = await apiClient.put(`/auth/update_availability/${availability.id}/`, {
+        clinic: selectedClinic,
+        specialization: selectedSpecialization,
+        days: selectedDays,
+        start_time: startTime,
+        end_time: endTime,
+        slot_duration: slotDuration,
+      });
+      onUpdate(data);
       onClose();
     } catch (err) {
       setError('Failed to update availability');
@@ -76,8 +65,7 @@ const EditAvailabilityForm = ({ availability, onClose, onUpdate }) => {
 
   return (
     <div className="text-black fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="relative bg-white  p-6 w-full
-      sm:h-auto sm:max-w-md sm:rounded-lg xs:h-full">
+      <div className="relative bg-white p-6 w-full sm:h-auto sm:max-w-md sm:rounded-lg xs:h-full">
         <button onClick={onClose} className="absolute top-2 right-2 text-black hover:text-gray-700">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M6 18L18 6M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -93,9 +81,7 @@ const EditAvailabilityForm = ({ availability, onClose, onUpdate }) => {
           >
             <option value="">Select Clinic</option>
             {clinics.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
+              <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
           <select
@@ -105,9 +91,7 @@ const EditAvailabilityForm = ({ availability, onClose, onUpdate }) => {
           >
             <option value="">Select Specialization</option>
             {specializations.map((spec) => (
-              <option key={spec.id} value={spec.id}>
-                {spec.name}
-              </option>
+              <option key={spec.id} value={spec.id}>{spec.name}</option>
             ))}
           </select>
           <div className="flex flex-wrap gap-2">
@@ -150,9 +134,7 @@ const EditAvailabilityForm = ({ availability, onClose, onUpdate }) => {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className={`w-full py-2 rounded-md text-white font-normal sm:mt-none xs:mt-auto font-['Inter'] ${
-              loading ? 'bg-gray-400' : 'bg-[#ee6c4d] hover:bg-[#ff7653]'
-            }`}
+            className={`w-full py-2 rounded-md text-white font-normal sm:mt-none xs:mt-auto font-['Inter'] ${loading ? 'bg-gray-400' : 'bg-[#ee6c4d] hover:bg-[#ff7653]'}`}
           >
             {loading ? 'Updating...' : 'Update'}
           </button>

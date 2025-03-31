@@ -1,6 +1,7 @@
-// components/SpecialtySearch.js
+'use client';
+
 import { useState } from 'react';
-import axios from 'axios';
+import { apiClient } from '@/utils/api'; // Import apiClient
 
 export default function SpecialtySearch({ onSpecialtyAdded }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -9,15 +10,11 @@ export default function SpecialtySearch({ onSpecialtyAdded }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fetch available specialties when search bar opens
   const fetchSpecialties = async () => {
     setLoading(true);
     setError(null);
     try {
-      const accessToken = localStorage.getItem("access_token");
-      const { data } = await axios.get('http://localhost:8000/api/auth/available_specialties/', {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      });
+      const { data } = await apiClient.get('/auth/available_specialties/');
       setSpecialties(data);
     } catch (err) {
       setError('Failed to load specialties');
@@ -27,25 +24,18 @@ export default function SpecialtySearch({ onSpecialtyAdded }) {
     }
   };
 
-  // Handle adding a specialty
   const handleAddSpecialty = async (specialtyId) => {
     try {
-      const accessToken = localStorage.getItem("access_token");
-      await axios.post(
-        'http://localhost:8000/api/auth/add_specialty/',
-        { specialty_id: specialtyId },
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      );
-      setIsOpen(false); // Close the search bar
-      setSearchTerm(''); // Reset search
-      onSpecialtyAdded(); // Trigger reload in parent component
+      await apiClient.post('/auth/add_specialty/', { specialty_id: specialtyId });
+      setIsOpen(false);
+      setSearchTerm('');
+      onSpecialtyAdded();
     } catch (err) {
       setError('Failed to add specialty');
       console.error(err);
     }
   };
 
-  // Filter specialties based on search term
   const filteredSpecialties = specialties.filter(specialty =>
     specialty.name.toLowerCase().includes(searchTerm.toLowerCase())
   );

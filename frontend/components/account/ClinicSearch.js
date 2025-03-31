@@ -1,6 +1,7 @@
-// components/ClinicSearch.js
+'use client';
+
 import { useState } from 'react';
-import axios from 'axios';
+import { apiClient } from '@/utils/api'; // Import apiClient
 
 export default function ClinicSearch({ onClinicAdded }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -9,15 +10,11 @@ export default function ClinicSearch({ onClinicAdded }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fetch available clinics when search bar opens
   const fetchClinics = async () => {
     setLoading(true);
     setError(null);
     try {
-      const accessToken = localStorage.getItem("access_token");
-      const { data } = await axios.get('http://localhost:8000/api/auth/available_clinics/', {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      });
+      const { data } = await apiClient.get('/auth/available_clinics/');
       setClinics(data);
     } catch (err) {
       setError('Failed to load clinics');
@@ -27,25 +24,18 @@ export default function ClinicSearch({ onClinicAdded }) {
     }
   };
 
-  // Handle adding a clinic
   const handleAddClinic = async (clinicId) => {
     try {
-      const accessToken = localStorage.getItem("access_token");
-      await axios.post(
-        'http://localhost:8000/api/auth/add_clinic/',
-        { clinic_id: clinicId },
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      );
-      setIsOpen(false); // Close the search bar
-      setSearchTerm(''); // Reset search
-      onClinicAdded(); // Trigger reload in parent component
+      await apiClient.post('/auth/add_clinic/', { clinic_id: clinicId });
+      setIsOpen(false);
+      setSearchTerm('');
+      onClinicAdded();
     } catch (err) {
       setError('Failed to add clinic');
       console.error(err);
     }
   };
 
-  // Filter clinics based on search term
   const filteredClinics = clinics.filter(clinic =>
     clinic.name.toLowerCase().includes(searchTerm.toLowerCase())
   );

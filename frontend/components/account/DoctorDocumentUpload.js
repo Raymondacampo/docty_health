@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { apiClient } from '@/utils/api'; // Import apiClient
 
 export const DoctorDocumentUpload = ({ onUpload }) => {
   const [file, setFile] = useState(null);
@@ -42,27 +43,15 @@ export const DoctorDocumentUpload = ({ onUpload }) => {
     }
 
     try {
-      const accessToken = localStorage.getItem('access_token');
-      const response = await fetch('http://localhost:8000/api/auth/upload_document/', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-        },
-        body: formData,
+      const { data } = await apiClient.post('/auth/upload_document/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to upload document');
-      }
-
-      const data = await response.json();
       console.log('Document uploaded:', data);
       onUpload();
       setFile(null);
       setDescription('');
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.error || 'Failed to upload document');
     } finally {
       setUploading(false);
     }
@@ -92,9 +81,7 @@ export const DoctorDocumentUpload = ({ onUpload }) => {
       <button
         onClick={handleUpload}
         disabled={uploading || !file}
-        className={`w-fit px-4 py-2 rounded-md text-white font-normal font-['Inter'] ${
-          uploading || !file ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#4285f4] hover:bg-[#3267d6]'
-        }`}
+        className={`w-fit px-4 py-2 rounded-md text-white font-normal font-['Inter'] ${uploading || !file ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#4285f4] hover:bg-[#3267d6]'}`}
       >
         {uploading ? 'Uploading...' : 'Upload'}
       </button>

@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { apiClient } from '@/utils/api'; // Import apiClient
 
 const CreateAvailabilityForm = ({ user, onClose, onCreate }) => {
-  const [clinics, setClinics] = useState(user.clinics || []);
-  const [specializations, setSpecializations] = useState(user.specializations || []);
+  const [clinics] = useState(user.clinics || []);
+  const [specializations] = useState(user.specializations || []);
   const [days, setDays] = useState([]);
   const [selectedClinic, setSelectedClinic] = useState('');
   const [selectedSpecialization, setSelectedSpecialization] = useState('');
@@ -19,10 +19,8 @@ const CreateAvailabilityForm = ({ user, onClose, onCreate }) => {
   useEffect(() => {
     const fetchDays = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/auth/days_of_week/', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
-        });
-        setDays(response.data);
+        const { data } = await apiClient.get('/auth/days_of_week/');
+        setDays(data);
       } catch (err) {
         setError('Failed to load days of week');
       }
@@ -46,22 +44,16 @@ const CreateAvailabilityForm = ({ user, onClose, onCreate }) => {
     setError(null);
 
     try {
-      const accessToken = localStorage.getItem('access_token');
-      const response = await axios.post(
-        'http://localhost:8000/api/auth/create_availability/',
-        {
-          clinic: selectedClinic,
-          specialization: selectedSpecialization,
-          days: selectedDays,
-          start_time: startTime,
-          end_time: endTime,
-          slot_duration: slotDuration,
-        },
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }
-      );
-      onCreate(response.data);
+      const { data } = await apiClient.post('/auth/create_availability/', {
+        clinic: selectedClinic,
+        specialization: selectedSpecialization,
+        days: selectedDays,
+        start_time: startTime,
+        end_time: endTime,
+        slot_duration: slotDuration,
+      });
+      onCreate(data);
+      onClose();
     } catch (err) {
       setError('Failed to create availability');
     } finally {
@@ -71,8 +63,7 @@ const CreateAvailabilityForm = ({ user, onClose, onCreate }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center text-black items-center z-50">
-      <div className="relative bg-white  p-6 w-full
-      sm:h-auto sm:max-w-md sm:rounded-lg xs:h-full">
+      <div className="relative bg-white p-6 w-full sm:h-auto sm:max-w-md sm:rounded-lg xs:h-full">
         <button
           onClick={onClose}
           className="absolute top-2 right-2 text-black hover:text-gray-700"
@@ -103,9 +94,7 @@ const CreateAvailabilityForm = ({ user, onClose, onCreate }) => {
           >
             <option value="">Select Clinic</option>
             {clinics.map((clinic) => (
-              <option key={clinic.id} value={clinic.id}>
-                {clinic.name}
-              </option>
+              <option key={clinic.id} value={clinic.id}>{clinic.name}</option>
             ))}
           </select>
           <select
@@ -115,9 +104,7 @@ const CreateAvailabilityForm = ({ user, onClose, onCreate }) => {
           >
             <option value="">Select Specialization</option>
             {specializations.map((spec) => (
-              <option key={spec.id} value={spec.id}>
-                {spec.name}
-              </option>
+              <option key={spec.id} value={spec.id}>{spec.name}</option>
             ))}
           </select>
           <div className="flex flex-wrap gap-2">
@@ -156,9 +143,7 @@ const CreateAvailabilityForm = ({ user, onClose, onCreate }) => {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className={`w-full py-2 rounded-md text-white font-normal font-['Inter'] sm:mt-none xs:mt-auto ${
-              loading ? 'bg-orange-400' : 'bg-[#ee6c4d] hover:bg-[#ff7653]'
-            }`}
+            className={`w-full py-2 rounded-md text-white font-normal font-['Inter'] sm:mt-none xs:mt-auto ${loading ? 'bg-orange-400' : 'bg-[#ee6c4d] hover:bg-[#ff7653]'}`}
           >
             {loading ? 'Creating...' : 'Create'}
           </button>
