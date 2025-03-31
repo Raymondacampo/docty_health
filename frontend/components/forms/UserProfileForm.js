@@ -46,9 +46,7 @@ const UserProfileForm = ({ initialUser, finish }) => {
     if (phoneNumber && !phoneRegex.test(phoneNumber)) {
       errors.phone = "Invalid phone number format";
     }
-    if (!(bornDate || "").trim()) {
-      errors.bornDate = "Date of birth is required";
-    }
+
     return errors;
   };
 
