@@ -1,9 +1,8 @@
 // context/auth.js
 'use client';
 import { createContext, useContext, useState } from 'react';
-import axios from 'axios';
 import { useRouter } from 'next/router';
-
+import { apiClient } from '@/utils/api';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
@@ -19,7 +18,8 @@ export function AuthProvider({ children }) {
     console.log('Google Token:', googleToken);
     try {
       // Send Google token to the correct endpoint
-      const { data } = await axios.post('http://localhost:8000/api/auth/google/', {
+      
+      const { data } = await apiClient.post('auth/google/', {
         token: googleToken, // Use the passed googleToken
       });
 
@@ -53,8 +53,8 @@ export function AuthProvider({ children }) {
         console.warn('No tokens found, proceeding with client-side logout');
       } else {
         // 3. Send logout request to backend with tokens
-        await axios.post(
-          'http://localhost:8000/api/auth/logout/', // Correct absolute URL
+        await apiClient.post(
+          'auth/logout/', // Correct absolute URL
           { refresh: refreshToken }, // Send refresh token in body
           {
             headers: {
