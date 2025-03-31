@@ -11,7 +11,6 @@ export async function getValidToken() {
   
     // ✅ Ensure this points to `/api/token/verify/`
     const { res } = await apiClient.post('token/verify/', {
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token }),     
     });
 
@@ -26,7 +25,6 @@ export async function getValidToken() {
   
       // Token expired, refresh it
       const {refreshRes} = await apiClient.post('token/refresh/', {
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refresh: refreshToken }),
       });
       // const refreshRes = await fetch("https://juanpabloduarte.com/api/token/refresh/", {
@@ -63,7 +61,6 @@ export async function logoutUser() {
   //   body: JSON.stringify({ refresh: refreshToken }),
   // });
   apiClient.post('logout/', {
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ refresh: refreshToken }),
   });
 

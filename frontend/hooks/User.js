@@ -34,7 +34,11 @@ export const useUser = () => {
           return;
         }
 
-        const { data } = await apiClient.get("/auth/me/");
+        const { data } = await apiClient.get("/auth/me/",  {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        });
         setUser(data);
       } catch (error) {
         console.error("Error fetching user:", error);

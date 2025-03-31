@@ -80,23 +80,6 @@ export function AuthProvider({ children }) {
       router.push('/login');
     }
   };
-  // const logout = () => {
-
-  //   // Clear tokens
-  //   localStorage.removeItem('access_token');
-  //   localStorage.removeItem('refresh_token');
-    
-  //   // Clear user state
-  //   setUser(null);
-    
-  //   // Optional: Invalidate tokens on backend
-  //   axios.post('/api/auth/logout/', 
-  //   {headers: {Authorization: `Bearer ${localStorage.getItem('access_token')}` } 
-  //   }).catch(console.error);
-    
-  //   // // Redirect to login
-  //   // window.location.href = '/login';
-  // };
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>
