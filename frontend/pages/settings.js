@@ -176,7 +176,7 @@ export default function Settings() {
               <div className="self-stretch text-black font-normal font-['Inter'] sm:text-2xl xs:text-xl">
                 Personal data
               </div>
-              {edit ? (
+              {edit == true ? (
                 <button
                   onClick={() => setEdit(false)}
                   className="ml-auto text-[#f44242] justify-end flex text-sm items-center gap-1"
