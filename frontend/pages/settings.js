@@ -176,29 +176,30 @@ export default function Settings() {
               <div className="self-stretch text-black font-normal font-['Inter'] sm:text-2xl xs:text-xl">
                 Personal data
               </div>
-              {edit == true ? (
+              {edit &&
                 <button
                   onClick={() => setEdit(false)}
                   className="ml-auto text-[#f44242] justify-end flex text-sm items-center gap-1"
                 >
                   Cancel
                 </button>
-              ) : (
+              } 
+              {edit == false && 
                 <button
                   onClick={() => setEdit(true)}
                   className="ml-auto text-[#4285f4] justify-end flex text-sm items-center gap-1"
                 >
                   <Pencil /> Edit info
-                </button>
-              )}
+                </button>              
+              }
+
             </div>
             <div className="w-full p-4 rounded-[10px] flex-col justify-start items-start gap-6 flex">
               <div className="w-full justify-start items-center gap-[11px] inline-flex flex-col">
                 <div className="w-[75px] h-[75px] bg-[#d9d9d9] rounded-full"></div>
               </div>
-              {edit == true ? (
-                <UserProfileForm initialUser={user} finish={handleEditFinish} />
-              ) : (
+              {edit && <UserProfileForm initialUser={user} finish={handleEditFinish} />} 
+              {edit == false &&
                 <>
                   <Field
                     title="Full name"
@@ -209,8 +210,8 @@ export default function Settings() {
                   <Field title="E-mail" value={user.email} setEdit={setEdit} />
                   <Field title="Phone number" value={user.phone_number} setEdit={setEdit} />
                   <Field title="Date of birth" value={user.born_date} setEdit={setEdit} />
-                </>
-              )}
+                </>              
+              }
             </div>
           </div>
           {user.is_doctor && (
