@@ -5,8 +5,9 @@ const DEFAULT_API_URL = "https://juanpabloduarte.com/api";
 
 export const getApiImgUrl = () => {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'https://juanpabloduarte.com';
-  console.log("Image Base URL:", baseUrl);
-  return baseUrl;
+  const mediaUrl = `${baseUrl}/media`;  // Add /media/ prefix
+  console.log("Image Base URL:", mediaUrl);
+  return mediaUrl;
 };
 
 export const getApiUrl = () => {
