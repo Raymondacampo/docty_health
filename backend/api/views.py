@@ -12,7 +12,7 @@ from .serializers import UserProfileSerializer, SignupSerializer, DoctorSignupSe
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view
 from django.contrib.auth import get_user_model
-
+from django.core.exceptions import ValidationError
 from google.oauth2 import id_token
 from google.auth.transport import requests
 import os
@@ -21,7 +21,7 @@ import re
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from django.utils import timezone
 from datetime import timedelta, datetime
-from .models import PasswordResetToken, Specialty, Clinic, DoctorDocument, Doctor, DoctorAvailability, Appointment, DayOfWeek
+from .models import PasswordResetToken, Specialty, Clinic, DoctorDocument, Doctor, DoctorAvailability, Appointment, DayOfWeek, Ensurance
 
 serializer = URLSafeTimedSerializer(settings.SECRET_KEY)
 
@@ -258,6 +258,7 @@ class UserProfileView(APIView):
             "last_name": user.last_name,
             "phone_number": getattr(user, 'phone_number', ''),
             "born_date": getattr(user, 'born_date', ''),
+            "profile_picture": user.profile_picture.url if user.profile_picture else None,  # Add profile picture
             "is_doctor": hasattr(user, 'doctor')
         }
 
@@ -269,7 +270,7 @@ class UserProfileView(APIView):
                 "experience": doctor.experience,
                 "specializations": [{"id":specialty.id, "name": specialty.name} for specialty in doctor.specialties.all()],
                 "clinics": [{"id":clinic.id, "name": clinic.name} for clinic in doctor.clinics.all()],
-                # Optionally include documents if needed
+                "ensurances": [{"id": ensurance.id, "name": ensurance.name, "logo": ensurance.logo.url if ensurance.logo else None} for ensurance in doctor.ensurances.all()],  
                 "documents": [
                     {"id": doc.id, "url": doc.file.url, "description": doc.description}
                     for doc in doctor.documents.all()
@@ -315,6 +316,17 @@ class UserProfileView(APIView):
             user.phone_number = data.get('phone_number', user.phone_number)
         if hasattr(user, 'born_date'):
             user.born_date = data.get('born_date', user.born_date)
+
+        if 'profile_picture' in request.FILES:
+            try:
+                user.profile_picture = request.FILES['profile_picture']
+                user.full_clean()  # Trigger validators
+            except ValidationError as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        elif data.get('profile_picture') == 'remove':
+            if user.profile_picture:
+                user.profile_picture.delete(save=False)
+                user.profile_picture = None
             
         user.save()
         return Response({
@@ -491,6 +503,62 @@ class RemoveClinicView(APIView):
                 {"error": "Clinic not found"},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+class AvailableEnsurancesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        if not hasattr(user, 'doctor'):
+            return Response({"error": "User is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        doctor = user.doctor
+        # Get all ensurances excluding the ones the doctor already has
+        current_ensurances = doctor.ensurances.values_list('id', flat=True)
+        available_ensurances = Ensurance.objects.exclude(id__in=current_ensurances).values('id', 'name')
+        return Response(list(available_ensurances), status=status.HTTP_200_OK)
+
+class AddEnsuranceView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        if not hasattr(user, 'doctor'):
+            return Response({"error": "User is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        ensurance_id = request.data.get('ensurance_id')
+        if not ensurance_id:
+            return Response({"error": "Ensurance ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            ensurance = Ensurance.objects.get(id=ensurance_id)
+            doctor = user.doctor
+            if ensurance in doctor.ensurances.all():
+                return Response({"error": "Ensurance already assigned"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            doctor.ensurances.add(ensurance)
+            return Response({"message": "Ensurance added successfully"}, status=status.HTTP_200_OK)
+        except Ensurance.DoesNotExist:
+            return Response({"error": "Ensurance not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class RemoveEnsuranceView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, ensurance_id):
+        user = request.user
+        if not hasattr(user, 'doctor'):
+            return Response({"error": "User is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        doctor = user.doctor
+        try:
+            ensurance = Ensurance.objects.get(id=ensurance_id)
+            if ensurance not in doctor.ensurances.all():
+                return Response({"error": "Ensurance not associated with this doctor"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            doctor.ensurances.remove(ensurance)
+            return Response({"message": "Ensurance removed successfully"}, status=status.HTTP_200_OK)
+        except Ensurance.DoesNotExist:
+            return Response({"error": "Ensurance not found"}, status=status.HTTP_404_NOT_FOUND)
 
 # DOCTOR DOCUMENT MANAGEMENT
 class UploadDoctorDocumentView(APIView):

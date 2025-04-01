@@ -1,8 +1,10 @@
 from django.urls import path
 from .views import get_data, LoginView, UserProfileView, SignupView, LogoutView, GoogleLogin, DoctorSignupView, PasswordResetRequestView, PasswordChangeView, ValidateTokenView,AvailableSpecialtiesView, AddSpecialtyView, AddClinicView, AvailableClinicsView
 from .views import RemoveClinicView, RemoveSpecialtyView, UploadDoctorDocumentView, BookAppointmentView, CreateDoctorAvailabilityView, AvailableSlotsView, DayOfWeekListView,UpdateDoctorAvailabilityView, DeleteDoctorAvailabilityView, DeleteDoctorDocumentView
+from .views import AvailableEnsurancesView, AddEnsuranceView, RemoveEnsuranceView
 from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView, TokenObtainPairView
-
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('data/', get_data),
@@ -23,6 +25,9 @@ urlpatterns = [
     path('auth/add_clinic/', AddClinicView.as_view(), name='add_clinic'),
     path('auth/remove_specialty/<int:specialty_id>/', RemoveSpecialtyView.as_view(), name='remove_specialty'),
     path('auth/remove_clinic/<int:clinic_id>/', RemoveClinicView.as_view(), name='remove_clinic'),
+    path('auth/available_ensurances/', AvailableEnsurancesView.as_view(), name='available_ensurances'),
+    path('auth/add_ensurance/', AddEnsuranceView.as_view(), name='add_ensurance'),
+    path('auth/remove_ensurance/<int:ensurance_id>/', RemoveEnsuranceView.as_view(), name='remove_ensurance'),
 
     path('auth/upload_document/', UploadDoctorDocumentView.as_view(), name='upload_doctor_document'),
     path('auth/delete_document/<int:document_id>/', DeleteDoctorDocumentView.as_view(), name='delete_doctor_document'),
@@ -38,4 +43,4 @@ urlpatterns = [
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),  # ✅ Refresh access token
     path("token/verify/", TokenVerifyView.as_view(), name="token_verify"),  # ✅ Verify if token is valid
 
-]
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

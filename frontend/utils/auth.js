@@ -14,12 +14,6 @@ export async function getValidToken() {
       body: JSON.stringify({ token }),     
     });
 
-    // const res = await fetch("https://juanpabloduarte.com/api/token/verify/", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ token }),
-    // });
-  
     if (res.status !== 200) {
       console.log("Token expired! Trying to refresh...");
   
@@ -27,11 +21,6 @@ export async function getValidToken() {
       const {refreshRes} = await apiClient.post('token/refresh/', {
         body: JSON.stringify({ refresh: refreshToken }),
       });
-      // const refreshRes = await fetch("https://juanpabloduarte.com/api/token/refresh/", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ refresh: refreshToken }),
-      // });
   
       if (refreshRes.ok) {
         const data = await refreshRes.json();
@@ -55,11 +44,6 @@ export async function logoutUser() {
     return;
   }
 
-  // await fetch("https://juanpabloduarte.com/api/logout/", {
-  //   method: "POST",
-  //   headers: { "Content-Type": "application/json" },
-  //   body: JSON.stringify({ refresh: refreshToken }),
-  // });
   apiClient.post('logout/', {
     body: JSON.stringify({ refresh: refreshToken }),
   });

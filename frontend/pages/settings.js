@@ -9,6 +9,10 @@ import { ClinicMenu } from "@/components/account/ClinicMenu";
 import { DoctorDocumentUpload } from "@/components/account/DoctorDocumentUpload";
 import DocumentsSection from "@/components/account/DocumentsSection";
 import DoctorAvailabilitySection from "@/components/account/DoctorAvailabilitySection";
+import { apiClient } from "@/utils/api";
+import EnsuranceSearch from "@/components/account/EnsuranceSearch";
+import { EnsuranceMenu } from "@/components/account/EnsuranceMenu";
+import { getApiImgUrl } from "@/utils/api";
 
 const Pencil = () => (
   <svg
@@ -41,87 +45,144 @@ const Field = ({ title, value, setEdit }) => (
   </div>
 );
 
-const ProfessionalData = ({ data, onReload }) => (
-  <div className="w-full rounded-[10px] flex-col justify-start items-start gap-6 inline-flex">
-    <div className="w-full flex items-center justify-between">
-      <div className="self-stretch text-black font-normal font-['Inter'] sm:text-2xl xs:text-xl">
-        Professional data
-      </div>
-    </div>
-    <div className="self-stretch p-4 rounded-[10px] flex-col justify-start items-start gap-6 flex">
-      <div className="self-stretch flex-col justify-between items-start gap-8 inline-flex">
-        <div className="w-full flex-col flex gap-4">
-          <div className="self-stretch justify-between items-start gap-4 inline-flex">
-            <div className="w-[125px] text-[#3d5a80] font-normal font-['Inter'] sm:text-base xs:text-sm">
-              Exequatur
-            </div>
-            <div className="text-black text-sm font-normal font-['Inter']">{data.exequatur}</div>
-          </div>
-          <div className="self-stretch justify-between items-start gap-4 inline-flex">
-            <div className="w-[125px] text-[#3d5a80] font-normal font-['Inter'] sm:text-base xs:text-sm">
-              Experience
-            </div>
-            <div className="text-black text-sm font-normal font-['Inter']">{data.experience} Years</div>
-          </div>
-        </div>
-        <div className="w-full flex flex-col gap-2.5">
-          <div className="w-full text-[#3d5a80] font-normal font-['Inter'] sm:text-base xs:text-sm">
-            Specialization
-          </div>
-          {data.specializations.length > 0 &&
-            data.specializations.map((specialization) => (
-              <div
-                key={specialization.id}
-                className="w-full px-4 py-2 bg-[#98c1d1]/25 rounded-[10px] justify-between items-center gap-2.5 flex"
-              >
-                <div className="text-black text-sm font-normal font-['Inter']">{specialization.name}</div>
-                <div>
-                  <SpecializationMenu specialization={specialization} onDelete={onReload} />
-                </div>
-              </div>
-            ))}
-          <SpecialtySearch onSpecialtyAdded={onReload} />
-        </div>
-        <div className="w-full flex flex-col gap-2.5">
-          <div className="w-full text-[#3d5a80] font-normal font-['Inter'] sm:text-base xs:text-sm">Clinics</div>
-          {data.clinics.length > 0 &&
-            data.clinics.map((clinic) => (
-              <div
-                key={clinic.id}
-                className="w-full px-4 py-2 bg-[#98c1d1]/25 rounded-[10px] justify-between items-center gap-2.5 flex"
-              >
-                <div className="text-black text-sm font-normal font-['Inter']">{clinic.name}</div>
-                <div>
-                  <ClinicMenu clinic={clinic} onDelete={onReload} />
-                </div>
-              </div>
-            ))}
-          <ClinicSearch onClinicAdded={onReload} />
+const ProfessionalData = ({ data, onReload }) => {
+  const backendBaseUrl = getApiImgUrl();
+  return (
+    <div className="w-full rounded-[10px] flex-col justify-start items-start gap-6 inline-flex">
+      <div className="w-full flex items-center justify-between">
+        <div className="self-stretch text-black font-normal font-['Inter'] sm:text-2xl xs:text-xl">
+          Professional data
         </div>
       </div>
-    </div>
-  </div>
-);
+      <div className="self-stretch p-4 rounded-[10px] flex-col justify-start items-start gap-6 flex">
+        <div className="self-stretch flex-col justify-between items-start gap-8 inline-flex">
+          <div className="w-full flex-col flex gap-4">
+            <div className="self-stretch justify-between items-start gap-4 inline-flex">
+              <div className="w-[125px] text-[#3d5a80] font-normal font-['Inter'] sm:text-base xs:text-sm">
+                Exequatur
+              </div>
+              <div className="text-black text-sm font-normal font-['Inter']">{data.exequatur}</div>
+            </div>
+            <div className="self-stretch justify-between items-start gap-4 inline-flex">
+              <div className="w-[125px] text-[#3d5a80] font-normal font-['Inter'] sm:text-base xs:text-sm">
+                Experience
+              </div>
+              <div className="text-black text-sm font-normal font-['Inter']">{data.experience} Years</div>
+            </div>
+          </div>
+          <div className="w-full flex flex-col gap-2.5">
+            <div className="w-full text-[#3d5a80] font-normal font-['Inter'] sm:text-base xs:text-sm">
+              Specialization
+            </div>
+            {data.specializations.length > 0 &&
+              data.specializations.map((specialization) => (
+                <div
+                  key={specialization.id}
+                  className="w-full px-4 py-2 bg-[#98c1d1]/25 rounded-[10px] justify-between items-center gap-2.5 flex"
+                >
+                  <div className="text-black text-sm font-normal font-['Inter']">{specialization.name}</div>
+                  <div>
+                    <SpecializationMenu specialization={specialization} onDelete={onReload} />
+                  </div>
+                </div>
+              ))}
+            <SpecialtySearch onSpecialtyAdded={onReload} />
+          </div>
+          <div className="w-full flex flex-col gap-2.5">
+            <div className="w-full text-[#3d5a80] font-normal font-['Inter'] sm:text-base xs:text-sm">Clinics</div>
+            {data.clinics.length > 0 &&
+              data.clinics.map((clinic) => (
+                <div
+                  key={clinic.id}
+                  className="w-full px-4 py-2 bg-[#98c1d1]/25 rounded-[10px] justify-between items-center gap-2.5 flex"
+                >
+                  <div className="text-black text-sm font-normal font-['Inter']">{clinic.name}</div>
+                  <div>
+                    <ClinicMenu clinic={clinic} onDelete={onReload} />
+                  </div>
+                </div>
+              ))}
+            <ClinicSearch onClinicAdded={onReload} />
+          </div>
+          <div className="w-full flex flex-col gap-2.5">
+            <div className="w-full text-[#3d5a80] font-normal font-['Inter'] sm:text-base xs:text-sm">Ensurances</div>
+            {data.ensurances && data.ensurances.length > 0 && 
+              data.ensurances.map((ensurance) => (
+                <div
+                  key={ensurance.id}
+                  className="w-full px-4 py-2 bg-[#98c1d1]/25 rounded-[10px] justify-between items-center gap-2.5 flex"
+                >
+                  <div className="flex items-center gap-2">
+                    {ensurance.logo && (
+                      <img src={`${backendBaseUrl}${ensurance.logo}`} alt={`${ensurance.name} logo`} className="w-6 h-6 object-contain" />
+                    )}
+                    <div className="text-black text-sm font-normal font-['Inter']">{ensurance.name}</div>
+                  </div>
+                  <div>
+                    <EnsuranceMenu ensurance={ensurance} onDelete={onReload} />
+                  </div>
+                </div>
+              ))}
+            <EnsuranceSearch onEnsuranceAdded={onReload} />
+          </div>
+        </div>
+      </div>
+    </div>    
+  )};
 
-const Scheduling = ({ user, onReload }) => (
-  <div className="w-full rounded-[10px] flex-col justify-start items-start gap-6 inline-flex">
-    <div className="w-full flex items-center justify-between">
-      <div className="self-stretch text-black font-normal font-['Inter'] sm:text-2xl xs:text-xl">Availability</div>
-    </div>
-    <div className="self-stretch flex-col justify-start items-center gap-2 flex">
-      <div className="self-stretch rounded-[10px] flex-col justify-start items-center gap-6 flex px-4">
-        <div className="self-stretch justify-start items-start gap-4 inline-flex">
-          <div className="w-[125px] text-[#3d5a80] font-normal font-['Inter'] sm:text-lg xs:text-base">
-            Taking dates
+const Scheduling = ({ user, onReload }) => {
+  const [takingDates, setTakingDates] = useState(user.taking_dates !== undefined ? user.taking_dates : true);
+
+  const handleToggleTakingDates = async () => {
+      const newValue = !takingDates;
+      setTakingDates(newValue);
+
+      try {
+          const accessToken = localStorage.getItem('access_token');
+          await apiClient.put(
+              'auth/me/',
+              { taking_dates: newValue },
+              { headers: { Authorization: `Bearer ${accessToken}` } }
+          );
+          onReload(); // Refresh user data to reflect the change
+      } catch (error) {
+          console.error('Failed to update taking_dates:', error);
+          setTakingDates(!newValue); // Revert on failure
+      }
+  };
+
+  return (
+      <div className="w-full rounded-[10px] flex-col justify-start items-start gap-6 inline-flex">
+          <div className="w-full flex items-center justify-between">
+              <div className="self-stretch text-black font-normal font-['Inter'] sm:text-2xl xs:text-xl">Availability</div>
           </div>
-        </div>
-        <div className="self-stretch flex-col justify-start items-start gap-2 flex">
-          <DoctorAvailabilitySection user={user} onReload={onReload} />
-        </div>
+          <div className="self-stretch flex-col justify-start items-start gap-2 flex">
+              <div className="self-stretch rounded-[10px] flex-col justify-start items-start gap-6 flex px-4">
+                  <div className="self-stretch items-center gap-4 inline-flex">
+                      <div className="w-[125px] text-[#3d5a80] font-normal font-['Inter'] sm:text-lg xs:text-base">Taking dates</div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                              type="checkbox"
+                              checked={takingDates}
+                              onChange={handleToggleTakingDates}
+                              className="sr-only peer"
+                          />
+                          <div className="w-11 h-6 bg-gray-400 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#ee6c4d]"></div>
+                      </label>
+                  </div>
+                  <div className="text-[#3d5a80] text-xs font-normal font-['Inter']">
+                      If you want to work with Doctify dates, set Taking dates to true
+                  </div>
+                  {takingDates && (
+                      <div className="self-stretch flex-col justify-start items-start gap-2 flex">
+                          <DoctorAvailabilitySection user={user} onReload={onReload} />
+                      </div>
+                  )}
+              </div>
+          </div>
       </div>
-    </div>
-  </div>
-);
+  );
+};
 
 const ChangePasswordModal = ({ isOpen, onClose, onConfirm }) => {
   if (!isOpen) return null;
@@ -147,6 +208,7 @@ export default function Settings() {
   const { user, loading, reload } = useUser(); // Use the hook
   const [edit, setEdit] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const backendBaseUrl = getApiImgUrl();
 
   if (loading) return <div>Loading...</div>;
   if (!user) return <div>Error loading user data.</div>;
@@ -200,7 +262,16 @@ export default function Settings() {
             </div>
             <div className="w-full p-4 rounded-[10px] flex-col justify-start items-start gap-6 flex">
               <div className="w-full justify-start items-center gap-[11px] inline-flex flex-col">
-                <div className="w-[75px] h-[75px] bg-[#d9d9d9] rounded-full"></div>
+                {user.profile_picture ? (
+                  <img
+                    src={`${backendBaseUrl}${user.profile_picture}`}
+                    alt="Profile Picture"
+                    className="w-[125px] h-[125px] rounded-full object-cover"
+                    onError={(e) => console.error(`Failed to load profile picture: ${e.target.src}`)}
+                  />
+                ) : (
+                  <div className="w-[125px] h-[125px] bg-[#d9d9d9] rounded-full flex items-center justify-center text-gray-500">No Photo</div>
+                )}
               </div>
               {edit && <UserProfileForm initialUser={user} finish={handleEditFinish} />} 
               {edit == false &&

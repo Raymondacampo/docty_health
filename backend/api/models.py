@@ -2,12 +2,26 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 import uuid
 from django.utils import timezone
+from django.core.exceptions import ValidationError
+from PIL import Image
+
+def validate_square_image(image):
+    """Ensure the uploaded image is square (width == height)."""
+    with Image.open(image) as img:
+        width, height = img.size
+        if width != height:
+            raise ValidationError("Profile picture must be square (width must equal height).")
 
 # User Model
 class User(AbstractUser):
     born_date = models.DateField(blank=True, null=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
-    profile_picture = models.ImageField(upload_to="profile_pics/", blank=True, null=True)
+    profile_picture = models.ImageField(
+        upload_to='profile_pics/',
+        blank=True,
+        null=True,
+        validators=[validate_square_image]  # Add validator
+    )
 
     username = models.CharField(max_length=150, unique=True, blank=True, null=True)
     email = models.EmailField(unique=True)
@@ -42,6 +56,7 @@ class Doctor(models.Model):
     exequatur = models.CharField(max_length=20, unique=True)  # Unique doctor registration number
     specialties = models.ManyToManyField("Specialty", related_name="doctors")  # Many doctors can have many specialties
     clinics = models.ManyToManyField("Clinic", related_name="doctors")  # Many doctors work in many clinics
+    ensurances = models.ManyToManyField("Ensurance", related_name="doctors", blank=True)  # New field
     experience = models.PositiveIntegerField(help_text="Years of Experience")
     taking_dates = models.BooleanField(default=True)
     
@@ -73,6 +88,13 @@ class Clinic(models.Model):
     name = models.CharField(max_length=150)
     address = models.TextField()
     google_place_id = models.CharField(max_length=255, blank=True, null=True)  # ✅ Optional Google Maps ID
+
+    def __str__(self):
+        return self.name
+    
+class Ensurance(models.Model):
+    name = models.CharField(max_length=150, unique=True)
+    logo = models.ImageField(upload_to="ensurance_logos/", blank=True, null=True)  # Logo image field
 
     def __str__(self):
         return self.name

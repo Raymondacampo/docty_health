@@ -1,151 +1,119 @@
+// components/forms/UserProfileForm.js
 'use client';
+import { useState } from 'react';
+import { apiClient } from '@/utils/api';
 
-import React, { useState } from 'react';
-import { apiClient } from '@/utils/api'; // Import apiClient
-
-const EditableField = ({ title, value, onChange, error, type = "text" }) => {
-  return (
-    <div className="w-full flex flex-col">
-      <div className="w-full flex justify-between items-center gap-4">
-        <label className="text-[#3d5a80] font-normal font-['Inter'] sm:text-base xs:text-sm">{title}</label>
-        <input
-          type={type}
-          value={value}
-          onChange={onChange}
-          className={`self-stretch text-black font-['Inter'] sm:text-sm xs:text-xs border rounded p-2 ${error ? "border-red-500" : "border-gray-300"}`}
-        />
-      </div>
-      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
-    </div>
-  );
-};
-
-const UserProfileForm = ({ initialUser, finish }) => {
-  const [firstName, setFirstName] = useState(initialUser.first_name);
-  const [lastName, setLastName] = useState(initialUser.last_name);
-  const [username, setUsername] = useState(initialUser.username);
-  const [email] = useState(initialUser.email); // Email is read-only
-  const [phoneNumber, setPhoneNumber] = useState(initialUser.phone_number);
-  const [bornDate, setBornDate] = useState(initialUser.born_date);
-  const [loading, setLoading] = useState(false);
+export default function UserProfileForm({ initialUser, finish }) {
+  const [formData, setFormData] = useState({
+    first_name: initialUser.first_name || '',
+    last_name: initialUser.last_name || '',
+    phone_number: initialUser.phone_number || '',
+    born_date: initialUser.born_date || '',
+  });
+  const [profilePicture, setProfilePicture] = useState(null);
+  const [removePicture, setRemovePicture] = useState(false);
   const [error, setError] = useState(null);
-  const [fieldErrors, setFieldErrors] = useState({});
 
-  const validateFields = () => {
-    const errors = {};
-    if (!(firstName || "").trim()) {
-      errors.fullName = "First name is required";
-    }
-    if (!(lastName || "").trim()) {
-      errors.fullName = errors.fullName ? errors.fullName + " and last name are required" : "Last name is required";
-    }
-    if (!(username || "").trim()) {
-      errors.username = "Username is required";
-    }
-    const phoneRegex = /^\+?\d{7,15}$/;
-    if (phoneNumber && !phoneRegex.test(phoneNumber)) {
-      errors.phone = "Invalid phone number format";
-    }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-    return errors;
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const img = new Image();
+      img.onload = () => {
+        if (img.width !== img.height) {
+          setError("Profile picture must be square (width must equal height).");
+          setProfilePicture(null);
+          e.target.value = '';  // Clear input
+        } else {
+          setProfilePicture(file);
+          setError(null);
+          setRemovePicture(false);
+        }
+      };
+      img.onerror = () => {
+        setError("Failed to load image.");
+        setProfilePicture(null);
+      };
+      img.src = URL.createObjectURL(file);
+    }
+  };
+
+  const handleRemoveCheckbox = (e) => {
+    setRemovePicture(e.target.checked);
+    if (e.target.checked) setProfilePicture(null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
 
-    const errors = validateFields();
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      setLoading(false);
-      return;
-    } else {
-      setFieldErrors({});
-    }
+    const data = new FormData();
+    data.append('first_name', formData.first_name);
+    data.append('last_name', formData.last_name);
+    data.append('phone_number', formData.phone_number);
+    data.append('born_date', formData.born_date);
 
-    const updatedUser = {
-      first_name: firstName,
-      last_name: lastName,
-      username,
-      email,
-      phone_number: phoneNumber,
-      born_date: bornDate,
-    };
+    if (profilePicture) {
+      data.append('profile_picture', profilePicture);
+    } else if (removePicture) {
+      data.append('profile_picture', 'remove');
+    }
 
     try {
       const accessToken = localStorage.getItem('access_token');
-      const { data } = await apiClient.put('/auth/me/', updatedUser, {
+      const { data: response } = await apiClient.put('/auth/me/', data, {
         headers: {
-          Authorization: `Bearer ${accessToken}`, // Send access token in header
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'multipart/form-data',
         },
       });
-      console.log("Profile updated:", data);
-      if (finish) finish();
+      console.log("Profile updated:", response);
+      finish();
     } catch (err) {
-      setError(err.response?.data?.detail || err.message);
+      setError(err.response?.data?.error || err.message);
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
-      <EditableField
-        title="Full name"
-        value={`${firstName} ${lastName}`}
-        onChange={(e) => {
-          const fullName = e.target.value;
-          const nameParts = fullName.split(" ");
-          setFirstName(nameParts[0] || "");
-          setLastName(nameParts.slice(1).join(" ") || "");
-          if (fieldErrors.fullName) setFieldErrors({ ...fieldErrors, fullName: undefined });
-        }}
-        error={fieldErrors.fullName}
-      />
-      <EditableField
-        title="Username"
-        value={username}
-        onChange={(e) => {
-          setUsername(e.target.value);
-          if (fieldErrors.username) setFieldErrors({ ...fieldErrors, username: undefined });
-        }}
-        error={fieldErrors.username}
-      />
-      <div className="w-full justify-between items-center gap-4 flex">
-        <div className="text-[#3d5a80] font-normal font-['Inter'] sm:text-base xs:text-sm">Email</div>
-        <div className="w-[209px] text-right self-stretch text-black font-['Inter'] text-wrap break-all sm:text-sm xs:text-xs">{email}</div>
+      <div className="flex flex-col gap-2">
+        <label className="text-[#3d5a80] text-sm font-normal font-['Inter']">First Name</label>
+        <input type="text" name="first_name" value={formData.first_name} onChange={handleChange} className="border border-gray-300 rounded-md p-2 text-black" />
       </div>
-      <EditableField
-        title="Phone number"
-        value={phoneNumber}
-        onChange={(e) => {
-          setPhoneNumber(e.target.value);
-          if (fieldErrors.phone) setFieldErrors({ ...fieldErrors, phone: undefined });
-        }}
-        error={fieldErrors.phone}
-      />
-      <EditableField
-        title="Date of birth"
-        type="date"
-        value={bornDate}
-        onChange={(e) => {
-          setBornDate(e.target.value);
-          if (fieldErrors.bornDate) setFieldErrors({ ...fieldErrors, bornDate: undefined });
-        }}
-        error={fieldErrors.bornDate}
-      />
-      {error && <div className="text-red-500 mb-4">{error}</div>}
-      <button
-        type="submit"
-        disabled={loading}
-        className="px-4 py-2 bg-[#ee6c4d] text-white rounded hover:bg-[#ff7653] transition"
-      >
-        {loading ? "Saving..." : "Save"}
-      </button>
+      <div className="flex flex-col gap-2">
+        <label className="text-[#3d5a80] text-sm font-normal font-['Inter']">Last Name</label>
+        <input type="text" name="last_name" value={formData.last_name} onChange={handleChange} className="border border-gray-300 rounded-md p-2 text-black" />
+      </div>
+      <div className="flex flex-col gap-2">
+        <label className="text-[#3d5a80] text-sm font-normal font-['Inter']">Phone Number</label>
+        <input type="text" name="phone_number" value={formData.phone_number} onChange={handleChange} className="border border-gray-300 rounded-md p-2 text-black" />
+      </div>
+      <div className="flex flex-col gap-2">
+        <label className="text-[#3d5a80] text-sm font-normal font-['Inter']">Date of Birth</label>
+        <input type="date" name="born_date" value={formData.born_date} onChange={handleChange} className="border border-gray-300 rounded-md p-2 text-black" />
+      </div>
+      <div className="flex flex-col gap-2">
+        <label className="text-[#3d5a80] text-sm font-normal font-['Inter']">Profile Picture (Square Images Only)</label>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="border border-gray-300 rounded-md p-2 text-black"
+        />
+        {initialUser.profile_picture && (
+          <label className="flex items-center gap-2 mt-2">
+            <input type="checkbox" checked={removePicture} onChange={handleRemoveCheckbox} className="h-4 w-4" />
+            <span className="text-sm text-gray-600">Remove Profile Picture</span>
+          </label>
+        )}
+      </div>
+      {error && <div className="text-red-500 text-sm">{error}</div>}
+      <button type="submit" className="mt-4 bg-[#ee6c4d] text-white px-4 py-2 rounded-md hover:bg-[#ff7653]">Save</button>
     </form>
   );
-};
-
-export default UserProfileForm;
+}

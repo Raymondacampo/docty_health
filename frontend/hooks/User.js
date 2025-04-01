@@ -2,7 +2,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { apiClient } from "@/utils/api";
-
+import api from "@/utils/axios";
+import { buildApiUrl } from "@/utils/api";
 // Helper function to check if a JWT token is expired
 const isTokenExpired = (token) => {
   if (!token) return true;
@@ -23,22 +24,22 @@ export const useUser = () => {
   const router = useRouter();
 
   useEffect(() => {
+    
     const fetchUser = async () => {
       try {
         const accessToken = localStorage.getItem("access_token");
-        console.log("Token being sent:", accessToken);
 
         if (!accessToken || isTokenExpired(accessToken)) {
           console.log("Token missing or expired. Redirecting to login...");
           router.push("/login");
           return;
         }
-
-        const { data } = await apiClient.get("/auth/me/",  {
+        const { data } = await apiClient.get("auth/me/",  {
           headers: {
             Authorization: `Bearer ${accessToken}`
           }
         });
+        console.log(data)
         setUser(data);
       } catch (error) {
         console.error("Error fetching user:", error);
