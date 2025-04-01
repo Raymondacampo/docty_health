@@ -20,11 +20,12 @@ const DoctorAvailabilitySection = ({ user, onReload }) => {
     }
   };
 
-  if (!user.is_doctor || !user.availabilities || user.availabilities.length === 0) {
+  if (!user.is_doctor ) {
     return null;
   }
 
   useEffect(() => {
+    console.log(user.availabilities.length)
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setShowMenu(null);
@@ -43,7 +44,7 @@ const DoctorAvailabilitySection = ({ user, onReload }) => {
   return (
     <div className="w-full rounded-[10px] flex-col justify-start items-start gap-6 inline-flex">
       <div className="self-stretch rounded-[10px] flex-col justify-start items-start gap-4 flex">
-        {user.availabilities.map((availability) => (
+        {user.availabilities.length > 0 && user.availabilities.map((availability) => (
           <div
             key={availability.id}
             className="w-full px-4 py-2 bg-[#98c1d1]/25 rounded-[10px] justify-between items-center gap-2.5 flex"
