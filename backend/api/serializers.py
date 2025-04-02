@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
 import uuid
-from .models import Doctor, DoctorAvailability, Clinic, DayOfWeek, Specialty
+from .models import Doctor, DoctorAvailability, Clinic, DayOfWeek, Specialty, Ensurance
 User = get_user_model()
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -73,6 +73,7 @@ class DoctorSignupSerializer(serializers.Serializer):
     experience = serializers.IntegerField(required=True)
     specialties = serializers.ListField(child=serializers.IntegerField(), required=False)
     clinics = serializers.ListField(child=serializers.IntegerField(), required=False)
+    sex = serializers.ChoiceField(choices=[('M', 'Male'), ('F', 'Female')], required=True)  # New field
 
     def validate(self, attrs):
         # Ensure passwords match
@@ -87,6 +88,10 @@ class DoctorSignupSerializer(serializers.Serializer):
         if Doctor.objects.filter(exequatur=attrs['exequatur']).exists():
             raise serializers.ValidationError({"exequatur": "This exequatur is already in use"})
         
+        # Validate sex (redundant due to ChoiceField, but for clarity)
+        if attrs['sex'] not in ['M', 'F']:
+            raise serializers.ValidationError({"sex": "Sex must be 'M' (Male) or 'F' (Female)"})
+
         return attrs
 
     def create(self, validated_data):
@@ -98,6 +103,7 @@ class DoctorSignupSerializer(serializers.Serializer):
         experience = validated_data.pop('experience')
         specialties = validated_data.pop('specialties', [])
         clinics = validated_data.pop('clinics', [])
+        sex = validated_data.pop('sex')  # Extract sex
 
         # Create the User object
         user = User.objects.create_user(
@@ -112,7 +118,8 @@ class DoctorSignupSerializer(serializers.Serializer):
         doctor = Doctor.objects.create(
             user=user,
             exequatur=exequatur,
-            experience=experience
+            experience=experience,
+            sex=sex  # Include sex
         )
 
         # Add specialties and clinics if provided
@@ -144,23 +151,37 @@ class MinimalUserSerializer(serializers.ModelSerializer):
     
 # DATE SYSTEM
 class DoctorAvailabilitySerializer(serializers.ModelSerializer):
-    days = serializers.PrimaryKeyRelatedField(many=True, queryset=DayOfWeek.objects.all())
-    clinic = serializers.PrimaryKeyRelatedField(queryset=Clinic.objects.all())
-    specialization = serializers.PrimaryKeyRelatedField(queryset=Specialty.objects.all())
-    slot_duration = serializers.IntegerField(default=30)
+    days = serializers.PrimaryKeyRelatedField(queryset=DayOfWeek.objects.all(), many=True)
 
     class Meta:
         model = DoctorAvailability
-        fields = ['id', 'doctor', 'clinic', 'specialization', 'days', 'start_time', 'end_time', 'slot_duration']
-        read_only_fields = []
+        fields = ['id', 'doctor', 'clinic', 'specialization', 'days', 'start_time', 'end_time', 'slot_duration', 'virtual']
 
-    def create(self, validated_data):
-        days = validated_data.pop('days')
-        availability = DoctorAvailability.objects.create(**validated_data)
-        availability.days.set(days)
-        return availability
+    def validate(self, data):
+        if not data.get('virtual'):
+            # If not virtual, clinic and specialization are required
+            if not data.get('clinic'):
+                raise serializers.ValidationError({"clinic": "Clinic is required for in-person availability."})
+            if not data.get('specialization'):
+                raise serializers.ValidationError({"specialization": "Specialization is required for in-person availability."})
+        return data
     
 class DayOfWeekSerializer(serializers.ModelSerializer):
     class Meta:
         model = DayOfWeek
         fields = ['id', 'name']
+
+class SpecialtySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Specialty
+        fields = ['id', 'name']
+
+class ClinicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Clinic
+        fields = ['id', 'name']  # You can add 'google_place_id' if needed
+
+class EnsuranceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ensurance
+        fields = ['id', 'name', 'logo']  # You can add 'logo' if needed

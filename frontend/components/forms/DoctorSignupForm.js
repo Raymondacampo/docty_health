@@ -3,19 +3,32 @@
 import { useState } from 'react';
 import { useAuth } from '@/context/auth';
 import { useRouter } from 'next/router';
-import { apiClient } from '@/utils/api'; // Import apiClient
+import { apiClient } from '@/utils/api';
 
-const FormField = ({ title, type, name, placeholder, onChange, err }) => {
+const FormField = ({ title, type, name, placeholder, onChange, err, options }) => {
   return (
     <div className="self-stretch flex-col justify-start items-start gap-[5px] flex">
       <div className="self-stretch text-[#3d5a80] text-base font-normal font-['Inter'] tracking-wide">{title}</div>
-      <input
-        type={type}
-        name={name}
-        placeholder={placeholder}
-        onChange={onChange}
-        className="text-sm self-stretch px-4 py-3 focus:outline-none text-black rounded-[5px] border border-black justify-start items-center gap-2.5 inline-flex"
-      />
+      {type === 'select' ? (
+        <select
+          name={name}
+          onChange={onChange}
+          className="text-sm self-stretch px-4 py-3 focus:outline-none text-black rounded-[5px] border border-black justify-start items-center gap-2.5 inline-flex"
+        >
+          <option value="" disabled selected>{placeholder}</option>
+          {options && options.map((option) => (
+            <option key={option.value} value={option.value}>{option.label}</option>
+          ))}
+        </select>
+      ) : (
+        <input
+          type={type}
+          name={name}
+          placeholder={placeholder}
+          onChange={onChange}
+          className="text-sm self-stretch px-4 py-3 focus:outline-none text-black rounded-[5px] border border-black justify-start items-center gap-2.5 inline-flex"
+        />
+      )}
       {err && <span className="text-red-500 text-sm">{err}</span>}
     </div>
   );
@@ -32,6 +45,7 @@ export default function DoctorSignupForm() {
     experience: '',
     password: '',
     confirm_password: '',
+    sex: '',  // New field
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -72,6 +86,10 @@ export default function DoctorSignupForm() {
       }
     }
 
+    if (name === 'sex' && value.trim() !== '' && !['M', 'F'].includes(value)) {
+      newErrors.sex = 'Please select either Male or Female';
+    }
+
     setErrors(newErrors);
   };
 
@@ -103,6 +121,10 @@ export default function DoctorSignupForm() {
       validationErrors.experience = 'Years of experience must be a positive number';
     }
 
+    if (formData.sex && !['M', 'F'].includes(formData.sex)) {
+      validationErrors.sex = 'Please select either Male or Female';
+    }
+
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       setLoading(false);
@@ -124,6 +146,11 @@ export default function DoctorSignupForm() {
     }
   };
 
+  const sexOptions = [
+    { value: 'M', label: 'Male' },
+    { value: 'F', label: 'Female' },
+  ];
+
   return (
     <div className="border-black/25 border py-8 bg-white rounded-[15px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] flex-col justify-center items-center gap-8 inline-flex sm:px-8 xs:w-full xs:max-w-md xs:px-4">
       <div className="self-stretch text-center text-[#293241] text-xl font-['Inter'] tracking-wide">Create your Doctor account!</div>
@@ -135,6 +162,15 @@ export default function DoctorSignupForm() {
             <FormField title="Last name" type="text" name="last_name" placeholder="Your last name" onChange={handleChange} err={errors.last_name} />
             <FormField title="Exequatur" type="text" name="exequatur" placeholder="0000-000" onChange={handleChange} err={errors.exequatur} />
             <FormField title="Years of experience" type="text" name="experience" placeholder="How long have you been a doctor?" onChange={handleChange} err={errors.experience} />
+            <FormField
+              title="Sex"
+              type="select"
+              name="sex"
+              placeholder="Select your sex"
+              onChange={handleChange}
+              err={errors.sex}
+              options={sexOptions}
+            />
             <FormField title="Password" type="password" name="password" placeholder="Password" onChange={handleChange} err={errors.password} />
             <FormField title="Repeat password" type="password" name="confirm_password" placeholder="Repeat password" onChange={handleChange} err={errors.confirm_password} />
           </div>

@@ -50,10 +50,9 @@ const DoctorAvailabilitySection = ({ user, onReload }) => {
             className="w-full px-4 py-2 bg-[#98c1d1]/25 rounded-[10px] justify-between items-center gap-2.5 flex"
           >
             <div className="text-black text-sm font-normal font-['Inter']">
-              {`${availability.clinic.name} - 
-                ${availability.specialization.name} - 
-                ${availability.days.map(d => d.name)} - 
-                ${availability.start_time.slice(0, 5)} to ${availability.end_time.slice(0, 5)} (${availability.slot_duration} min)`}
+            {availability.virtual
+                ? `Virtual - ${availability.days.map(d => d.name).join(', ')} - ${availability.start_time} to ${availability.end_time} (${availability.slot_duration} min)`
+                : `${availability.clinic.name} - ${availability.specialization.name} - ${availability.days.map(d => d.name).join(', ')} - ${availability.start_time} to ${availability.end_time} (${availability.slot_duration} min)`}
             </div>
             <div className="relative">
               <button

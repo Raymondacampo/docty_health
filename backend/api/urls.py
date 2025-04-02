@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import get_data, LoginView, UserProfileView, SignupView, LogoutView, GoogleLogin, DoctorSignupView, PasswordResetRequestView, PasswordChangeView, ValidateTokenView,AvailableSpecialtiesView, AddSpecialtyView, AddClinicView, AvailableClinicsView
 from .views import RemoveClinicView, RemoveSpecialtyView, UploadDoctorDocumentView, BookAppointmentView, CreateDoctorAvailabilityView, AvailableSlotsView, DayOfWeekListView,UpdateDoctorAvailabilityView, DeleteDoctorAvailabilityView, DeleteDoctorDocumentView
-from .views import AvailableEnsurancesView, AddEnsuranceView, RemoveEnsuranceView
+from .views import AvailableEnsurancesView, AddEnsuranceView, RemoveEnsuranceView, DoctorSearchView, AllSpecialtiesView, AllClinicsView, AllEnsurancesView  
 from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView, TokenObtainPairView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -38,6 +38,12 @@ urlpatterns = [
     path('auth/delete_availability/<int:availability_id>/', DeleteDoctorAvailabilityView.as_view(), name='delete_doctor_availability'),
     path('auth/available_slots/<int:doctor_id>/<str:date>/', AvailableSlotsView.as_view(), name='available_slots'),
     path('auth/book_appointment/', BookAppointmentView.as_view(), name='book_appointment'),
+
+    path('doctors/search/', DoctorSearchView.as_view(), name='doctor_search'),
+    # New endpoints for all values
+    path('all_specialties/', AllSpecialtiesView.as_view(), name='all_specialties'),
+    path('all_clinics/', AllClinicsView.as_view(), name='all_clinics'),
+    path('all_ensurances/', AllEnsurancesView.as_view(), name='all_ensurances'),
 
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),  # Login (returns access & refresh tokens)
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),  # ✅ Refresh access token

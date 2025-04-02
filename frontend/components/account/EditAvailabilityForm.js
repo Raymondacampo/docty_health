@@ -1,18 +1,20 @@
+// components/account/EditAvailabilityForm.js
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { apiClient } from '@/utils/api'; // Import apiClient
+import { apiClient } from '@/utils/api';
 
 const EditAvailabilityForm = ({ availability, onClose, onUpdate }) => {
   const [clinics] = useState(availability.user?.clinics || []);
   const [specializations] = useState(availability.user?.specializations || []);
   const [days, setDays] = useState([]);
-  const [selectedClinic, setSelectedClinic] = useState(availability.clinic.id);
-  const [selectedSpecialization, setSelectedSpecialization] = useState(availability.specialization.id);
+  const [selectedClinic, setSelectedClinic] = useState(availability.clinic?.id || '');
+  const [selectedSpecialization, setSelectedSpecialization] = useState(availability.specialization?.id || '');
   const [selectedDays, setSelectedDays] = useState(availability.days.map(day => day.id));
   const [startTime, setStartTime] = useState(availability.start_time?.slice(0, 5) || '');
   const [endTime, setEndTime] = useState(availability.end_time?.slice(0, 5) || '');
   const [slotDuration, setSlotDuration] = useState(availability.slot_duration || 30);
+  const [virtual, setVirtual] = useState(availability.virtual || false);  // New state for virtual
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -23,7 +25,6 @@ const EditAvailabilityForm = ({ availability, onClose, onUpdate }) => {
         setDays(data);
       } catch (err) {
         setError('Failed to load days of week');
-        console.error(err);
       }
     };
     fetchDays();
@@ -35,9 +36,21 @@ const EditAvailabilityForm = ({ availability, onClose, onUpdate }) => {
     );
   };
 
+  const handleVirtualChange = (e) => {
+    setVirtual(e.target.checked);
+    if (e.target.checked) {
+      setSelectedClinic('');  // Clear clinic when virtual
+      setSelectedSpecialization('');  // Clear specialization when virtual
+    }
+  };
+
   const handleSubmit = async () => {
-    if (!selectedClinic || !selectedSpecialization || selectedDays.length === 0 || !startTime || !endTime) {
-      setError('All fields are required');
+    if (selectedDays.length === 0 || !startTime || !endTime) {
+      setError('Days, start time, and end time are required');
+      return;
+    }
+    if (!virtual && (!selectedClinic || !selectedSpecialization)) {
+      setError('Clinic and specialization are required for in-person availability');
       return;
     }
 
@@ -46,18 +59,18 @@ const EditAvailabilityForm = ({ availability, onClose, onUpdate }) => {
 
     try {
       const { data } = await apiClient.put(`/auth/update_availability/${availability.id}/`, {
-        clinic: selectedClinic,
-        specialization: selectedSpecialization,
+        clinic: virtual ? null : selectedClinic,
+        specialization: virtual ? null : selectedSpecialization,
         days: selectedDays,
         start_time: startTime,
         end_time: endTime,
         slot_duration: slotDuration,
+        virtual,  // Include virtual field
       });
       onUpdate(data);
       onClose();
     } catch (err) {
-      setError('Failed to update availability');
-      console.error(err.response?.data || err.message);
+      setError(err.response?.data?.error || 'Failed to update availability');
     } finally {
       setLoading(false);
     }
@@ -74,26 +87,34 @@ const EditAvailabilityForm = ({ availability, onClose, onUpdate }) => {
         <h3 className="text-lg font-normal font-['Inter'] sm:mb-4 xs:mb-8">Edit Availability</h3>
         {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
         <div className="h-[90%] flex flex-col sm:gap-6 xs:gap-8">
-          <select
-            value={selectedClinic}
-            onChange={(e) => setSelectedClinic(parseInt(e.target.value))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-          >
-            <option value="">Select Clinic</option>
-            {clinics.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
-          <select
-            value={selectedSpecialization}
-            onChange={(e) => setSelectedSpecialization(parseInt(e.target.value))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-          >
-            <option value="">Select Specialization</option>
-            {specializations.map((spec) => (
-              <option key={spec.id} value={spec.id}>{spec.name}</option>
-            ))}
-          </select>
+          <label className="flex items-center gap-2">
+            <input type="checkbox" checked={virtual} onChange={handleVirtualChange} />
+            Virtual Appointment
+          </label>
+          {!virtual && (
+            <>
+              <select
+                value={selectedClinic}
+                onChange={(e) => setSelectedClinic(parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              >
+                <option value="">Select Clinic</option>
+                {clinics.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+              <select
+                value={selectedSpecialization}
+                onChange={(e) => setSelectedSpecialization(parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              >
+                <option value="">Select Specialization</option>
+                {specializations.map((spec) => (
+                  <option key={spec.id} value={spec.id}>{spec.name}</option>
+                ))}
+              </select>
+            </>
+          )}
           <div className="flex flex-wrap gap-2">
             {days.length > 0 ? (
               days.map((day) => (

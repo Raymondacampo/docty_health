@@ -28,6 +28,13 @@ export const apiClient = axios.create({
   },
 });
 
+export const publicApiClient = axios.create({
+  baseURL: getApiUrl(),
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
 apiClient.interceptors.request.use((config) => {
   const accessToken = localStorage.getItem("access_token");
   if (accessToken) {

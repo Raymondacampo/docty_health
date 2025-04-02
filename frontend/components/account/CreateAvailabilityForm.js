@@ -1,7 +1,8 @@
+// components/account/CreateAvailabilityForm.js
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { apiClient } from '@/utils/api'; // Import apiClient
+import { apiClient } from '@/utils/api';
 
 const CreateAvailabilityForm = ({ user, onClose, onCreate }) => {
   const [clinics] = useState(user.clinics || []);
@@ -13,6 +14,7 @@ const CreateAvailabilityForm = ({ user, onClose, onCreate }) => {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [slotDuration, setSlotDuration] = useState(30);
+  const [virtual, setVirtual] = useState(false);  // New state for virtual
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -34,9 +36,21 @@ const CreateAvailabilityForm = ({ user, onClose, onCreate }) => {
     );
   };
 
+  const handleVirtualChange = (e) => {
+    setVirtual(e.target.checked);
+    if (e.target.checked) {
+      setSelectedClinic('');  // Clear clinic when virtual
+      setSelectedSpecialization('');  // Clear specialization when virtual
+    }
+  };
+
   const handleSubmit = async () => {
-    if (!selectedClinic || !selectedSpecialization || selectedDays.length === 0 || !startTime || !endTime) {
-      setError('All fields are required');
+    if (selectedDays.length === 0 || !startTime || !endTime) {
+      setError('Days, start time, and end time are required');
+      return;
+    }
+    if (!virtual && (!selectedClinic || !selectedSpecialization)) {
+      setError('Clinic and specialization are required for in-person availability');
       return;
     }
 
@@ -45,17 +59,18 @@ const CreateAvailabilityForm = ({ user, onClose, onCreate }) => {
 
     try {
       const { data } = await apiClient.post('/auth/create_availability/', {
-        clinic: selectedClinic,
-        specialization: selectedSpecialization,
+        clinic: virtual ? null : selectedClinic,
+        specialization: virtual ? null : selectedSpecialization,
         days: selectedDays,
         start_time: startTime,
         end_time: endTime,
         slot_duration: slotDuration,
+        virtual,  // Include virtual field
       });
       onCreate(data);
       onClose();
     } catch (err) {
-      setError('Failed to create availability');
+      setError(err.response?.data?.error || 'Failed to create availability');
     } finally {
       setLoading(false);
     }
@@ -64,49 +79,42 @@ const CreateAvailabilityForm = ({ user, onClose, onCreate }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center text-black items-center z-50">
       <div className="relative bg-white p-6 w-full sm:h-auto sm:max-w-md sm:rounded-lg xs:h-full">
-        <button
-          onClick={onClose}
-          className="absolute top-2 right-2 text-black hover:text-gray-700"
-        >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M6 18L18 6M6 6L18 18"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+        <button onClick={onClose} className="absolute top-2 right-2 text-black hover:text-gray-700">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 18L18 6M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
         <h3 className="text-lg font-normal font-['Inter'] sm:mb-4 xs:mb-8">Create Availability</h3>
         {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
         <div className="h-[90%] flex flex-col sm:gap-6 xs:gap-8">
-          <select
-            value={selectedClinic}
-            onChange={(e) => setSelectedClinic(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-          >
-            <option value="">Select Clinic</option>
-            {clinics.map((clinic) => (
-              <option key={clinic.id} value={clinic.id}>{clinic.name}</option>
-            ))}
-          </select>
-          <select
-            value={selectedSpecialization}
-            onChange={(e) => setSelectedSpecialization(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-          >
-            <option value="">Select Specialization</option>
-            {specializations.map((spec) => (
-              <option key={spec.id} value={spec.id}>{spec.name}</option>
-            ))}
-          </select>
+          <label className="flex items-center gap-2">
+            <input type="checkbox" checked={virtual} onChange={handleVirtualChange} />
+            Virtual Appointment
+          </label>
+          {!virtual && (
+            <>
+              <select
+                value={selectedClinic}
+                onChange={(e) => setSelectedClinic(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              >
+                <option value="">Select Clinic</option>
+                {clinics.map((clinic) => (
+                  <option key={clinic.id} value={clinic.id}>{clinic.name}</option>
+                ))}
+              </select>
+              <select
+                value={selectedSpecialization}
+                onChange={(e) => setSelectedSpecialization(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              >
+                <option value="">Select Specialization</option>
+                {specializations.map((spec) => (
+                  <option key={spec.id} value={spec.id}>{spec.name}</option>
+                ))}
+              </select>
+            </>
+          )}
           <div className="flex flex-wrap gap-2">
             {days.map((day) => (
               <label key={day.id} className="flex items-center gap-1">

@@ -8,7 +8,7 @@ from rest_framework import status
 from django.core.mail import send_mail
 from django.conf import settings
 from rest_framework.generics import RetrieveUpdateAPIView
-from .serializers import UserProfileSerializer, SignupSerializer, DoctorSignupSerializer, DoctorAvailabilitySerializer, DayOfWeekSerializer
+from .serializers import UserProfileSerializer, SignupSerializer, DoctorSignupSerializer, DoctorAvailabilitySerializer, DayOfWeekSerializer, EnsuranceSerializer, ClinicSerializer, SpecialtySerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view
 from django.contrib.auth import get_user_model
@@ -276,12 +276,13 @@ class UserProfileView(APIView):
                 "availabilities": [
                     {
                         "id": avail.id,
-                        "clinic": {"id": avail.clinic.id, "name": avail.clinic.name},
-                        "specialization": {"id": avail.specialization.id, "name": avail.specialization.name},
+                        "clinic": {"id": avail.clinic.id, "name": avail.clinic.name} if avail.clinic else None,
+                        "specialization": {"id": avail.specialization.id, "name": avail.specialization.name} if avail.specialization else None,
                         "days": [{"id": day.id, "name": day.name} for day in avail.days.all()],
                         "start_time": avail.start_time.strftime('%H:%M'),
                         "end_time": avail.end_time.strftime('%H:%M'),
-                        "slot_duration": avail.slot_duration
+                        "slot_duration": avail.slot_duration,
+                        "virtual": avail.virtual  # New field
                     }
                     for avail in DoctorAvailability.objects.filter(doctor=doctor)
                 ],
@@ -617,7 +618,6 @@ class CreateDoctorAvailabilityView(APIView):
         data = request.data.copy()
         data['doctor'] = user.doctor.id
 
-        # Validate slot_duration is 30, 45, or 60
         slot_duration = data.get('slot_duration', 30)
         if slot_duration not in [30, 45, 60]:
             return Response({"error": "Slot duration must be 30, 45, or 60 minutes"}, status=status.HTTP_400_BAD_REQUEST)
@@ -766,3 +766,57 @@ class DayOfWeekListView(generics.ListAPIView):
     queryset = DayOfWeek.objects.all()
     serializer_class = DayOfWeekSerializer
 
+class DoctorSearchView(APIView):
+    def get(self, request):
+        queryset = Doctor.objects.all()
+        specialty = request.query_params.get('specialty')
+        ensurance = request.query_params.get('ensurance')
+        location = request.query_params.get('location')
+        sex = request.query_params.get('sex')
+        takes_dates = request.query_params.get('takes_dates')
+
+        if specialty:
+            queryset = queryset.filter(specialties__name=specialty)
+        if ensurance:
+            queryset = queryset.filter(ensurances__name=ensurance)
+        if location:
+            queryset = queryset.filter(clinics__name=location)
+        if sex and sex != 'both':
+            queryset = queryset.filter(sex=sex)
+        if takes_dates and takes_dates != 'any':
+            if takes_dates == 'app':
+                queryset = queryset.filter(taking_dates=True)
+            elif takes_dates == 'virtual':
+                queryset = queryset.filter(availability__virtual=True)
+            elif takes_dates == 'in_person':
+                queryset = queryset.filter(availability__virtual=False)
+
+        # Serialize and return results
+        # Add your serializer here
+        return Response(data)
+    
+class AllSpecialtiesView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        specialties = Specialty.objects.all()
+        serializer = SpecialtySerializer(specialties, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+# View to return all clinics
+class AllClinicsView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        clinics = Clinic.objects.all()
+        serializer = ClinicSerializer(clinics, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+# View to return all ensurances
+class AllEnsurancesView(APIView):
+    permission_classes = [AllowAny]
+    
+    def get(self, request):
+        ensurances = Ensurance.objects.all()
+        serializer = EnsuranceSerializer(ensurances, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

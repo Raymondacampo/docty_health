@@ -4,6 +4,7 @@ import uuid
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from PIL import Image
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 def validate_square_image(image):
     """Ensure the uploaded image is square (width == height)."""
@@ -52,6 +53,10 @@ class User(AbstractUser):
 
 # Doctor Model (Extends User)
 class Doctor(models.Model):
+    SEX_CHOICES = (
+        ('M', 'Male'),
+        ('F', 'Female'),
+    )
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     exequatur = models.CharField(max_length=20, unique=True)  # Unique doctor registration number
     specialties = models.ManyToManyField("Specialty", related_name="doctors")  # Many doctors can have many specialties
@@ -59,6 +64,7 @@ class Doctor(models.Model):
     ensurances = models.ManyToManyField("Ensurance", related_name="doctors", blank=True)  # New field
     experience = models.PositiveIntegerField(help_text="Years of Experience")
     taking_dates = models.BooleanField(default=True)
+    sex = models.CharField(max_length=1, choices=SEX_CHOICES, help_text="Doctor's sex (Male or Female)")  # New field
     
     def __str__(self):
         return f"Dr. {self.user.first_name} {self.user.last_name} - {self.exequatur}"
@@ -108,12 +114,13 @@ class DayOfWeek(models.Model):
 
 class DoctorAvailability(models.Model):
     doctor = models.ForeignKey('Doctor', on_delete=models.CASCADE)
-    clinic = models.ForeignKey('Clinic', on_delete=models.CASCADE)
-    specialization = models.ForeignKey('Specialty', on_delete=models.CASCADE)
+    clinic = models.ForeignKey('Clinic', on_delete=models.CASCADE, null=True, blank=True)
+    specialization = models.ForeignKey('Specialty', on_delete=models.CASCADE, null=True, blank=True)
     days = models.ManyToManyField(DayOfWeek)
     start_time = models.TimeField()
     end_time = models.TimeField()
     slot_duration = models.PositiveIntegerField(default=30, help_text="Duration in minutes (30, 45, or 60)")
+    virtual = models.BooleanField(default=False, help_text="Indicates if this is a virtual appointment")  # New field
 
     def __str__(self):
         return f"{self.doctor} - {self.clinic} - {self.specialization}"
@@ -128,6 +135,23 @@ class Appointment(models.Model):
 
     def __str__(self):
         return f"Appointment with {self.doctor} on {self.date} at {self.start_time}"
+    
+class Review(models.Model):
+    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='reviews_given')
+    doctor = models.ForeignKey('Doctor', on_delete=models.CASCADE, related_name='reviews_received')
+    rating = models.PositiveIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        help_text="Rating from 1 to 5"
+    )
+    headline = models.CharField(max_length=100, help_text="Short summary of the review")
+    body = models.TextField(help_text="Detailed review text")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'doctor')  # Prevent duplicate reviews from the same user for the same doctor
+
+    def __str__(self):
+        return f"{self.user} - {self.doctor} - {self.rating} stars"
 
 class PasswordResetToken(models.Model):
     email = models.EmailField()
