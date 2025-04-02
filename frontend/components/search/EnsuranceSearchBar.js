@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import { publicApiClient } from "@/utils/api";export default function EnsuranceSearchBar({ value, onChange }) {
+import { publicApiClient } from "@/utils/api";
+
+export default function EnsuranceSearchBar({ value, onChange }) {
   const [ensurances, setEnsurances] = useState([]);
   const [filteredEnsurances, setFilteredEnsurances] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -9,7 +11,7 @@ import { publicApiClient } from "@/utils/api";export default function EnsuranceS
     const fetchEnsurances = async () => {
       setLoading(true);
       try {
-        const response = await publicApiClient.get("/all_specialties/");
+        const response = await publicApiClient.get("/all_ensurances/");
         const data = response.data;
         setEnsurances(data);
         setFilteredEnsurances(data);
@@ -24,7 +26,7 @@ import { publicApiClient } from "@/utils/api";export default function EnsuranceS
 
   const handleInputChange = (e) => {
     const inputValue = e.target.value;
-    // onChange(inputValue);
+    onChange(inputValue);
     const filtered = ensurances.filter((ensurance) =>
       ensurance.name.toLowerCase().includes(inputValue.toLowerCase())
     );

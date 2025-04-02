@@ -25,7 +25,7 @@ export default function SpecialtySearchBar({ value, onChange }) {
 
   const handleInputChange = (e) => {
     const inputValue = e.target.value;
-    // onChange(inputValue);
+    onChange(inputValue);
     const filtered = specialties.filter((specialty) =>
       specialty.name.toLowerCase().includes(inputValue.toLowerCase())
     );

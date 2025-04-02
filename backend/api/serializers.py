@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
 import uuid
-from .models import Doctor, DoctorAvailability, Clinic, DayOfWeek, Specialty, Ensurance
+from .models import Doctor, DoctorAvailability, Clinic, DayOfWeek, Specialty, Ensurance, Review
 User = get_user_model()
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -185,3 +185,42 @@ class EnsuranceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ensurance
         fields = ['id', 'name', 'logo']  # You can add 'logo' if needed
+
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ['rating']
+
+class DoctorSerializer(serializers.ModelSerializer):
+    specialties = SpecialtySerializer(many=True)
+    clinics = ClinicSerializer(many=True)
+    ensurances = EnsuranceSerializer(many=True)
+    user = serializers.SerializerMethodField()
+    average_rating = serializers.SerializerMethodField()
+    review_count = serializers.SerializerMethodField()
+    has_availability = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Doctor
+        fields = [
+            'id', 'user', 'exequatur', 'experience', 'sex', 'taking_dates',
+            'specialties', 'clinics', 'ensurances', 'average_rating', 'review_count', 'has_availability'
+        ]
+
+    def get_user(self, obj):
+        return {
+            'first_name': obj.user.first_name,
+            'last_name': obj.user.last_name,
+        }
+
+    def get_average_rating(self, obj):
+        reviews = obj.reviews_received.all()
+        if reviews.exists():
+            return round(sum(review.rating for review in reviews) / reviews.count(), 1)
+        return 0
+
+    def get_review_count(self, obj):
+        return obj.reviews_received.count()
+
+    def get_has_availability(self, obj):
+        return DoctorAvailability.objects.filter(doctor=obj).exists()

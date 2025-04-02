@@ -8,7 +8,7 @@ from rest_framework import status
 from django.core.mail import send_mail
 from django.conf import settings
 from rest_framework.generics import RetrieveUpdateAPIView
-from .serializers import UserProfileSerializer, SignupSerializer, DoctorSignupSerializer, DoctorAvailabilitySerializer, DayOfWeekSerializer, EnsuranceSerializer, ClinicSerializer, SpecialtySerializer
+from .serializers import UserProfileSerializer, SignupSerializer, DoctorSignupSerializer, DoctorAvailabilitySerializer, DayOfWeekSerializer, EnsuranceSerializer, ClinicSerializer, SpecialtySerializer, DoctorSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view
 from django.contrib.auth import get_user_model
@@ -22,6 +22,7 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from django.utils import timezone
 from datetime import timedelta, datetime
 from .models import PasswordResetToken, Specialty, Clinic, DoctorDocument, Doctor, DoctorAvailability, Appointment, DayOfWeek, Ensurance
+from rest_framework.pagination import PageNumberPagination
 
 serializer = URLSafeTimedSerializer(settings.SECRET_KEY)
 
@@ -766,7 +767,15 @@ class DayOfWeekListView(generics.ListAPIView):
     queryset = DayOfWeek.objects.all()
     serializer_class = DayOfWeekSerializer
 
+class DoctorPagination(PageNumberPagination):
+    page_size = 10  # 10 doctors per page
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
 class DoctorSearchView(APIView):
+    permission_classes = [AllowAny]  # Make it public for now
+    pagination_class = DoctorPagination
+
     def get(self, request):
         queryset = Doctor.objects.all()
         specialty = request.query_params.get('specialty')
@@ -791,9 +800,15 @@ class DoctorSearchView(APIView):
             elif takes_dates == 'in_person':
                 queryset = queryset.filter(availability__virtual=False)
 
-        # Serialize and return results
-        # Add your serializer here
-        return Response(data)
+        # Apply distinct to avoid duplicates from many-to-many filters
+        queryset = queryset.distinct()
+
+        # Paginate the results
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(queryset, request)
+        serializer = DoctorSerializer(page, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
     
 class AllSpecialtiesView(APIView):
     permission_classes = [AllowAny]

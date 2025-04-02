@@ -24,7 +24,7 @@ import { publicApiClient } from "@/utils/api";export default function LocationSe
 
   const handleInputChange = (e) => {
     const inputValue = e.target.value;
-    // onChange(inputValue);
+    onChange(inputValue);
     const filtered = clinics.filter((clinic) =>
       clinic.name.toLowerCase().includes(inputValue.toLowerCase())
     );
