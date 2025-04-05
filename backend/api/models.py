@@ -66,7 +66,7 @@ class Doctor(models.Model):
     taking_dates = models.BooleanField(default=False)
     takes_virtual = models.BooleanField(default=False, help_text="Doctor takes virtual appointments")
     takes_in_person = models.BooleanField(default=False, help_text="Doctor takes in-person appointments")
-    sex = models.CharField(max_length=1, choices=SEX_CHOICES, help_text="Doctor's sex (Male or Female)")  # New field
+    sex = models.CharField(max_length=1, choices=SEX_CHOICES,null=True, blank=True, help_text="Doctor's sex (Male or Female)")  # New field
     
     def __str__(self):
         return f"Dr. {self.user.first_name} {self.user.last_name} - {self.exequatur}"
