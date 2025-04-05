@@ -21,7 +21,7 @@ export default function SexFilter({ value, onChange }) {
 
               {/* Inner orange dot */}
               {value === opt.value && (
-                <span className="absolute w-[12] h-[12] rounded-full bg-[#2b2774]" />
+                <span className="absolute w-[10px] h-[10px] rounded-full bg-[#2b2774]" />
               )}
 
               {/* Invisible input */}
