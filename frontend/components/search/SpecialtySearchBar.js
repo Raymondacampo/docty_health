@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { publicApiClient } from "@/utils/api";
-export default function SpecialtySearchBar({ value, onChange }) {
+export default function SpecialtySearchBar({ value, onChange, round }) {
   const [specialties, setSpecialties] = useState([]);
   const [filteredSpecialties, setFilteredSpecialties] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -23,6 +23,13 @@ export default function SpecialtySearchBar({ value, onChange }) {
     fetchSpecialties();
   }, []);
 
+  useEffect(() => {
+    if (!isOpen && !specialties.some(item => item.name === value)) {
+      onChange("");
+      setFilteredSpecialties(specialties);
+    }
+  },[isOpen]);
+
   const handleInputChange = (e) => {
     const inputValue = e.target.value;
     onChange(inputValue);
@@ -39,26 +46,24 @@ export default function SpecialtySearchBar({ value, onChange }) {
   };
 
   return (
-    <div className="max-w-3xs w-full relative">
+    <div className="w-full h-full relative text-black">
       <input
         type="text"
         placeholder="Search for a specialty"
         value={value}
         onChange={handleInputChange}
         onFocus={() => setIsOpen(true)}
-        onBlur={() => setTimeout(() => setIsOpen(false), 200)}
-        className="max-w-3xs p-4 w-full bg-white rounded-[10px] focus:outline-none text-black placeholder-gray-400 justify-start items-center gap-2.5 inline-flex
-                sm:rounded-tl-full sm:rounded-bl-full sm:rounded-tr-[0px] sm:rounded-br-[0px] sm:p-4 sm:border-r sm:border-0
-                xs:p-3 xs:border xs:border-black/45"
+        onBlur={() => setTimeout(() => setIsOpen(false), 100)}
+        className={`px-4 py-2 w-full h-full focus:outline-none ${round}`}
         disabled={loading}
       />
       {isOpen && !loading && filteredSpecialties.length > 0 && (
-        <ul className="text-black absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+        <ul className="text-black text-sm absolute top-full z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
           {filteredSpecialties.map((specialty) => (
             <li
               key={specialty.id}
               onMouseDown={() => handleOptionClick(specialty.name)}
-              className="p-2 hover:bg-gray-100 cursor-pointer"
+              className="px-2 py-3 hover:bg-gray-100 cursor-pointer"
             >
               {specialty.name}
             </li>

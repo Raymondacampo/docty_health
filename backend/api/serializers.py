@@ -155,11 +155,10 @@ class DoctorAvailabilitySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DoctorAvailability
-        fields = ['id', 'doctor', 'clinic', 'specialization', 'days', 'start_time', 'end_time', 'slot_duration', 'virtual']
+        fields = ['id', 'doctor', 'clinic', 'specialization', 'days', 'start_time', 'end_time', 'slot_duration', 'virtual', 'active']
 
     def validate(self, data):
         if not data.get('virtual'):
-            # If not virtual, clinic and specialization are required
             if not data.get('clinic'):
                 raise serializers.ValidationError({"clinic": "Clinic is required for in-person availability."})
             if not data.get('specialization'):
@@ -204,6 +203,7 @@ class DoctorSerializer(serializers.ModelSerializer):
         model = Doctor
         fields = [
             'id', 'user', 'exequatur', 'experience', 'sex', 'taking_dates',
+            'takes_virtual', 'takes_in_person',  # New fields
             'specialties', 'clinics', 'ensurances', 'average_rating', 'review_count', 'has_availability'
         ]
 

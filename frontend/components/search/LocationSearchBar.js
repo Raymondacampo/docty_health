@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { publicApiClient } from "@/utils/api";export default function LocationSearchBar({ value, onChange }) {
+import { publicApiClient } from "@/utils/api";export default function LocationSearchBar({ value, onChange,round }) {
   const [clinics, setClinics] = useState([]);
   const [filteredClinics, setFilteredClinics] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -22,6 +22,13 @@ import { publicApiClient } from "@/utils/api";export default function LocationSe
     fetchClinics();
   }, []);
 
+  useEffect(() => {
+    if (!isOpen && !clinics.some(item => item.name === value)) {
+      onChange("");
+      setFilteredClinics(clinics);
+    }
+  },[isOpen]);
+
   const handleInputChange = (e) => {
     const inputValue = e.target.value;
     onChange(inputValue);
@@ -38,26 +45,24 @@ import { publicApiClient } from "@/utils/api";export default function LocationSe
   };
 
   return (
-    <div className="max-w-3xs w-full relative">
+    <div className="w-full h-full relative text-black">
       <input
         type="text"
         placeholder="Search for a location"
         value={value}
         onChange={handleInputChange}
         onFocus={() => setIsOpen(true)}
-        onBlur={() => setTimeout(() => setIsOpen(false), 200)}
-        className="max-w-3xs p-4 w-full bg-white focus:outline-none text-black placeholder-gray-400 justify-start items-center gap-2.5 inline-flex
-                sm:p-4 sm:border-l sm:border-0
-                xs:p-3 xs:border xs:border-black/45"
+        onBlur={() => setTimeout(() => setIsOpen(false), 100)}
+        className={`px-4 py-2 w-full h-full focus:outline-none ${round}`}
         disabled={loading}
       />
       {isOpen && !loading && filteredClinics.length > 0 && (
-        <ul className="text-black absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+        <ul className="text-black text-sm absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
           {filteredClinics.map((clinic) => (
             <li
               key={clinic.id}
               onMouseDown={() => handleOptionClick(clinic.name)}
-              className="p-2 hover:bg-gray-100 cursor-pointer"
+              className="px-2 py-3 hover:bg-gray-100 cursor-pointer"
             >
               {clinic.name}
             </li>

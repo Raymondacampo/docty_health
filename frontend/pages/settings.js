@@ -131,56 +131,85 @@ const ProfessionalData = ({ data, onReload }) => {
   )};
 
 const Scheduling = ({ user, onReload }) => {
-  const [takingDates, setTakingDates] = useState(user.taking_dates !== undefined ? user.taking_dates : true);
+  const [takesVirtual, setTakesVirtual] = useState(user.takes_virtual || false);
+  const [takesInPerson, setTakesInPerson] = useState(user.takes_in_person || false);
 
-  const handleToggleTakingDates = async () => {
-      const newValue = !takingDates;
-      setTakingDates(newValue);
+  const handleToggleVirtual = async () => {
+    const newValue = !takesVirtual;
+    setTakesVirtual(newValue);
+    try {
+      const accessToken = localStorage.getItem('access_token');
+      await apiClient.put(
+        'auth/me/',
+        { takes_virtual: newValue },
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      onReload();
+    } catch (error) {
+      console.error('Failed to update takes_virtual:', error);
+      setTakesVirtual(!newValue); // Revert on failure
+    }
+  };
 
-      try {
-          const accessToken = localStorage.getItem('access_token');
-          await apiClient.put(
-              'auth/me/',
-              { taking_dates: newValue },
-              { headers: { Authorization: `Bearer ${accessToken}` } }
-          );
-          onReload(); // Refresh user data to reflect the change
-      } catch (error) {
-          console.error('Failed to update taking_dates:', error);
-          setTakingDates(!newValue); // Revert on failure
-      }
+  const handleToggleInPerson = async () => {
+    const newValue = !takesInPerson;
+    setTakesInPerson(newValue);
+    try {
+      const accessToken = localStorage.getItem('access_token');
+      await apiClient.put(
+        'auth/me/',
+        { takes_in_person: newValue },
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      onReload();
+    } catch (error) {
+      console.error('Failed to update takes_in_person:', error);
+      setTakesInPerson(!newValue); // Revert on failure
+    }
   };
 
   return (
-      <div className="w-full rounded-[10px] flex-col justify-start items-start gap-6 inline-flex">
-          <div className="w-full flex items-center justify-between">
-              <div className="self-stretch text-black font-normal font-['Inter'] sm:text-2xl xs:text-xl">Availability</div>
-          </div>
-          <div className="self-stretch flex-col justify-start items-start gap-2 flex">
-              <div className="self-stretch rounded-[10px] flex-col justify-start items-start gap-6 flex px-4">
-                  <div className="self-stretch items-center gap-4 inline-flex">
-                      <div className="w-[125px] text-[#3d5a80] font-normal font-['Inter'] sm:text-lg xs:text-base">Taking dates</div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                          <input
-                              type="checkbox"
-                              checked={takingDates}
-                              onChange={handleToggleTakingDates}
-                              className="sr-only peer"
-                          />
-                          <div className="w-11 h-6 bg-gray-400 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#ee6c4d]"></div>
-                      </label>
-                  </div>
-                  <div className="text-[#3d5a80] text-xs font-normal font-['Inter']">
-                      If you want to work with Doctify dates, set Taking dates to true
-                  </div>
-                  {takingDates && (
-                      <div className="self-stretch flex-col justify-start items-start gap-2 flex">
-                          <DoctorAvailabilitySection user={user} onReload={onReload} />
-                      </div>
-                  )}
-              </div>
-          </div>
+    <div className="w-full rounded-[10px] flex-col justify-start items-start gap-6 inline-flex">
+      <div className="w-full flex items-center justify-between">
+        <div className="self-stretch text-black font-normal font-['Inter'] sm:text-2xl xs:text-xl">Availability</div>
       </div>
+      <div className="self-stretch flex-col justify-start items-start gap-2 flex">
+        <div className="self-stretch rounded-[10px] flex-col justify-start items-start gap-6 flex px-4">
+          <div className="self-stretch items-center gap-4 inline-flex">
+            <div className="w-[125px] text-[#3d5a80] font-normal font-['Inter'] sm:text-lg xs:text-base">Takes Virtual</div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={takesVirtual}
+                onChange={handleToggleVirtual}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-400 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#ee6c4d]"></div>
+            </label>
+          </div>
+          <div className="self-stretch items-center gap-4 inline-flex">
+            <div className="w-[125px] text-[#3d5a80] font-normal font-['Inter'] sm:text-lg xs:text-base">Takes In Person</div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={takesInPerson}
+                onChange={handleToggleInPerson}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-400 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#ee6c4d]"></div>
+            </label>
+          </div>
+          <div className="text-[#3d5a80] text-xs font-normal font-['Inter']">
+            Set your availability preferences. Disabling will deactivate related availabilities.
+          </div>
+          {(takesVirtual || takesInPerson) && (
+            <div className="self-stretch flex-col justify-start items-start gap-2 flex">
+              <DoctorAvailabilitySection user={user} onReload={onReload} />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 

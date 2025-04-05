@@ -63,11 +63,26 @@ class Doctor(models.Model):
     clinics = models.ManyToManyField("Clinic", related_name="doctors")  # Many doctors work in many clinics
     ensurances = models.ManyToManyField("Ensurance", related_name="doctors", blank=True)  # New field
     experience = models.PositiveIntegerField(help_text="Years of Experience")
-    taking_dates = models.BooleanField(default=True)
+    taking_dates = models.BooleanField(default=False)
+    takes_virtual = models.BooleanField(default=False, help_text="Doctor takes virtual appointments")
+    takes_in_person = models.BooleanField(default=False, help_text="Doctor takes in-person appointments")
     sex = models.CharField(max_length=1, choices=SEX_CHOICES, help_text="Doctor's sex (Male or Female)")  # New field
     
     def __str__(self):
         return f"Dr. {self.user.first_name} {self.user.last_name} - {self.exequatur}"
+    
+    def update_taking_dates(self):
+        """Set taking_dates based on existence of active DoctorAvailability and update virtual/in-person flags."""
+        has_active_availability = DoctorAvailability.objects.filter(doctor=self, active=True).exists()
+        self.taking_dates = has_active_availability
+        if has_active_availability:
+            virtual_exists = DoctorAvailability.objects.filter(doctor=self, virtual=True, active=True).exists()
+            in_person_exists = DoctorAvailability.objects.filter(doctor=self, virtual=False, active=True).exists()
+            if virtual_exists:
+                self.takes_virtual = True
+            if in_person_exists:
+                self.takes_in_person = True
+        self.save()
 
 # DoctorDocument Upload Path Function
 def doctor_document_upload_path(instance, filename):
@@ -121,9 +136,10 @@ class DoctorAvailability(models.Model):
     end_time = models.TimeField()
     slot_duration = models.PositiveIntegerField(default=30, help_text="Duration in minutes (30, 45, or 60)")
     virtual = models.BooleanField(default=False, help_text="Indicates if this is a virtual appointment")  # New field
+    active = models.BooleanField(default=True, help_text="Indicates if this availability is active")  # New field
 
     def __str__(self):
-        return f"{self.doctor} - {self.clinic} - {self.specialization}"
+        return f"{self.doctor} - {self.clinic} - {self.specialization} - {'Active' if self.active else 'Inactive'}"
 
 class Appointment(models.Model):
     doctor = models.ForeignKey('Doctor', on_delete=models.CASCADE)

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { publicApiClient } from "@/utils/api";
 
-export default function EnsuranceSearchBar({ value, onChange }) {
+export default function EnsuranceSearchBar({ value, onChange,round }) {
   const [ensurances, setEnsurances] = useState([]);
   const [filteredEnsurances, setFilteredEnsurances] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -24,6 +24,14 @@ export default function EnsuranceSearchBar({ value, onChange }) {
     fetchEnsurances();
   }, []);
 
+  useEffect(() => {
+    if (!isOpen && value && !ensurances.some(item => item.name === value)) {
+      console.log("hola", value)
+      onChange("");
+      setFilteredEnsurances(ensurances);
+    }
+  },[isOpen]);
+
   const handleInputChange = (e) => {
     const inputValue = e.target.value;
     onChange(inputValue);
@@ -36,29 +44,29 @@ export default function EnsuranceSearchBar({ value, onChange }) {
 
   const handleOptionClick = (ensuranceName) => {
     onChange(ensuranceName);
+    value = ensuranceName;
     setIsOpen(false);
   };
 
   return (
-    <div className="max-w-3xs w-full relative">
+    <div className="w-full h-full relative text-black">
       <input
         type="text"
         placeholder="Search for an ensurance"
         value={value}
         onChange={handleInputChange}
         onFocus={() => setIsOpen(true)}
-        onBlur={() => setTimeout(() => setIsOpen(false), 200)}
-        className="max-w-3xs p-4 w-full bg-white rounded-[10px] focus:outline-none text-black placeholder-gray-400 justify-start items-center gap-2.5 inline-flex
-                sm:p-4 xs:p-3 xs:border xs:border-black/45"
+        onBlur={() => setTimeout(() => setIsOpen(false), 100)}
+        className={`px-4 py-2 w-full h-full focus:outline-none ${round}`}
         disabled={loading}
       />
       {isOpen && !loading && filteredEnsurances.length > 0 && (
-        <ul className="text-black absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+        <ul className="text-black text-sm absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
           {filteredEnsurances.map((ensurance) => (
             <li
               key={ensurance.id}
               onMouseDown={() => handleOptionClick(ensurance.name)}
-              className="p-2 hover:bg-gray-100 cursor-pointer"
+              className="px-2 py-3 hover:bg-gray-100 cursor-pointer"
             >
               {ensurance.name}
             </li>

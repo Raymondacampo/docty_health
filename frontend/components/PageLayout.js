@@ -6,7 +6,7 @@ export default function PageLayout({ children }) {
   return (
     <div className="w-full flex flex-col overflow-hidden">
       <Head />
-      <main className="flex-grow">{children}</main>
+      <main className="flex-grow font-['Inter']">{children}</main>
       <Footer/>
     </div>
   );

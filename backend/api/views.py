@@ -245,9 +245,6 @@ class UserProfileView(APIView):
 
     def get(self, request):
         user = request.user
-
-    def get(self, request):
-        user = request.user
         response_data = {
             "id": user.id,
             "email": user.email,
@@ -256,24 +253,22 @@ class UserProfileView(APIView):
             "last_name": user.last_name,
             "phone_number": getattr(user, 'phone_number', ''),
             "born_date": getattr(user, 'born_date', ''),
-            "profile_picture": user.profile_picture.url if user.profile_picture else None,  # Add profile picture
+            "profile_picture": user.profile_picture.url if user.profile_picture else None,
             "is_doctor": hasattr(user, 'doctor')
         }
 
-        # If the user is a doctor, add doctor-specific fields
         if hasattr(user, 'doctor'):
             doctor = user.doctor
             response_data.update({
                 "exequatur": doctor.exequatur,
                 "experience": doctor.experience,
-                "specializations": [{"id":specialty.id, "name": specialty.name} for specialty in doctor.specialties.all()],
-                "clinics": [{"id":clinic.id, "name": clinic.name} for clinic in doctor.clinics.all()],
-                "ensurances": [{"id": ensurance.id, "name": ensurance.name, "logo": ensurance.logo.url if ensurance.logo else None} for ensurance in doctor.ensurances.all()],  
+                "specializations": [{"id": specialty.id, "name": specialty.name} for specialty in doctor.specialties.all()],
+                "clinics": [{"id": clinic.id, "name": clinic.name} for clinic in doctor.clinics.all()],
+                "ensurances": [{"id": ensurance.id, "name": ensurance.name, "logo": ensurance.logo.url if ensurance.logo else None} for ensurance in doctor.ensurances.all()],
                 "documents": [
                     {"id": doc.id, "url": doc.file.url, "description": doc.description}
                     for doc in doctor.documents.all()
                 ],
-                # Add DoctorAvailability data
                 "availabilities": [
                     {
                         "id": avail.id,
@@ -283,34 +278,34 @@ class UserProfileView(APIView):
                         "start_time": avail.start_time.strftime('%H:%M'),
                         "end_time": avail.end_time.strftime('%H:%M'),
                         "slot_duration": avail.slot_duration,
-                        "virtual": avail.virtual  # New field
+                        "virtual": avail.virtual,
+                        "active": avail.active
                     }
                     for avail in DoctorAvailability.objects.filter(doctor=doctor)
                 ],
-                "taking_dates": doctor.taking_dates
+                "taking_dates": doctor.taking_dates,
+                "takes_virtual": doctor.takes_virtual,
+                "takes_in_person": doctor.takes_in_person
             })
 
-        return Response(response_data)  
+        return Response(response_data)
 
     def put(self, request):
         user = request.user
         data = request.data
 
-        # Update user fields
         user.first_name = data.get('first_name', user.first_name)
         user.last_name = data.get('last_name', user.last_name)
         user.username = data.get('username', user.username)
 
         phone_number = data.get('phone_number', '')
         if phone_number:
-        # This regex allows an optional '+' followed by 7 to 15 digits.
             if not re.fullmatch(r'\+?\d{7,15}', phone_number):
                 return Response(
                     {"error": "Invalid phone number format. Please enter a valid phone number."},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-        
-        # Assuming you have these fields in your User model or a related profile model
+
         if hasattr(user, 'phone_number'):
             user.phone_number = data.get('phone_number', user.phone_number)
         if hasattr(user, 'born_date'):
@@ -319,14 +314,43 @@ class UserProfileView(APIView):
         if 'profile_picture' in request.FILES:
             try:
                 user.profile_picture = request.FILES['profile_picture']
-                user.full_clean()  # Trigger validators
+                user.full_clean()
             except ValidationError as e:
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         elif data.get('profile_picture') == 'remove':
             if user.profile_picture:
                 user.profile_picture.delete(save=False)
                 user.profile_picture = None
-            
+
+        if hasattr(user, 'doctor'):
+            doctor = user.doctor
+            if 'takes_virtual' in data:
+                new_takes_virtual = data['takes_virtual']
+                if new_takes_virtual:  # If takes_virtual is being set to True
+                    DoctorAvailability.objects.filter(doctor=doctor, virtual=True).update(active=True)
+                else:  # If takes_virtual is being set to False
+                    DoctorAvailability.objects.filter(doctor=doctor, virtual=True).update(active=False)
+                doctor.takes_virtual = new_takes_virtual
+            if 'takes_in_person' in data:
+                new_takes_in_person = data['takes_in_person']
+                if new_takes_in_person:  # If takes_in_person is being set to True
+                    DoctorAvailability.objects.filter(
+                        doctor=doctor,
+                        virtual=False,
+                        clinic__isnull=False,
+                        specialization__isnull=False
+                    ).update(active=True)
+                else:  # If takes_in_person is being set to False
+                    DoctorAvailability.objects.filter(
+                        doctor=doctor,
+                        virtual=False,
+                        clinic__isnull=False,
+                        specialization__isnull=False
+                    ).update(active=False)
+                doctor.takes_in_person = new_takes_in_person
+            doctor.update_taking_dates()  # Recalculate taking_dates based on active availabilities
+            doctor.save()
+
         user.save()
         return Response({
             "message": "Profile updated successfully",
@@ -337,7 +361,9 @@ class UserProfileView(APIView):
             "phone_number": getattr(user, 'phone_number', ''),
             "born_date": getattr(user, 'born_date', ''),
             "is_doctor": hasattr(user, 'doctor'),
-            "taking_dates": user.doctor.taking_dates if hasattr(user, 'doctor') else None
+            "taking_dates": user.doctor.taking_dates if hasattr(user, 'doctor') else None,
+            "takes_virtual": user.doctor.takes_virtual if hasattr(user, 'doctor') else None,
+            "takes_in_person": user.doctor.takes_in_person if hasattr(user, 'doctor') else None
         })
         
 # DOCTOR MANAGEMENTS
@@ -625,7 +651,13 @@ class CreateDoctorAvailabilityView(APIView):
 
         serializer = DoctorAvailabilitySerializer(data=data)
         if serializer.is_valid():
-            serializer.save()
+            availability = serializer.save()
+            doctor = user.doctor
+            if availability.virtual:
+                doctor.takes_virtual = True
+            else:
+                doctor.takes_in_person = True  # Set for in-person availability
+            doctor.update_taking_dates()  # Reflect active availabilities
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
@@ -743,6 +775,8 @@ class UpdateDoctorAvailabilityView(APIView):
             serializer = DoctorAvailabilitySerializer(availability, data=data, partial=True)
             if serializer.is_valid():
                 serializer.save()
+                # Update doctor's taking_dates, takes_virtual, and takes_in_person
+                availability.doctor.update_taking_dates()
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except DoctorAvailability.DoesNotExist:
@@ -759,6 +793,8 @@ class DeleteDoctorAvailabilityView(APIView):
         try:
             availability = DoctorAvailability.objects.get(id=availability_id, doctor=user.doctor)
             availability.delete()
+            # Update doctor's taking_dates, takes_virtual, and takes_in_person
+            user.doctor.update_taking_dates()
             return Response({"message": "Availability deleted successfully"}, status=status.HTTP_200_OK)
         except DoctorAvailability.DoesNotExist:
             return Response({"error": "Availability not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -773,7 +809,7 @@ class DoctorPagination(PageNumberPagination):
     max_page_size = 100
 
 class DoctorSearchView(APIView):
-    permission_classes = [AllowAny]  # Make it public for now
+    permission_classes = [AllowAny]
     pagination_class = DoctorPagination
 
     def get(self, request):
@@ -782,7 +818,15 @@ class DoctorSearchView(APIView):
         ensurance = request.query_params.get('ensurance')
         location = request.query_params.get('location')
         sex = request.query_params.get('sex')
-        takes_dates = request.query_params.get('takes_dates')
+        takes_dates = request.query_params.get('takes_dates')  # Expecting 'true', 'virtual', 'in_person', or None
+        experience_min = request.query_params.get('experience_min')
+
+
+        if experience_min and experience_min != 'any':
+            try:
+                queryset = queryset.filter(experience__gte=int(experience_min))
+            except ValueError:
+                pass  # Ignore if not a valid integer
 
         if specialty:
             queryset = queryset.filter(specialties__name=specialty)
@@ -792,18 +836,16 @@ class DoctorSearchView(APIView):
             queryset = queryset.filter(clinics__name=location)
         if sex and sex != 'both':
             queryset = queryset.filter(sex=sex)
-        if takes_dates and takes_dates != 'any':
-            if takes_dates == 'app':
+        if takes_dates:
+            if takes_dates == 'true':
                 queryset = queryset.filter(taking_dates=True)
             elif takes_dates == 'virtual':
-                queryset = queryset.filter(availability__virtual=True)
+                queryset = queryset.filter(taking_dates=True, takes_virtual=True)
             elif takes_dates == 'in_person':
-                queryset = queryset.filter(availability__virtual=False)
+                queryset = queryset.filter(taking_dates=True, takes_in_person=True)
 
-        # Apply distinct to avoid duplicates from many-to-many filters
         queryset = queryset.distinct()
 
-        # Paginate the results
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(queryset, request)
         serializer = DoctorSerializer(page, many=True)
