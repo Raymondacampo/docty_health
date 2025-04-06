@@ -4,6 +4,9 @@ from django.contrib.auth import get_user_model
 import uuid
 from .models import Doctor, DoctorAvailability, Clinic, DayOfWeek, Specialty, Ensurance, Review
 User = get_user_model()
+import logging
+logger = logging.getLogger(__name__)
+
 
 class UserProfileSerializer(serializers.ModelSerializer):
     user_id = serializers.UUIDField(source='id', read_only=True)
@@ -73,6 +76,37 @@ class DoctorSignupSerializer(serializers.Serializer):
     experience = serializers.IntegerField(required=True)
     specialties = serializers.ListField(child=serializers.IntegerField(), required=False)
     clinics = serializers.ListField(child=serializers.IntegerField(), required=False)
+    specialties = serializers.ListField(
+        child=serializers.IntegerField(),
+        required=True,
+        min_length=1,
+        max_length=1,
+        error_messages={
+            'min_length': 'Exactly one specialty is required.',
+            'max_length': 'Only one specialty can be selected during signup.',
+            'required': 'Specialty is required.'
+        }
+    )
+    clinics = serializers.ListField(
+        child=serializers.IntegerField(),
+        required=True,
+        min_length=1,
+        max_length=1,
+        error_messages={
+            'min_length': 'Exactly one clinic is required.',
+            'max_length': 'Only one clinic can be selected during signup.',
+            'required': 'Clinic is required.'
+        }
+    )
+    ensurances = serializers.ListField(
+        child=serializers.IntegerField(),
+        required=False,
+        max_length=1,
+        default=[],
+        error_messages={
+            'max_length': 'Only one ensurance can be selected during signup.'
+        }
+    )
     sex = serializers.ChoiceField(choices=[('M', 'Male'), ('F', 'Female')], required=True)  # New field
 
     def validate(self, attrs):
@@ -91,7 +125,22 @@ class DoctorSignupSerializer(serializers.Serializer):
         # Validate sex (redundant due to ChoiceField, but for clarity)
         if attrs['sex'] not in ['M', 'F']:
             raise serializers.ValidationError({"sex": "Sex must be 'M' (Male) or 'F' (Female)"})
+        
+        # Validate specialty existence
+        specialty_ids = attrs.get('specialties', [])
+        if specialty_ids and not Specialty.objects.filter(id=specialty_ids[0]).exists():
+            raise serializers.ValidationError({"specialties": "Selected specialty does not exist."})
 
+        # Validate clinic existence
+        clinic_ids = attrs.get('clinics', [])
+        if clinic_ids and not Clinic.objects.filter(id=clinic_ids[0]).exists():
+            raise serializers.ValidationError({"clinics": "Selected clinic does not exist."})
+
+        # Validate ensurance existence (if provided)
+        ensurance_ids = attrs.get('ensurances', [])
+        if ensurance_ids and not Ensurance.objects.filter(id=ensurance_ids[0]).exists():
+            raise serializers.ValidationError({"ensurances": "Selected ensurance does not exist."})
+        
         return attrs
 
     def create(self, validated_data):
@@ -101,8 +150,15 @@ class DoctorSignupSerializer(serializers.Serializer):
         # Extract doctor-specific fields
         exequatur = validated_data.pop('exequatur')
         experience = validated_data.pop('experience')
-        specialties = validated_data.pop('specialties', [])
-        clinics = validated_data.pop('clinics', [])
+        specialties = validated_data.pop('specialties', None)
+        if specialties is None:
+            logger.error("Missing 'specialties' in validated_data: %s", validated_data)
+            raise serializers.ValidationError({"specialties": "This field is required and was not provided."})
+        clinics = validated_data.pop('clinics', None)
+        if clinics is None:
+            logger.error("Missing 'specialties' in validated_data: %s", validated_data)
+            raise serializers.ValidationError({"specialties": "This field is required and was not provided."})
+        ensurances = validated_data.pop('ensurances', [])
         sex = validated_data.pop('sex')  # Extract sex
 
         # Create the User object
@@ -122,11 +178,11 @@ class DoctorSignupSerializer(serializers.Serializer):
             sex=sex  # Include sex
         )
 
-        # Add specialties and clinics if provided
-        if specialties:
-            doctor.specialties.set(specialties)
-        if clinics:
-            doctor.clinics.set(clinics)
+        # Set specialties, clinics, and ensurances (each as a single item)
+        doctor.specialties.set(specialties)
+        doctor.clinics.set(clinics)
+        if ensurances:
+            doctor.ensurances.set(ensurances)
 
         return user
 

@@ -18,12 +18,14 @@ from google.auth.transport import requests
 import os
 import uuid
 import re
+import logging
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from django.utils import timezone
 from datetime import timedelta, datetime
 from .models import PasswordResetToken, Specialty, Clinic, DoctorDocument, Doctor, DoctorAvailability, Appointment, DayOfWeek, Ensurance
 from rest_framework.pagination import PageNumberPagination
 
+logger = logging.getLogger(__name__)
 serializer = URLSafeTimedSerializer(settings.SECRET_KEY)
 
 @api_view(['GET'])
@@ -60,7 +62,7 @@ class DoctorSignupView(APIView):
     permission_classes = []
     
     def post(self, request):
-        print('comenzo')
+        logger.info("DoctorSignupView POST request received: %s", request.data)
         serializer = DoctorSignupSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()

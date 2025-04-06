@@ -1,12 +1,11 @@
 // utils/api.js
 import axios from "axios";
 
-const DEFAULT_API_URL = "http://localhost:8000/api";
+const DEFAULT_API_URL = "https://juanpabloduarte.com/api";
 
 export const getApiImgUrl = () => {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:8000';
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'https://juanpabloduarte.com';
   const mediaUrl = `${baseUrl}`;  // Add /media/ prefix
-  console.log("Image Base URL:", mediaUrl);
   return mediaUrl;
 };
 
@@ -29,9 +28,9 @@ export const apiClient = axios.create({
 });
 
 export const publicApiClient = axios.create({
-  baseURL: getApiUrl(),
+  baseURL: 'https://juanpabloduarte.com/api',
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
 });
 

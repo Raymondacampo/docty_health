@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/context/auth';
 import { useRouter } from 'next/router';
-import { apiClient } from '@/utils/api';
+import { apiClient, publicApiClient } from '@/utils/api';
+import SearchBar from '../SearchBar';
 
 const FormField = ({ title, type, name, placeholder, onChange, err, options }) => {
   return (
@@ -13,7 +13,7 @@ const FormField = ({ title, type, name, placeholder, onChange, err, options }) =
         <select
           name={name}
           onChange={onChange}
-          className="text-sm self-stretch px-4 py-3 focus:outline-none text-black rounded-[5px] border border-black justify-start items-center gap-2.5 inline-flex"
+          className="text-sm self-stretch px-3 py-3 focus:outline-none text-black rounded-[5px] border border-black justify-start items-center gap-2.5 inline-flex"
         >
           <option value="" disabled selected>{placeholder}</option>
           {options && options.map((option) => (
@@ -36,7 +36,6 @@ const FormField = ({ title, type, name, placeholder, onChange, err, options }) =
 
 export default function DoctorSignupForm() {
   const router = useRouter();
-  const { login } = useAuth();
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -45,7 +44,10 @@ export default function DoctorSignupForm() {
     experience: '',
     password: '',
     confirm_password: '',
-    sex: '',  // New field
+    sex: '', 
+    specialty: '',
+    clinic: '',
+    ensurance: '',
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -93,50 +95,121 @@ export default function DoctorSignupForm() {
     setErrors(newErrors);
   };
 
+  const handleSpecialtyChange = (value) => {
+    setFormData({ ...formData, specialty: value });
+    let newErrors = { ...errors };
+    if (value.trim() === '') {
+      newErrors.specialty = 'Specialty is required';
+    } else {
+      delete newErrors.specialty;
+    }
+    setErrors(newErrors);
+  };
+
+  const handleClinicChange = (value) => {
+    setFormData({ ...formData, clinic: value });
+    let newErrors = { ...errors };
+    if (value.trim() === '') {
+      newErrors.clinic = 'Clinic is required';
+    } else {
+      delete newErrors.clinic;
+    }
+    setErrors(newErrors);
+  };
+
+  const handleEnsuranceChange = (value) => {
+    setFormData({ ...formData, ensurance: value });
+    let newErrors = { ...errors };
+    delete newErrors.ensurance; // Ensurance is optional
+    setErrors(newErrors);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setErrors({});
-
+  
     let validationErrors = {};
     Object.keys(formData).forEach((key) => {
-      if (formData[key].trim() === '') {
+      if (formData[key].trim() === '' && key !== 'ensurance') {
         validationErrors[key] = `${key.replace('_', ' ').replace('confirm password', 'Repeat password')} is required`;
       }
     });
-
+  
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       validationErrors.email = 'Please enter a valid email address';
     }
-
+  
     if (formData.password && formData.password.length < 8) {
       validationErrors.password = 'Password must be at least 8 characters long';
     }
-
+  
     if (formData.confirm_password && formData.confirm_password !== formData.password) {
       validationErrors.confirm_password = 'Passwords do not match';
     }
-
+  
     if (formData.experience && (!/^\d+$/.test(formData.experience) || parseInt(formData.experience) < 0)) {
       validationErrors.experience = 'Years of experience must be a positive number';
     }
-
+  
     if (formData.sex && !['M', 'F'].includes(formData.sex)) {
       validationErrors.sex = 'Please select either Male or Female';
     }
-
+  
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       setLoading(false);
       return;
     }
-
+  
+    const submitData = { ...formData };
+    delete submitData.specialty;
+    delete submitData.clinic;
+    delete submitData.ensurance;
+    submitData.experience = parseInt(formData.experience, 10);
+  
     try {
-      const { data } = await apiClient.post('/auth/doctor_signup/', formData);
+      const specialtyRes = await publicApiClient.get("/all_specialties/");
+      const clinicRes = await publicApiClient.get("/all_clinics/");
+      const ensuranceRes = await publicApiClient.get("/all_ensurances/");
+      const specialty = specialtyRes.data.find(s => s.name === formData.specialty);
+      const clinic = clinicRes.data.find(c => c.name === formData.clinic);
+      const ensurance = ensuranceRes.data.find(e => e.name === formData.ensurance);
+
+      if (!specialty) {
+        validationErrors.specialty = 'Selected specialty not found';
+      } else {
+        submitData.specialties = [specialty.id];
+      }
+  
+      if (!clinic) {
+        validationErrors.clinic = 'Selected clinic not found';
+      } else {
+        submitData.clinics = [clinic.id];
+      }
+  
+      if (formData.ensurance && !ensurance) {
+        validationErrors.ensurance = 'Selected ensurance not found';
+      } else {
+        submitData.ensurances = ensurance ? [ensurance.id] : [];
+      }
+  
+      if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors);
+        setLoading(false);
+        return;
+      }
+      submitData.specialties = [specialty.id];
+      submitData.clinics = [clinic.id];
+      submitData.ensurances = ensurance ? [ensurance.id] : [];
+
+      const { data } = await publicApiClient.post('/auth/doctor_signup/', submitData);
       localStorage.setItem('access_token', data.access);
       localStorage.setItem('refresh_token', data.refresh);
       router.push('/profile');
+
     } catch (err) {
+      console.error("Error:", err.response?.data || err);
       if (err.response?.data) {
         setErrors(err.response.data);
       } else {
@@ -171,6 +244,36 @@ export default function DoctorSignupForm() {
               err={errors.sex}
               options={sexOptions}
             />
+            <div className="self-stretch flex-col justify-start items-start gap-[5px] flex">
+              <div className="self-stretch text-[#3d5a80] text-base font-normal font-['Inter'] tracking-wide">Specialty</div>
+              <SearchBar
+                value={formData.specialty}
+                onChange={handleSpecialtyChange}
+                endpoint="/all_specialties/"
+                placeholder="Search for a specialty"
+              />
+              {errors.specialty && <span className="text-red-500 text-sm">{errors.specialty}</span>}
+            </div>
+            <div className="self-stretch flex-col justify-start items-start gap-[5px] flex">
+              <div className="self-stretch text-[#3d5a80] text-base font-normal font-['Inter'] tracking-wide">Clinic</div>
+              <SearchBar
+                value={formData.clinic}
+                onChange={handleClinicChange}
+                endpoint="/all_clinics/"
+                placeholder="Search for a clinic"
+              />
+              {errors.clinic && <span className="text-red-500 text-sm">{errors.clinic}</span>}
+            </div>
+            <div className="self-stretch flex-col justify-start items-start gap-[5px] flex">
+              <div className="self-stretch text-[#3d5a80] text-base font-normal font-['Inter'] tracking-wide">Ensurance (optional)</div>
+              <SearchBar
+                value={formData.ensurance}
+                onChange={handleEnsuranceChange}
+                endpoint="/all_ensurances/"
+                placeholder="Search for an ensurance (optional)"
+              />
+              {errors.ensurance && <span className="text-red-500 text-sm">{errors.ensurance}</span>}
+            </div>
             <FormField title="Password" type="password" name="password" placeholder="Password" onChange={handleChange} err={errors.password} />
             <FormField title="Repeat password" type="password" name="confirm_password" placeholder="Repeat password" onChange={handleChange} err={errors.confirm_password} />
           </div>

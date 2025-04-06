@@ -13,7 +13,7 @@ class CustomUserCreationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ("email", "username", "born_date", "phone_number", "profile_picture")
+        fields = ("email", "username","first_name", "last_name", "born_date", "phone_number", "profile_picture")
 
     def clean_password2(self):
         """Ensure both passwords match"""
@@ -36,7 +36,7 @@ class CustomUserChangeForm(forms.ModelForm):
     """Form for editing users in the admin panel"""
     class Meta:
         model = User
-        fields = ("email", "username", "born_date", "phone_number", "profile_picture")
+        fields = ("email", "username", "first_name", "last_name", "born_date", "phone_number", "profile_picture")
 
     def clean_password(self):
         """Ensure password remains hashed"""
@@ -49,19 +49,19 @@ class CustomUserAdmin(UserAdmin):
     add_form = CustomUserCreationForm
 
     model = User
-    list_display = ("email", "username", "is_staff", "is_active")
+    list_display = ("email", "username", "first_name", "last_name", "is_staff", "is_active")
     list_filter = ("is_staff", "is_active")
 
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        (_("Personal Info"), {"fields": ("username", "born_date", "phone_number", "profile_picture")}),
+        (_("Personal Info"), {"fields": ("username", "first_name", "last_name", "born_date", "phone_number", "profile_picture")}),
         (_("Permissions"), {"fields": ("is_staff", "is_active", "groups", "user_permissions")}),
     )
 
     add_fieldsets = (
         (None, {
             "classes": ("wide",),
-            "fields": ("email", "username", "born_date", "phone_number", "profile_picture", "password1", "password2"),
+            "fields": ("email", "username", "first_name", "last_name", "born_date", "phone_number", "profile_picture", "password1", "password2"),
         }),
     )
 
