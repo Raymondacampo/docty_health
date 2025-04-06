@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import { publicApiClient } from '@/utils/api'; // Import publicApiClient
+import { apiClient } from '@/utils/api'; // Import apiClient
 import GoogleButton from '../GoogleLogin';
 
 export default function LoginForm() {
@@ -20,7 +20,7 @@ export default function LoginForm() {
     setLoading(true);
 
     try {
-      const { data } = await publicApiClient.post('/auth/login/', credentials);
+      const { data } = await apiClient.post('/auth/login/', credentials);
       localStorage.setItem('access_token', data.access);
       localStorage.setItem('refresh_token', data.refresh);
       router.push('/profile');
