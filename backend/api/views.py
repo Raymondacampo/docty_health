@@ -107,34 +107,48 @@ class LoginView(APIView):
 
 # Google Auth
 class GoogleLogin(APIView):
+    permission_classes = [AllowAny]  # Explicitly allow all requests
+
     def post(self, request):
+        print("GoogleLogin: Request received")  # Debug start
         token = request.data.get('token')
+        if not token:
+            print("GoogleLogin: No token provided")
+            return Response({'error': 'Token is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
         try:
-            # Validate the Google ID token
+            print("GoogleLogin: Validating token:", token[:10] + "...")  # Truncate for readability
             id_info = id_token.verify_oauth2_token(token, requests.Request(), os.getenv('GOOGLE_CLIENT_ID'))
+            print("GoogleLogin: Token validated, ID Info:", id_info)
             
-            # Get or create user
             user, created = User.objects.get_or_create(
                 email=id_info['email'],
                 defaults={
-                    'username': f"{id_info.get('given_name', '')}_{uuid.uuid4().hex[:10]}",  # 10-character UUID
+                    'username': f"{id_info.get('given_name', '')}_{uuid.uuid4().hex[:10]}",
                     'first_name': id_info.get('given_name', ''),
                     'last_name': id_info.get('family_name', '')
                 }
             )
+            print("GoogleLogin: User:", user.email, "Created:", created)
             
-            # Generate JWT
             refresh = RefreshToken.for_user(user)
-            return Response({
+            response = {
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
                 'user_id': user.id,
                 'email': user.email,
-                'username':user.username            
-                })
-        except ValueError:
-            return Response({'error': 'Invalid token'}, status=400)
-
+                'username': user.username            
+            }
+            print("GoogleLogin: Success, Response:", response)
+            return Response(response, status=status.HTTP_200_OK)
+        except ValueError as e:
+            print("GoogleLogin: Token validation failed:", str(e))
+            return Response({'error': 'Invalid token', 'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print("GoogleLogin: Unexpected error:", str(e))
+            return Response({'error': 'Server error', 'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        
 # Logout Api
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]  # ✅ Only logged-in users can logout

@@ -10,7 +10,7 @@ import MainContent from '@/components/Index/MainContent';
 
 export default function Home({ data }) {
   return (
-    <div class="w-full h-[3175px] relative bg-white  overflow-hidden">
+    <div className="w-full h-[3175px] relative bg-white  overflow-hidden">
         <MainContent />
     </div>
   );

@@ -1,10 +1,14 @@
 import { useState, useEffect } from "react";
-import { publicApiClient } from "@/utils/api";export default function LocationSearchBar({ value, onChange,round }) {
+import { publicApiClient } from "@/utils/api";
+
+export default function LocationSearchBar({ value, onChange, round }) {
   const [clinics, setClinics] = useState([]);
   const [filteredClinics, setFilteredClinics] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [inputValue, setInputValue] = useState(value); // Local state to sync with parent
 
+  // Fetch clinics on mount
   useEffect(() => {
     const fetchClinics = async () => {
       setLoading(true);
@@ -22,26 +26,41 @@ import { publicApiClient } from "@/utils/api";export default function LocationSe
     fetchClinics();
   }, []);
 
+  // Sync local inputValue with parent value and filter clinics
   useEffect(() => {
-    if (!isOpen && !clinics.some(item => item.name === value)) {
-      onChange("");
-      setFilteredClinics(clinics);
-    }
-  },[isOpen]);
+    setInputValue(value);
+    const filtered = clinics.filter((clinic) =>
+      clinic.name.toLowerCase().includes(value.toLowerCase())
+    );
+    setFilteredClinics(filtered);
+  }, [value, clinics]);
 
   const handleInputChange = (e) => {
-    const inputValue = e.target.value;
-    onChange(inputValue);
+    const newValue = e.target.value;
+    setInputValue(newValue);
+    onChange(newValue); // Notify parent of change
     const filtered = clinics.filter((clinic) =>
-      clinic.name.toLowerCase().includes(inputValue.toLowerCase())
+      clinic.name.toLowerCase().includes(newValue.toLowerCase())
     );
     setFilteredClinics(filtered);
     setIsOpen(true);
   };
 
   const handleOptionClick = (clinicName) => {
-    onChange(clinicName);
+    setInputValue(clinicName);
+    onChange(clinicName); // Notify parent of selection
     setIsOpen(false);
+  };
+
+  // Reset only if input is invalid on blur
+  const handleBlur = () => {
+    setTimeout(() => {
+      if (!clinics.some((item) => item.name === inputValue)) {
+        setInputValue("");
+        onChange("");
+      }
+      setIsOpen(false);
+    }, 100);
   };
 
   return (
@@ -49,10 +68,10 @@ import { publicApiClient } from "@/utils/api";export default function LocationSe
       <input
         type="text"
         placeholder="Search for a location"
-        value={value}
+        value={inputValue}
         onChange={handleInputChange}
         onFocus={() => setIsOpen(true)}
-        onBlur={() => setTimeout(() => setIsOpen(false), 100)}
+        onBlur={handleBlur}
         className={`px-4 py-2 w-full h-full focus:outline-none ${round}`}
         disabled={loading}
       />

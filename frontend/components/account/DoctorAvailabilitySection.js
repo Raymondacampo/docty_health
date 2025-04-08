@@ -25,7 +25,6 @@ const DoctorAvailabilitySection = ({ user, onReload }) => {
   }
 
   useEffect(() => {
-    console.log(user.availabilities.length);
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setShowMenu(null);

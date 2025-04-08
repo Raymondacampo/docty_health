@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { publicApiClient } from "@/utils/api";
 
-export default function EnsuranceSearchBar({ value, onChange,round }) {
+export default function EnsuranceSearchBar({ value, onChange, round }) {
   const [ensurances, setEnsurances] = useState([]);
   const [filteredEnsurances, setFilteredEnsurances] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [inputValue, setInputValue] = useState(value); // Local state to sync with parent
 
+  // Fetch ensurances on mount
   useEffect(() => {
     const fetchEnsurances = async () => {
       setLoading(true);
@@ -24,28 +26,41 @@ export default function EnsuranceSearchBar({ value, onChange,round }) {
     fetchEnsurances();
   }, []);
 
+  // Sync local inputValue with parent value and filter ensurances
   useEffect(() => {
-    if (!isOpen && value && !ensurances.some(item => item.name === value)) {
-      console.log("hola", value)
-      onChange("");
-      setFilteredEnsurances(ensurances);
-    }
-  },[isOpen]);
+    setInputValue(value);
+    const filtered = ensurances.filter((ensurance) =>
+      ensurance.name.toLowerCase().includes(value.toLowerCase())
+    );
+    setFilteredEnsurances(filtered);
+  }, [value, ensurances]);
 
   const handleInputChange = (e) => {
-    const inputValue = e.target.value;
-    onChange(inputValue);
+    const newValue = e.target.value;
+    setInputValue(newValue);
+    onChange(newValue); // Notify parent of change
     const filtered = ensurances.filter((ensurance) =>
-      ensurance.name.toLowerCase().includes(inputValue.toLowerCase())
+      ensurance.name.toLowerCase().includes(newValue.toLowerCase())
     );
     setFilteredEnsurances(filtered);
     setIsOpen(true);
   };
 
   const handleOptionClick = (ensuranceName) => {
-    onChange(ensuranceName);
-    value = ensuranceName;
+    setInputValue(ensuranceName);
+    onChange(ensuranceName); // Notify parent of selection
     setIsOpen(false);
+  };
+
+  // Reset only if input is invalid on blur
+  const handleBlur = () => {
+    setTimeout(() => {
+      if (!ensurances.some((item) => item.name === inputValue)) {
+        setInputValue("");
+        onChange("");
+      }
+      setIsOpen(false);
+    }, 100);
   };
 
   return (
@@ -53,10 +68,10 @@ export default function EnsuranceSearchBar({ value, onChange,round }) {
       <input
         type="text"
         placeholder="Search for an ensurance"
-        value={value}
+        value={inputValue}
         onChange={handleInputChange}
         onFocus={() => setIsOpen(true)}
-        onBlur={() => setTimeout(() => setIsOpen(false), 100)}
+        onBlur={handleBlur}
         className={`px-4 py-2 w-full h-full focus:outline-none ${round}`}
         disabled={loading}
       />

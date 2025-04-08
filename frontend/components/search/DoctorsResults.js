@@ -161,7 +161,7 @@ export default function DoctorsResults({ specialty, location, ensurance, sex, ta
               });
               const response = await publicApiClient.get(`/doctors/search/?${params.toString()}`);
               const data = response.data;
-              
+              console.log(data)
               let results = data.results;
 
               if (sortBy === "relevance") {

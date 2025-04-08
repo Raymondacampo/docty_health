@@ -176,7 +176,7 @@ const Scheduling = ({ user, onReload }) => {
       <div className="self-stretch flex-col justify-start items-start gap-2 flex">
         <div className="self-stretch rounded-[10px] flex-col justify-start items-start gap-6 flex px-4">
           <div className="self-stretch items-center gap-4 inline-flex">
-            <div className="w-[125px] text-[#3d5a80] font-normal font-['Inter'] sm:text-lg xs:text-base">Takes Virtual</div>
+            <div className="w-[125px] text-[#3d5a80] font-normal font-['Inter'] sm:text-lg xs:text-base">Virtual</div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
@@ -188,7 +188,7 @@ const Scheduling = ({ user, onReload }) => {
             </label>
           </div>
           <div className="self-stretch items-center gap-4 inline-flex">
-            <div className="w-[125px] text-[#3d5a80] font-normal font-['Inter'] sm:text-lg xs:text-base">Takes In Person</div>
+            <div className="w-[125px] text-[#3d5a80] font-normal font-['Inter'] sm:text-lg xs:text-base">In Person</div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
@@ -202,11 +202,9 @@ const Scheduling = ({ user, onReload }) => {
           <div className="text-[#3d5a80] text-xs font-normal font-['Inter']">
             Set your availability preferences. Disabling will deactivate related availabilities.
           </div>
-          {(takesVirtual || takesInPerson) && (
             <div className="self-stretch flex-col justify-start items-start gap-2 flex">
               <DoctorAvailabilitySection user={user} onReload={onReload} />
             </div>
-          )}
         </div>
       </div>
     </div>

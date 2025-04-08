@@ -1,83 +1,50 @@
 // context/auth.js
-'use client';
-import { createContext, useContext, useState } from 'react';
-import { useRouter } from 'next/router';
-import { apiClient } from '@/utils/api';
+"use client";
+import { createContext, useContext, useState } from "react";
+import { useRouter } from "next/router";
+import { apiClient, publicApiClient } from "@/utils/api";
+
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const router = useRouter();
-
   const [user, setUser] = useState({
-    email:null,
-    id:null,
-    username:null
+    email: null,
+    id: null,
+    username: null,
   });
 
-  const login = async (googleToken) => { // Parameter matches what GoogleButton passes
-    console.log('Google Token:', googleToken);
+  const login = async (googleToken) => {
+    console.log("Google Token:", googleToken);
     try {
-      // Send Google token to the correct endpoint
-      
-      const { data } = await apiClient.post('auth/google/', {
-        token: googleToken, // Use the passed googleToken
-      });
-
-      // Store JWT tokens from response
-      localStorage.setItem('access_token', data.access);
-      localStorage.setItem('refresh_token', data.refresh);
-
-      // Set user data from Django response
-      setUser({
-        email: data.email,
-        id: data.user_id,
-        username: data.username,
-      });
-
-      // Redirect to profile page
-      router.push('/profile'); // Changed from '/' to '/profile' for consistency
+      const { data } = await publicApiClient.post("/auth/google/", { token: googleToken });
+      localStorage.setItem("access_token", data.access);
+      localStorage.setItem("refresh_token", data.refresh);
+      setUser({ email: data.email, id: data.user_id, username: data.username });
+      router.push("/account");
     } catch (error) {
-      console.error('Login failed:', error.response?.data || error.message);
-      logout(); // Clear state on failure
+      console.error("Login failed:", error.response?.data || error.message);
+      throw error;
     }
   };
 
   const logout = async () => {
     try {
-      // 1. Retrieve tokens before clearing them
-      const accessToken = localStorage.getItem('access_token');
-      const refreshToken = localStorage.getItem('refresh_token');
-
-      // 2. Check if tokens exist
-      if (!accessToken || !refreshToken) {
-        console.warn('No tokens found, proceeding with client-side logout');
-      } else {
-        // 3. Send logout request to backend with tokens
-        await apiClient.post(
-          'auth/logout/', // Correct absolute URL
-          { refresh: refreshToken }, // Send refresh token in body
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`, // Send access token in header
-            },
-          }
-        );
+      const accessToken = localStorage.getItem("access_token");
+      const refreshToken = localStorage.getItem("refresh_token");
+      if (accessToken && refreshToken) {
+        await apiClient.post("/auth/logout/", { refresh: refreshToken }); // Use apiClient
       }
-
-      // 4. Clear tokens and user state after successful logout
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
       setUser(null);
-
-      // 5. Redirect to login page
-      router.push('/login'); // Use router.push instead of window.location.href for Next.js
+      router.push("/login");
     } catch (error) {
-      console.error('Logout failed:', error.response?.data || error.message);
-      // Proceed with client-side logout even if backend fails
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
+      console.error("Logout failed:", error.response?.data || error.message);
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
       setUser(null);
-      router.push('/login');
+      router.push("/login");
     }
   };
 
@@ -89,10 +56,9 @@ export function AuthProvider({ children }) {
 }
 
 export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (!context) {
-      throw new Error('useAuth must be used within AuthProvider');
-    }
-    return context;
-  };
-
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within AuthProvider");
+  }
+  return context;
+};

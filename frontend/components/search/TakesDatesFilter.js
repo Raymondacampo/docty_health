@@ -46,7 +46,7 @@ export default function TakesDatesFilter({ value, onChange }) {
   return (
     <div className="text-black px-2">
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-md font-medium text-black">Doctify dates</span>
+        <span className="text-md font-medium text-black">Doctify appointments</span>
         <label className="relative inline-flex items-center cursor-pointer">
           <input
             type="checkbox"
