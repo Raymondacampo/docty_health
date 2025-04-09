@@ -24,6 +24,9 @@ from django.utils import timezone
 from datetime import timedelta, datetime
 from .models import PasswordResetToken, Specialty, Clinic, DoctorDocument, Doctor, DoctorAvailability, Appointment, DayOfWeek, Ensurance
 from rest_framework.pagination import PageNumberPagination
+from django.contrib.gis.db.models.functions import Distance
+from django.contrib.gis.measure import D  # Distance measure
+from django.contrib.gis.geos import Point
 
 logger = logging.getLogger(__name__)
 serializer = URLSafeTimedSerializer(settings.SECRET_KEY)
@@ -832,24 +835,26 @@ class DoctorSearchView(APIView):
         queryset = Doctor.objects.all()
         specialty = request.query_params.get('specialty')
         ensurance = request.query_params.get('ensurance')
-        location = request.query_params.get('location')
+        location_name = request.query_params.get('location')  # Existing name filter
+        latitude = request.query_params.get('latitude')
+        longitude = request.query_params.get('longitude')
+        radius = request.query_params.get('radius', 10)  # Default 10 km
         sex = request.query_params.get('sex')
-        takes_dates = request.query_params.get('takes_dates')  # Expecting 'true', 'virtual', 'in_person', or None
+        takes_dates = request.query_params.get('takes_dates')
         experience_min = request.query_params.get('experience_min')
 
-
+        # Existing filters
         if experience_min and experience_min != 'any':
             try:
                 queryset = queryset.filter(experience__gte=int(experience_min))
             except ValueError:
-                pass  # Ignore if not a valid integer
-
+                pass
         if specialty:
             queryset = queryset.filter(specialties__name=specialty)
         if ensurance:
             queryset = queryset.filter(ensurances__name=ensurance)
-        if location:
-            queryset = queryset.filter(clinics__name=location)
+        if location_name:
+            queryset = queryset.filter(clinics__name=location_name)
         if sex and sex != 'both':
             queryset = queryset.filter(sex=sex)
         if takes_dates:
@@ -859,6 +864,21 @@ class DoctorSearchView(APIView):
                 queryset = queryset.filter(taking_dates=True, takes_virtual=True)
             elif takes_dates == 'in_person':
                 queryset = queryset.filter(taking_dates=True, takes_in_person=True)
+
+        # Geospatial filter
+        if latitude and longitude:
+            try:
+                lat = float(latitude)
+                lon = float(longitude)
+                radius_km = float(radius)
+                user_point = Point(lon, lat, srid=4326)  # SRID 4326 is WGS84
+                queryset = queryset.filter(
+                    clinics__location__distance_lte=(user_point, D(km=radius_km))
+                ).annotate(
+                    distance=Distance('clinics__location', user_point)
+                ).order_by('distance')  # Sort by proximity
+            except ValueError:
+                return Response({"error": "Invalid latitude, longitude, or radius"}, status=status.HTTP_400_BAD_REQUEST)
 
         queryset = queryset.distinct()
 

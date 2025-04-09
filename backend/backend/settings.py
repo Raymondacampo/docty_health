@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'dj_rest_auth',
     'dj_rest_auth.registration',
     'corsheaders',  # Enables cross-origin requests (CORS)
+    'django.contrib.gis',
     'api',
 
     "allauth",
@@ -156,7 +157,21 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+    },
+}
 
 
 # Database
@@ -174,7 +189,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': os.getenv('DB_NAME', 'test_project_db'),
         'USER': os.getenv('DB_USER', 'jefe'),
         'PASSWORD': os.getenv('DB_PASSWORD', 'rabomonito'),

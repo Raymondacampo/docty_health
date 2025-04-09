@@ -232,9 +232,16 @@ class SpecialtySerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 class ClinicSerializer(serializers.ModelSerializer):
+    location = serializers.SerializerMethodField()  # Custom field for lat/lon
+
     class Meta:
         model = Clinic
-        fields = ['id', 'name']  # You can add 'google_place_id' if needed
+        fields = ['id', 'name', 'location']  # Add 'location'
+
+    def get_location(self, obj):
+        if obj.location:
+            return {'latitude': obj.location.y, 'longitude': obj.location.x}
+        return None
 
 class EnsuranceSerializer(serializers.ModelSerializer):
     class Meta:
