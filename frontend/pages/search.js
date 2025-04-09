@@ -25,7 +25,6 @@ export default function Search() {
     }
   }, [router.isReady, router.query.specialty, router.query.location]);
 
-
   useEffect(() => {
     const handleResize = () => {
       setShowFilters(window.innerWidth >= 1280);
@@ -36,15 +35,28 @@ export default function Search() {
   }, []);
 
   useEffect(() => {
-    if (specialty) {
-      const query = { specialty, ensurance, location, sex, takes_dates: takesDates };
-      // API call to /api/doctors/search/ will go here
+    if (specialty || location) {
+      const query = {
+        specialty,
+        ensurance,
+        location,
+        sex,
+        takes_dates: takesDates,
+        experienceValue,
+      };
+      router.push({ query }, undefined, { shallow: true });
     }
   }, [specialty, ensurance, location, sex, takesDates, experienceValue]);
 
   return (
     <div className="w-full flex flex-col">
-      <SearchHead specialty={specialty} location={location} ensurance={ensurance} sex={sex} count={count} />
+      <SearchHead
+        specialty={specialty}
+        location={location}
+        ensurance={ensurance}
+        sex={sex}
+        count={count}
+      />
       <div className="w-full justify-center items-start gap-14 inline-flex xl:p-4 lg:pl-8 sm:p-4 xs:p-2">
         {showFilters && (
           <SearchFilters

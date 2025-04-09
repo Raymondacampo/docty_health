@@ -1,6 +1,6 @@
 import { useState } from "react";
 import SpecialtySearchBar from "@/components/search/SpecialtySearchBar"
-import LocationSearchBar from "@/components/search/LocationSearchBar"
+import CityStateSearchBar from "@/components/search/CityStateSearchBar";
 import { useRouter } from "next/router";
 
 export default function SearchBar(){
@@ -42,7 +42,7 @@ export default function SearchBar(){
                     <SpecialtySearchBar value={specialty} onChange={setSpecialty} round={'rounded-l-lg border-r border-gray-200'} />  
                   </div>
                   
-                  <LocationSearchBar value={location} onChange={setLocation} /> 
+                  <CityStateSearchBar value={location} onChange={setLocation} round={'border-r border-gray-200'} />
                   <button onClick={handleSearch} 
                   className="h-[100%] w-full bg-[#293241] shadow-[-2px_2px_4px_0px_rgba(0,0,0,0.5)] border border-black justify-center items-center gap-2.5 inline-flex relative
                   sm:py-4 xs:py-2 xs:rounded-l-sm">

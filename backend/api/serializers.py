@@ -236,7 +236,7 @@ class ClinicSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Clinic
-        fields = ['id', 'name', 'location']  # Add 'location'
+        fields = ['id', 'name', 'city', 'state','location']  # Add 'location'
 
     def get_location(self, obj):
         if obj.location:

@@ -27,6 +27,7 @@ from rest_framework.pagination import PageNumberPagination
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.measure import D  # Distance measure
 from django.contrib.gis.geos import Point
+from django.db.models import Q
 
 logger = logging.getLogger(__name__)
 serializer = URLSafeTimedSerializer(settings.SECRET_KEY)
@@ -827,6 +828,7 @@ class DoctorPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100
 
+# api/views.py
 class DoctorSearchView(APIView):
     permission_classes = [AllowAny]
     pagination_class = DoctorPagination
@@ -835,13 +837,27 @@ class DoctorSearchView(APIView):
         queryset = Doctor.objects.all()
         specialty = request.query_params.get('specialty')
         ensurance = request.query_params.get('ensurance')
-        location_name = request.query_params.get('location')  # Existing name filter
+        location_name = request.query_params.get('location')  # e.g., "Santo Domingo, Distrito Nacional"
         latitude = request.query_params.get('latitude')
         longitude = request.query_params.get('longitude')
         radius = request.query_params.get('radius', 10)  # Default 10 km
         sex = request.query_params.get('sex')
         takes_dates = request.query_params.get('takes_dates')
         experience_min = request.query_params.get('experience_min')
+
+        # Filter by city/state if location is provided
+        if location_name:
+            try:
+                city, state = [part.strip() for part in location_name.split(',', 1)]
+            except ValueError:
+                city, state = location_name.strip(), None
+            clinic_filter = Q()
+            if city:
+                clinic_filter |= Q(city__iexact=city)
+            if state:
+                clinic_filter |= Q(state__iexact=state)
+            matching_clinics = Clinic.objects.filter(clinic_filter)
+            queryset = queryset.filter(clinics__in=matching_clinics)
 
         # Existing filters
         if experience_min and experience_min != 'any':
@@ -853,8 +869,6 @@ class DoctorSearchView(APIView):
             queryset = queryset.filter(specialties__name=specialty)
         if ensurance:
             queryset = queryset.filter(ensurances__name=ensurance)
-        if location_name:
-            queryset = queryset.filter(clinics__name=location_name)
         if sex and sex != 'both':
             queryset = queryset.filter(sex=sex)
         if takes_dates:
@@ -865,18 +879,18 @@ class DoctorSearchView(APIView):
             elif takes_dates == 'in_person':
                 queryset = queryset.filter(taking_dates=True, takes_in_person=True)
 
-        # Geospatial filter
+        # Geospatial filter if lat/lon provided
         if latitude and longitude:
             try:
                 lat = float(latitude)
                 lon = float(longitude)
                 radius_km = float(radius)
-                user_point = Point(lon, lat, srid=4326)  # SRID 4326 is WGS84
+                user_point = Point(lon, lat, srid=4326)
                 queryset = queryset.filter(
                     clinics__location__distance_lte=(user_point, D(km=radius_km))
                 ).annotate(
                     distance=Distance('clinics__location', user_point)
-                ).order_by('distance')  # Sort by proximity
+                ).order_by('distance')
             except ValueError:
                 return Response({"error": "Invalid latitude, longitude, or radius"}, status=status.HTTP_400_BAD_REQUEST)
 
