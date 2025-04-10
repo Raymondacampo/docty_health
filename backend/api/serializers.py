@@ -274,6 +274,8 @@ class DoctorSerializer(serializers.ModelSerializer):
         return {
             'first_name': obj.user.first_name,
             'last_name': obj.user.last_name,
+            "phone_number": obj.user.phone_number,
+            "email": obj.user.email
         }
 
     def get_average_rating(self, obj):

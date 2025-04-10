@@ -4,7 +4,7 @@ import axios from "axios";
 const DEFAULT_API_URL = "http://localhost:8000/api";
 
 export const getApiImgUrl = () => {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:8000';
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhosdt:8000';
   const mediaUrl = `${baseUrl}`;  // Add /media/ prefix
   return mediaUrl;
 };

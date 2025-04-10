@@ -1,13 +1,7 @@
-const Insurance = () => {
-    return(
-        <div class=" px-4 justify-start items-center gap-4 flex">
-            <div class="w-[75px] h-[75px] bg-[#5c5c5c]"></div>
-            <div class="text-center text-[#293241] text-base font-normal font-['Inter'] tracking-wide">Insurance instance</div>
-        </div>
-    )
-}
+import { getApiImgUrl } from "@/utils/api";
 
-export default function Insurances({ user }) {
+export default function Insurances({ insurances }) {
+    const img_src = getApiImgUrl()
     return(
         <div class=" py-[22px] rounded-[10px] flex-col justify-start items-start gap-8 flex">
             <div class="w-full px-2.5 pb-2 justify-start items-center gap-2.5 inline-flex border-b border-black/50 mt-16">
@@ -24,9 +18,12 @@ export default function Insurances({ user }) {
                 </div>
             </div>
             <div class="w-full justify-start items-start gap-5 inline-flex flex-wrap">
-                <Insurance />
-                <Insurance />
-                <Insurance />
+                {insurances.map(e => 
+                    <div class=" px-4 justify-start items-center gap-4 flex">
+                        <img src={`${img_src}${e.logo}`} class="w-[75px] h-[75px] bg-[#5c5c5c]"></img>
+                        <div class="text-center text-[#293241] text-base font-normal font-['Inter'] tracking-wide">{e.name}</div>
+                    </div>
+                )}
             </div>
             <div class=" px-4 justify-center items-center gap-2.5 inline-flex">
                 <div class="px-4 py-2 bg-[#3d5a80] rounded-[10px] justify-center items-center gap-2.5 flex">

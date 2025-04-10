@@ -902,6 +902,19 @@ class DoctorSearchView(APIView):
 
         return paginator.get_paginated_response(serializer.data)
     
+class DoctorDetailView(APIView):
+    permission_classes = [AllowAny]  # Adjust permissions as needed
+
+    def get(self, request, doctor_id):
+        try:
+            doctor = Doctor.objects.get(id=doctor_id)
+            serializer = DoctorSerializer(doctor)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Doctor.DoesNotExist:
+            return Response({"error": "Doctor not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
 class AllSpecialtiesView(APIView):
     permission_classes = [AllowAny]
 

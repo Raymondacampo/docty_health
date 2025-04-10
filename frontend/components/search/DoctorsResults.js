@@ -2,11 +2,7 @@
 import { useState, useEffect } from "react";
 import { publicApiClient } from "@/utils/api";
 import Pagination from "../Pagination";
-
-const Doctor = ({ doctor }) => {
-  // ... (unchanged Doctor component)
-};
-
+import Doctor from "./Doctor";
 const Filters = ({ sortBy, setSortBy, onFiltersToggle }) => {
   const handleSortChange = (e) => {
     setSortBy(e.target.value);
