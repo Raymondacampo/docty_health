@@ -232,19 +232,51 @@ class SpecialtySerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 class ClinicSerializer(serializers.ModelSerializer):
+    location = serializers.SerializerMethodField()  # Custom field for lat/lon
+
     class Meta:
         model = Clinic
-        fields = ['id', 'name']  # You can add 'google_place_id' if needed
+        fields = ['id', 'name', 'city', 'state','location', 'address']  # Add 'location'
+
+    def get_location(self, obj):
+        if obj.location:
+            return {'latitude': obj.location.y, 'longitude': obj.location.x}
+        return None
 
 class EnsuranceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ensurance
         fields = ['id', 'name', 'logo']  # You can add 'logo' if needed
 
+# serializers.py
+# api/serializers.py
 class ReviewSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField(read_only=True)
+    user_id = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), source='user', write_only=True
+    )
+    doctor_id = serializers.PrimaryKeyRelatedField(
+        queryset=Doctor.objects.all(), source='doctor', write_only=True
+    )
+
     class Meta:
         model = Review
-        fields = ['rating']
+        fields = ['id', 'user', 'user_id', 'doctor_id', 'rating', 'headline', 'body', 'created_at']
+        read_only_fields = ['id', 'user', 'created_at']
+
+    def get_user(self, obj):
+        return {
+            'id': obj.user.id,
+            'first_name': obj.user.first_name,
+            'last_name': obj.user.last_name,
+        }
+
+    def validate(self, attrs):
+        # Ensure rating is between 1 and 5
+        rating = attrs.get('rating')
+        if rating is None or rating < 1 or rating > 5:
+            raise serializers.ValidationError({"rating": "Rating must be between 1 and 5."})
+        return attrs
 
 class DoctorSerializer(serializers.ModelSerializer):
     specialties = SpecialtySerializer(many=True)
@@ -254,7 +286,6 @@ class DoctorSerializer(serializers.ModelSerializer):
     average_rating = serializers.SerializerMethodField()
     review_count = serializers.SerializerMethodField()
     has_availability = serializers.SerializerMethodField()
-
     class Meta:
         model = Doctor
         fields = [
@@ -267,6 +298,9 @@ class DoctorSerializer(serializers.ModelSerializer):
         return {
             'first_name': obj.user.first_name,
             'last_name': obj.user.last_name,
+            "phone_number": obj.user.phone_number,
+            "email": obj.user.email,
+            "profile_picture": obj.user.profile_picture.url if obj.user.profile_picture else None,
         }
 
     def get_average_rating(self, obj):

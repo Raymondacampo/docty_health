@@ -8,7 +8,7 @@ from rest_framework import status
 from django.core.mail import send_mail
 from django.conf import settings
 from rest_framework.generics import RetrieveUpdateAPIView
-from .serializers import UserProfileSerializer, SignupSerializer, DoctorSignupSerializer, DoctorAvailabilitySerializer, DayOfWeekSerializer, EnsuranceSerializer, ClinicSerializer, SpecialtySerializer, DoctorSerializer
+from .serializers import UserProfileSerializer, SignupSerializer, DoctorSignupSerializer, DoctorAvailabilitySerializer, DayOfWeekSerializer, EnsuranceSerializer, ClinicSerializer, SpecialtySerializer, DoctorSerializer, ReviewSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view
 from django.contrib.auth import get_user_model
@@ -22,8 +22,12 @@ import logging
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from django.utils import timezone
 from datetime import timedelta, datetime
-from .models import PasswordResetToken, Specialty, Clinic, DoctorDocument, Doctor, DoctorAvailability, Appointment, DayOfWeek, Ensurance
+from .models import PasswordResetToken, Specialty, Clinic, DoctorDocument, Doctor, DoctorAvailability, Appointment, DayOfWeek, Ensurance, Review
 from rest_framework.pagination import PageNumberPagination
+from django.contrib.gis.db.models.functions import Distance
+from django.contrib.gis.measure import D  # Distance measure
+from django.contrib.gis.geos import Point
+from django.db.models import Q, Count
 
 logger = logging.getLogger(__name__)
 serializer = URLSafeTimedSerializer(settings.SECRET_KEY)
@@ -824,6 +828,7 @@ class DoctorPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100
 
+# api/views.py
 class DoctorSearchView(APIView):
     permission_classes = [AllowAny]
     pagination_class = DoctorPagination
@@ -832,24 +837,38 @@ class DoctorSearchView(APIView):
         queryset = Doctor.objects.all()
         specialty = request.query_params.get('specialty')
         ensurance = request.query_params.get('ensurance')
-        location = request.query_params.get('location')
+        location_name = request.query_params.get('location')  # e.g., "Santo Domingo, Distrito Nacional"
+        latitude = request.query_params.get('latitude')
+        longitude = request.query_params.get('longitude')
+        radius = request.query_params.get('radius', 10)  # Default 10 km
         sex = request.query_params.get('sex')
-        takes_dates = request.query_params.get('takes_dates')  # Expecting 'true', 'virtual', 'in_person', or None
+        takes_dates = request.query_params.get('takes_dates')
         experience_min = request.query_params.get('experience_min')
 
+        # Filter by city/state if location is provided
+        if location_name:
+            try:
+                city, state = [part.strip() for part in location_name.split(',', 1)]
+            except ValueError:
+                city, state = location_name.strip(), None
+            clinic_filter = Q()
+            if city:
+                clinic_filter |= Q(city__iexact=city)
+            if state:
+                clinic_filter |= Q(state__iexact=state)
+            matching_clinics = Clinic.objects.filter(clinic_filter)
+            queryset = queryset.filter(clinics__in=matching_clinics)
 
+        # Existing filters
         if experience_min and experience_min != 'any':
             try:
                 queryset = queryset.filter(experience__gte=int(experience_min))
             except ValueError:
-                pass  # Ignore if not a valid integer
-
+                pass
         if specialty:
             queryset = queryset.filter(specialties__name=specialty)
         if ensurance:
             queryset = queryset.filter(ensurances__name=ensurance)
-        if location:
-            queryset = queryset.filter(clinics__name=location)
         if sex and sex != 'both':
             queryset = queryset.filter(sex=sex)
         if takes_dates:
@@ -860,6 +879,21 @@ class DoctorSearchView(APIView):
             elif takes_dates == 'in_person':
                 queryset = queryset.filter(taking_dates=True, takes_in_person=True)
 
+        # Geospatial filter if lat/lon provided
+        if latitude and longitude:
+            try:
+                lat = float(latitude)
+                lon = float(longitude)
+                radius_km = float(radius)
+                user_point = Point(lon, lat, srid=4326)
+                queryset = queryset.filter(
+                    clinics__location__distance_lte=(user_point, D(km=radius_km))
+                ).annotate(
+                    distance=Distance('clinics__location', user_point)
+                ).order_by('distance')
+            except ValueError:
+                return Response({"error": "Invalid latitude, longitude, or radius"}, status=status.HTTP_400_BAD_REQUEST)
+
         queryset = queryset.distinct()
 
         paginator = self.pagination_class()
@@ -867,6 +901,107 @@ class DoctorSearchView(APIView):
         serializer = DoctorSerializer(page, many=True)
 
         return paginator.get_paginated_response(serializer.data)
+    
+class DoctorDetailView(APIView):
+    permission_classes = [AllowAny]  # Adjust permissions as needed
+
+    def get(self, request, doctor_id):
+        try:
+            doctor = Doctor.objects.get(id=doctor_id)
+            serializer = DoctorSerializer(doctor)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Doctor.DoesNotExist:
+            return Response({"error": "Doctor not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class ReviewPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+class ReviewsDetailView(APIView):
+    permission_classes = [AllowAny]
+    pagination_class = ReviewPagination
+
+    def get(self, request, doctor_id):
+        try:
+            doctor = Doctor.objects.get(id=doctor_id)
+            reviews = Review.objects.filter(doctor=doctor).order_by('-created_at')
+            total_reviews = reviews.count()
+
+            # Compute rating distribution
+            rating_distribution = (
+                reviews.values('rating')
+                .annotate(count=Count('rating'))
+                .order_by('rating')
+            )
+            # Initialize counts for all ratings (1 to 5)
+            distribution = {str(i): 0 for i in range(1, 6)}
+            for item in rating_distribution:
+                distribution[str(item['rating'])] = item['count']
+
+            paginator = self.pagination_class()
+            page = paginator.paginate_queryset(reviews, request)
+            serializer = ReviewSerializer(page, many=True)
+
+            return Response({
+                'reviews': serializer.data,
+                'total_reviews': total_reviews,
+                'page_size': paginator.page_size,
+                'current_page': paginator.page.number,
+                'total_pages': paginator.page.paginator.num_pages,
+                'rating_distribution': distribution,
+            }, status=status.HTTP_200_OK)
+        except Doctor.DoesNotExist:
+            return Response({"error": "Doctor not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class CreateReviewView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, doctor_id):
+        try:
+            doctor = Doctor.objects.get(id=doctor_id)
+            user = request.user
+
+            # Check if user has already reviewed this doctor
+            if Review.objects.filter(user=user, doctor=doctor).exists():
+                return Response(
+                    {"error": "You have already reviewed this doctor"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            data = {
+                'user_id': user.id,
+                'doctor_id': doctor.id,
+                'rating': request.data.get('rating'),
+                'headline': request.data.get('headline', ''),
+                'body': request.data.get('body', '')
+            }
+
+            serializer = ReviewSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {"message": "Review created successfully"},
+                    status=status.HTTP_201_CREATED
+                )
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Doctor.DoesNotExist:
+            return Response(
+                {"error": "Doctor not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
     
 class AllSpecialtiesView(APIView):
     permission_classes = [AllowAny]

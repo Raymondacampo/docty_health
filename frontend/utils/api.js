@@ -28,7 +28,7 @@ export const apiClient = axios.create({
 });
 
 export const publicApiClient = axios.create({
-  baseURL: 'http://localhost:8000/api',
+  baseURL: getApiUrl(),
   headers: {
     'Content-Type': 'application/json',
   },

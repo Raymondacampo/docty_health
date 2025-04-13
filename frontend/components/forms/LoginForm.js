@@ -20,7 +20,7 @@ export default function LoginForm() {
       const { data } = await apiClient.post("/api/auth/login/", credentials);
       localStorage.setItem("access_token", data.access);
       localStorage.setItem("refresh_token", data.refresh);
-      router.push("/profile");
+      router.push("/account");
     } catch (err) {
       console.error(err);
       setError("Invalid email or password");

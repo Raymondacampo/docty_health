@@ -1,12 +1,12 @@
+import ClinicMap from "../ClinicMap";
+
 const Location = ({ location }) => {
     return (
         <div class="w-full flex-col justify-center items-center gap-[11px] inline-flex">
             <div class="w-full text-black font-['Inter'] tracking-wide
             sm:text-lg
-            xs:text-md">Centro Medico Moderno</div>
-            <div class="w-full bg-[#5c5c5c]
-            sm:h-[350px] 
-            xs:h-[300px]"></div>
+            xs:text-md">{location.name}</div>
+            <ClinicMap clinicName={location.name} width="100%" height="400" />
             <div class="w-full flex-col justify-center items-start gap-2 flex break-all">
                 <div class="w-full justify-start items-start gap-2 inline-flex">
                     <div data-svg-wrapper class="relative">
@@ -15,8 +15,7 @@ const Location = ({ location }) => {
                     <path d="M10.6128 7.92263C10.6128 8.73868 10.3012 9.5213 9.74651 10.0983C9.19182 10.6754 8.4395 10.9995 7.65504 10.9995C6.87059 10.9995 6.11827 10.6754 5.56358 10.0983C5.00889 9.5213 4.69727 8.73868 4.69727 7.92263C4.69727 7.10658 5.00889 6.32395 5.56358 5.74691C6.11827 5.16988 6.87059 4.8457 7.65504 4.8457C8.4395 4.8457 9.19182 5.16988 9.74651 5.74691C10.3012 6.32395 10.6128 7.10658 10.6128 7.92263Z" fill="white" stroke="black"/>
                     </svg>
                     </div>
-                    <div class="w-full text-black font-['Inter'] tracking-wide
-                    sm:text-sm xs:text-xs">Calle casi esquina don rembolo el frere 345. nunez de churchill</div>
+                    <div class="w-full text-black font-['Inter'] tracking-wide text-sm">{location.address}</div>
                 </div>
                 <div class="justify-start items-center gap-2 inline-flex">
                     <div data-svg-wrapper>
@@ -32,13 +31,11 @@ const Location = ({ location }) => {
     );
 }
 
-export default function Locations({ user }) {
+export default function Locations({ clinics }) {
     return(
-        <div class="px-4 flex-col justify-center items-center gap-8 flex">
+        <div class="flex-col justify-center items-center gap-8 flex">
             <div class="w-full py-2.5 justify-start items-end gap-2.5 inline-flex border-b border-black/50  mt-16">
-                <div class="text-center text-black font-['Inter'] tracking-wide
-                sm:text-xl 
-                xs:text-lg">Locations</div>
+                <div class="text-center text-black font-['Inter'] tracking-wide text-2xl">Locations</div>
                 <div data-svg-wrapper class="relative">
                 <svg width="30" height="30" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M20 36.25C26.25 27.5 31.25 20 31.25 15C31.25 12.0163 30.0647 9.15483 27.955 7.04505C25.8452 4.93526 22.9837 3.75 20 3.75C17.0163 3.75 14.1548 4.93526 12.045 7.04505C9.93526 9.15483 8.75 12.0163 8.75 15C8.75 20 13.75 27.5 20 36.25Z" fill="#293241" stroke="black"/>
@@ -47,11 +44,10 @@ export default function Locations({ user }) {
                 </div>
             </div>
             <div class="w-full justify-center items-center inline-flex gap-x-8 gap-y-12 flex-wrap
-            sm:px-8
-            xs:px-0 ">
-                <Location />
-                <Location />
-                <Location />
+            xs:px-2 ">
+                {clinics.map(c => 
+                    <Location location={c} />
+                )}
             </div>
         </div>
     )
