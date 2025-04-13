@@ -58,7 +58,7 @@ export default function Reviews({
 
   return (
     <div className="flex-col justify-center items-center gap-12 flex">
-      <div className="w-full justify-start items-center gap-2.5 inline-flex border-b border-black/50 mt-16">
+      <div className="w-full p-2.5 justify-start items-center gap-2.5 inline-flex border-b border-black/50 mt-16">
         <div className="text-center text-[#293241] font-['Inter'] tracking-wide text-2xl">
           Reviews
         </div>

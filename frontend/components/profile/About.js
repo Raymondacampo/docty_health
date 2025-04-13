@@ -1,10 +1,10 @@
 import { getApiImgUrl } from "@/utils/api";
-import Doctor from "../search/Doctor";
-export default function About({ doctor }) {
+import AverageRatingStars from "./components/AverageRatingStar";
+export default function About({ doctor, averageRating, reviewCount }) {
     const backendBaseUrl = getApiImgUrl();
     return(    
         <div class="w-full flex-col justify-start items-center gap-[52px] flex">
-            <div className="w-full flex justify-between  px-4
+            <div className="w-full flex justify-between 
             md:flex-nowrap md:flex-row
             sm:flex-wrap sm:gap-4
             xs:flex-col xs:gap-6">
@@ -23,7 +23,7 @@ export default function About({ doctor }) {
                                 )}
                             </div>
                         </div>
-                        <div class="justify-start items-start gap-1.5 inline-flex flex-col ">
+                        {/* <div class="justify-start items-start gap-1.5 inline-flex flex-col ">
                             {doctor.clinics.map(c => 
                             <div className="flex gap-2 items-center">
                                 <div data-svg-wrapper class="relative">
@@ -35,7 +35,10 @@ export default function About({ doctor }) {
                                 <div class=" text-[#3d5a80] font-['Inter'] tracking-wide text-wrap text-sm">{c.city}, {c.state }</div>                              
                             </div>
                             )}
-
+                        </div> */}
+                        <div className="flex gap-2 items-center ">
+                            <AverageRatingStars averageRating={averageRating} />
+                            <div class="text-[#293241] font-['Inter'] tracking-wide text-xs">( {reviewCount} reviews )</div>
                         </div>
                     </div>
                 </div>
@@ -52,7 +55,7 @@ export default function About({ doctor }) {
                             </div>
                             <div class="text-white font-['Inter'] tracking-wide font-bold text-sm">{doctor.user.email}</div>
                         </div>
-                        {doctor.user.phone_number && 
+                        {/* {doctor.user.phone_number && 
                         <>
                             <div class="justify-start items-center gap-2.5 inline-flex">
                                 <div data-svg-wrapper>
@@ -72,12 +75,24 @@ export default function About({ doctor }) {
                                 <a href={`https://wa.me/${doctor.user.phone_number}`} class=" text-[#3d5a80] font-['Inter'] tracking-wide text-sm ">Whatsapp</a>
                             </div>                         
                         </>           
-                        }
+                        } */}
+                        {doctor.clinics.map(c => 
+                            <div className="flex gap-2 items-center">
+                                <div data-svg-wrapper class="relative">
+                                    <svg width="12" height="16" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 18.5C11.8889 13.6538 15 9.5 15 6.73077C15 5.07827 14.2625 3.49345 12.9497 2.32495C11.637 1.15645 9.85652 0.5 8 0.5C6.14348 0.5 4.36301 1.15645 3.05025 2.32495C1.7375 3.49345 1 5.07827 1 6.73077C1 9.5 4.11111 13.6538 8 18.5Z" fill="white" stroke="white"/>
+                                        <path d="M11.1109 6.73114C11.1109 7.46559 10.7831 8.16995 10.1997 8.68929C9.61622 9.20862 8.8249 9.50037 7.99978 9.50037C7.17466 9.50037 6.38334 9.20862 5.79989 8.68929C5.21645 8.16995 4.88867 7.46559 4.88867 6.73114C4.88867 5.9967 5.21645 5.29233 5.79989 4.773C6.38334 4.25367 7.17466 3.96191 7.99978 3.96191C8.8249 3.96191 9.61622 4.25367 10.1997 4.773C10.7831 5.29233 11.1109 5.9967 11.1109 6.73114Z" fill="#3D5A80" stroke="#3D5A80"/>
+                                    </svg>
+                                </div>
+                                <div class=" text-white font-['Inter'] tracking-wide text-wrap text-sm">{c.city}, {c.state }</div>                              
+                            </div>
+                            )}
                     </div>
                 </div>            
             </div>
 
-                <div class=" p-2.5 justify-center items-center gap-2.5 inline-flex">
+                <div class=" p-2.5 justify-center items-start gap-2.5 inline-flex flex-col">
+                    <div className="text-black font-bold text-lg">{doctor.experience} years of experience</div>
                     <div class="grow shrink basis-0 text-[#293241] font-normal font-['Inter'] tracking-wide text-base">
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vulputate commodo consequat.
                         Nam vitae consequat ante. Nullam urna libero, hendrerit eleifend ultricies quis, suscipit quis est. Aliquam placerat sem neque. Suspendisse potenti. Suspendisse rhoncus mi a rhoncus sodales. 

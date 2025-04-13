@@ -27,10 +27,13 @@ load_dotenv()
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-SECURE_SSL_REDIRECT = True
+def get_bool_env(key, default=False):
+    return os.environ.get(key, str(default)).lower() in ("1", "true", "yes")
+
+DEBUG = get_bool_env('DEBUG', False)
+SESSION_COOKIE_SECURE = get_bool_env('PROD_SSL', True)
+CSRF_COOKIE_SECURE = get_bool_env('PROD_SSL', True)
+SECURE_SSL_REDIRECT = get_bool_env('PROD_SSL', True)
 
 ALLOWED_HOSTS = ['localhost', 'juanpabloduarte.com', '127.0.0.1']
 APPEND_SLASH = True

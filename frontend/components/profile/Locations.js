@@ -34,7 +34,7 @@ const Location = ({ location }) => {
 export default function Locations({ clinics }) {
     return(
         <div class="flex-col justify-center items-center gap-8 flex">
-            <div class="w-full py-2.5 justify-start items-end gap-2.5 inline-flex border-b border-black/50  mt-16">
+            <div class="w-full p-2.5 justify-start items-end gap-2.5 inline-flex border-b border-black/50  mt-16">
                 <div class="text-center text-black font-['Inter'] tracking-wide text-2xl">Locations</div>
                 <div data-svg-wrapper class="relative">
                 <svg width="30" height="30" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">

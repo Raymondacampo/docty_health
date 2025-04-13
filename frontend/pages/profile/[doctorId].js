@@ -25,6 +25,7 @@ export default function Profile() {
     try {
       const response = await publicApiClient.get(`/doctors/${id}/`);
       setDoctorData(response.data);
+      console.log(response.data);
     } catch (err) {
       setError(err.response?.data?.error || "Failed to fetch doctor data");
     }
@@ -106,7 +107,11 @@ export default function Profile() {
   return (
     <div className="w-full py-4 flex-col justify-start items-center gap-[81px] inline-flex">
       <div className="w-full max-w-6xl shadow-[0px_4px_4px_0px_rgba(0,0,0,0.15)] md:px-10 sm:py-12 sm:rounded-xl xs:px-2 py-4 xs:rounded-none">
-        <About doctor={doctorData} />
+        <About 
+          doctor={doctorData}  
+          averageRating={doctorData.average_rating || 0}
+          reviewCount={doctorData.review_count || 0} 
+        />
         <Insurances
           insurances={doctorData.ensurances || []}
           name={`${doctorData.user?.first_name || ""} ${doctorData.user?.last_name || ""}`}

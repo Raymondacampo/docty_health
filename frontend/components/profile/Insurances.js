@@ -6,7 +6,7 @@ export default function Insurances({ insurances, name }) {
         <div class=" py-6 rounded-lg flex-col justify-start items-start gap-8 flex">
             {insurances.length > 0 &&
             <>
-            <div class="w-full px-2.5 pb-2 justify-start items-center gap-2.5 inline-flex border-b border-black/50 mt-16">
+            <div class="w-full p-2.5 pb-2 justify-start items-center gap-2.5 inline-flex border-b border-black/50 mt-16">
                 <div class="text-center text-[#293241] font-['Inter'] tracking-wide text-2xl">Insurances</div>
                 <div data-svg-wrapper class="relative">
                 <svg width="30" height="31" viewBox="0 0 30 31" fill="none" xmlns="http://www.w3.org/2000/svg">
