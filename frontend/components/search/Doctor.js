@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
-
+import { getApiImgUrl } from "@/utils/api";
 const Doctor = ({ doctor }) => {
+  const backendBaseUrl = getApiImgUrl();
   const router = useRouter();
   const specialties = doctor.specialties.map((s) => s.name).join(", ");
   const clinics = doctor.clinics.map((c) => c.name).join(", ");
@@ -17,7 +18,7 @@ const Doctor = ({ doctor }) => {
   return (
     <div className="w-full px-2 pb-2 rounded-lg border border-black/25 bg-white shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] flex-col justify-start items-center gap-4 flex md:gap-2.5 md:min-w-2xl">
       <div className="self-stretch p-2 justify-start items-center gap-4 inline-flex relative sm:flex-row xs:flex-col">
-        <div className="w-[100px] h-[100px] bg-[#d9d9d9] rounded-full"></div>
+        <img src={`${backendBaseUrl}${doctor.user.profile_picture}`} className="w-[100px] h-[100px] bg-[#d9d9d9] rounded-full"></img>
         <div className="grow shrink basis-0 flex-col justify-start items-start gap-2 inline-flex xs:w-[95%]">
           <div className="self-stretch flex-col justify-start items-start gap-[3px] flex">
             <div className="self-stretch py-[5px] border-b border-[#293241]/0 justify-between items-start inline-flex overflow-hidden">

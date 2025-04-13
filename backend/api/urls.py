@@ -2,7 +2,7 @@ from django.urls import path
 from .views import get_data, LoginView, UserProfileView, SignupView, LogoutView, GoogleLogin, DoctorSignupView, PasswordResetRequestView, PasswordChangeView, ValidateTokenView,AvailableSpecialtiesView, AddSpecialtyView, AddClinicView, AvailableClinicsView
 from .views import RemoveClinicView, RemoveSpecialtyView, UploadDoctorDocumentView, BookAppointmentView, CreateDoctorAvailabilityView, AvailableSlotsView, DayOfWeekListView,UpdateDoctorAvailabilityView, DeleteDoctorAvailabilityView, DeleteDoctorDocumentView
 from .views import AvailableEnsurancesView, AddEnsuranceView, RemoveEnsuranceView, DoctorSearchView, AllSpecialtiesView, AllClinicsView, AllEnsurancesView  
-from .views import DoctorDetailView
+from .views import DoctorDetailView, DoctorDetailView, ReviewsDetailView, CreateReviewView
 from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView, TokenObtainPairView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -50,4 +50,7 @@ urlpatterns = [
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),  # ✅ Refresh access token
     path("token/verify/", TokenVerifyView.as_view(), name="token_verify"),  # ✅ Verify if token is valid
     path('doctors/<int:doctor_id>/', DoctorDetailView.as_view(), name='doctor_detail'),
+    path('reviews/<int:doctor_id>/', ReviewsDetailView.as_view(), name='reviews_detail'),
+    path('reviews/create/<int:doctor_id>/', CreateReviewView.as_view(), name='create_review'),
+
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
