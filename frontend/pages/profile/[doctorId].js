@@ -54,34 +54,49 @@ export default function Profile() {
   };
 
   useEffect(() => {
+    // Wait for router to be ready
+    if (!router.isReady) return;
+
+    // Validate doctorId
     if (!doctorId || doctorId === "undefined" || isNaN(doctorId)) {
       setError("Invalid doctor profile");
       setLoading(false);
       return;
     }
 
+    // Clear error and fetch data
     const fetchAll = async () => {
       setLoading(true);
+      setError(null); // Reset error
       await Promise.all([fetchDoctorData(doctorId), fetchReviewData(doctorId)]);
       setLoading(false);
     };
 
     fetchAll();
-  }, [doctorId]);
+  }, [router.isReady, doctorId]);
 
   const loadMoreReviews = async () => {
     if (reviewsData.current_page >= reviewsData.total_pages) return;
 
     try {
       const nextPage = reviewsData.current_page + 1;
-      await fetchReviewData(doctorId, nextPage);
+      const response = await publicApiClient.get(`/reviews/${doctorId}/`, {
+        params: { page: nextPage },
+      });
+      setReviewsData((prev) => ({
+        ...prev,
+        reviews: [...prev.reviews, ...response.data.reviews],
+        current_page: response.data.current_page || nextPage,
+        total_pages: response.data.total_pages || prev.total_pages,
+        rating_distribution: response.data.rating_distribution || prev.rating_distribution,
+      }));
     } catch (err) {
       setError(err.response?.data?.error || "Failed to load more reviews");
     }
   };
 
   const handleReviewSubmitted = () => {
-    fetchReviewData(doctorId); // Refresh reviews
+    fetchReviewData(doctorId);
   };
 
   if (loading) return <div className="text-[#293241] font-['Inter'] text-center">Loading...</div>;
@@ -111,4 +126,13 @@ export default function Profile() {
       </div>
     </div>
   );
+}
+
+// Validate doctorId server-side
+export async function getServerSideProps({ params }) {
+  const { doctorId } = params;
+  if (!doctorId || isNaN(doctorId)) {
+    return { notFound: true }; // Return 404 for invalid IDs
+  }
+  return { props: {} };
 }
