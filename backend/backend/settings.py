@@ -32,7 +32,7 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_SSL_REDIRECT = True
 
-ALLOWED_HOSTS = ['localhost', 'juanpabloduarte.com']
+ALLOWED_HOSTS = ['localhost', 'juanpabloduarte.com', '127.0.0.1']
 APPEND_SLASH = True
 
 # Application definition
