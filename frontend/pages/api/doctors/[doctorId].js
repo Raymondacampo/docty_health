@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/doctors/${doctorId}`, {
+    const response = await fetch(`https://juanpabloduarte.com/api/doctors/${doctorId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
