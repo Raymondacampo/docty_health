@@ -23,7 +23,11 @@ export default function Profile() {
 
   const fetchDoctorData = async () => {
     try {
-      const response = await publicApiClient.get(`/doctors/${doctorId}`);
+      const response = await fetch(`https://juanpabloduarte.com/doctors/${doctorId}`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       setDoctorData(response.data);
     } catch (err) {
       setError(err.message);
@@ -32,7 +36,11 @@ export default function Profile() {
 
   const fetchReviewData = async () => {
     try {
-      const response = await publicApiClient.get(`/reviews/${doctorId}`);
+      const response = await fetch(`https://juanpabloduarte.com/reviews/${doctorId}`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       setReviewsData({
         reviews: response.data.reviews,
         total_reviews: response.data.total_reviews,
@@ -62,7 +70,11 @@ export default function Profile() {
 
     try {
       const nextPage = reviewsData.current_page + 1;
-      const response = await publicApiClient.get(`/reviews/${doctorId}?page=${nextPage}`);
+      const response = await fetch(`https://juanpabloduarte.com/reviews/${doctorId}?page=${nextPage}`, {
+        headers: {
+          "Content-Type": "application/json",
+        }});
+      // const response = await publicApiClient.get(`/reviews/${doctorId}?page=${nextPage}`);
       setReviewsData((prev) => ({
         ...prev,
         reviews: [...prev.reviews, ...response.data.reviews],
