@@ -33,7 +33,7 @@ CSRF_COOKIE_SECURE = True
 SECURE_SSL_REDIRECT = True
 
 ALLOWED_HOSTS = ['localhost', 'juanpabloduarte.com']
-
+APPEND_SLASH = True
 
 # Application definition
 

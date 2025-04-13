@@ -5,7 +5,7 @@ import About from "@/components/profile/About";
 import Insurances from "@/components/profile/Insurances";
 import Locations from "@/components/profile/Locations";
 import Reviews from "@/components/profile/Reviews";
-import { publicApiClient } from "@/utils/api"; // Use apiClient for consistency
+import { publicApiClient } from "@/utils/api";
 
 export default function Profile() {
   const router = useRouter();
@@ -21,44 +21,48 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchDoctorData = async () => {
+  const fetchDoctorData = async (id) => {
     try {
-      const response = await fetch(`https://juanpabloduarte.com/doctors/${doctorId}`, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await publicApiClient.get(`/doctors/${id}/`);
       setDoctorData(response.data);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.error || "Failed to fetch doctor data");
     }
   };
 
-  const fetchReviewData = async () => {
+  const fetchReviewData = async (id, page = 1) => {
     try {
-      const response = await fetch(`https://juanpabloduarte.com/reviews/${doctorId}`, {
-        headers: {
-          "Content-Type": "application/json",
-        },
+      const response = await publicApiClient.get(`/reviews/${id}/`, {
+        params: { page },
       });
       setReviewsData({
-        reviews: response.data.reviews,
-        total_reviews: response.data.total_reviews,
-        current_page: response.data.current_page,
-        total_pages: response.data.total_pages,
-        rating_distribution: response.data.rating_distribution,
+        reviews: response.data.reviews || [],
+        total_reviews: response.data.total_reviews || 0,
+        current_page: response.data.current_page || page,
+        total_pages: response.data.total_pages || 1,
+        rating_distribution: response.data.rating_distribution || {
+          1: 0,
+          2: 0,
+          3: 0,
+          4: 0,
+          5: 0,
+        },
       });
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.error || "Failed to fetch reviews");
     }
   };
 
   useEffect(() => {
-    if (!doctorId) return;
+    if (!doctorId || doctorId === "undefined" || isNaN(doctorId)) {
+      setError("Invalid doctor profile");
+      setLoading(false);
+      return;
+    }
 
     const fetchAll = async () => {
       setLoading(true);
-      await Promise.all([fetchDoctorData(), fetchReviewData()]);
+      await Promise.all([fetchDoctorData(doctorId), fetchReviewData(doctorId)]);
       setLoading(false);
     };
 
@@ -70,50 +74,39 @@ export default function Profile() {
 
     try {
       const nextPage = reviewsData.current_page + 1;
-      const response = await fetch(`https://juanpabloduarte.com/reviews/${doctorId}?page=${nextPage}`, {
-        headers: {
-          "Content-Type": "application/json",
-        }});
-      // const response = await publicApiClient.get(`/reviews/${doctorId}?page=${nextPage}`);
-      setReviewsData((prev) => ({
-        ...prev,
-        reviews: [...prev.reviews, ...response.data.reviews],
-        current_page: response.data.current_page,
-        total_pages: response.data.total_pages,
-        rating_distribution: response.data.rating_distribution,
-      }));
+      await fetchReviewData(doctorId, nextPage);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.error || "Failed to load more reviews");
     }
   };
 
   const handleReviewSubmitted = () => {
-    fetchReviewData(); // Refresh reviews
+    fetchReviewData(doctorId); // Refresh reviews
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-  if (!doctorData) return <div>No doctor data found</div>;
+  if (loading) return <div className="text-[#293241] font-['Inter'] text-center">Loading...</div>;
+  if (error) return <div className="text-red-500 font-['Inter'] text-center">Error: {error}</div>;
+  if (!doctorData) return <div className="text-[#293241] font-['Inter'] text-center">No doctor data found</div>;
 
   return (
     <div className="w-full py-4 flex-col justify-start items-center gap-[81px] inline-flex">
       <div className="w-full max-w-6xl shadow-[0px_4px_4px_0px_rgba(0,0,0,0.15)] md:px-10 sm:py-12 sm:rounded-xl xs:px-2 py-4 xs:rounded-none">
         <About doctor={doctorData} />
         <Insurances
-          insurances={doctorData.ensurances}
-          name={`${doctorData.user.first_name} ${doctorData.user.last_name}`}
+          insurances={doctorData.ensurances || []}
+          name={`${doctorData.user?.first_name || ""} ${doctorData.user?.last_name || ""}`}
         />
-        <Locations clinics={doctorData.clinics} />
+        <Locations clinics={doctorData.clinics || []} />
         <Reviews
           reviews={reviewsData.reviews}
           totalReviews={reviewsData.total_reviews}
           currentPage={reviewsData.current_page}
           totalPages={reviewsData.total_pages}
           loadMoreReviews={loadMoreReviews}
-          averageRating={doctorData.average_rating}
-          reviewCount={doctorData.review_count}
+          averageRating={doctorData.average_rating || 0}
+          reviewCount={doctorData.review_count || 0}
           ratingDistribution={reviewsData.rating_distribution}
-          onReviewSubmitted={handleReviewSubmitted} // Pass callback
+          onReviewSubmitted={handleReviewSubmitted}
         />
       </div>
     </div>
