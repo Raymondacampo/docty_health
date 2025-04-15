@@ -274,7 +274,8 @@ class UserProfileView(APIView):
             "phone_number": getattr(user, 'phone_number', ''),
             "born_date": getattr(user, 'born_date', ''),
             "profile_picture": user.profile_picture.url if user.profile_picture else None,
-            "is_doctor": hasattr(user, 'doctor')
+            "is_doctor": hasattr(user, 'doctor'),
+            "favorite_doctors": DoctorSerializer(user.favorite_doctors.all(), many=True, context={'request': request}).data
         }
 
         if hasattr(user, 'doctor'):
@@ -1001,6 +1002,31 @@ class CreateReviewView(APIView):
             return Response(
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+class ToggleFavoriteDoctorView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, doctor_id):
+        user = request.user
+        try:
+            doctor = Doctor.objects.get(id=doctor_id)
+            if doctor in user.favorite_doctors.all():
+                user.favorite_doctors.remove(doctor)
+                return Response({
+                    "message": "Doctor removed from favorites",
+                    "is_favorited": False
+                }, status=status.HTTP_200_OK)
+            else:
+                user.favorite_doctors.add(doctor)
+                return Response({
+                    "message": "Doctor added to favorites",
+                    "is_favorited": True
+                }, status=status.HTTP_200_OK)
+        except Doctor.DoesNotExist:
+            return Response(
+                {"error": "Doctor not found"},
+                status=status.HTTP_404_NOT_FOUND
             )
     
 class AllSpecialtiesView(APIView):

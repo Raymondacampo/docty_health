@@ -1,23 +1,25 @@
 import { getApiImgUrl } from "@/utils/api";
 import AverageRatingStars from "./components/AverageRatingStar";
+import FavoriteButton from "./components/FavouriteButton";
+
 export default function About({ doctor, averageRating, reviewCount }) {
     const backendBaseUrl = getApiImgUrl();
     return(    
         <div class="w-full flex-col justify-start items-center gap-[52px] flex">
             <div className="w-full flex justify-between 
-            md:flex-nowrap md:flex-row
-            sm:flex-wrap sm:gap-4
+            lg:flex-nowrap md:flex-row
+            md:flex-wrap sm:gap-4
             xs:flex-col xs:gap-6">
                 <div class=" gap-4 flex
                 sm:flex-row sm:w-auto sm:min-w-[450px]
                 xs:flex-col xs:w-full xs:items-center">
                     <img src={`${backendBaseUrl}${doctor.user.profile_picture}`} class="min-w-[150px] min-h-[150px] max-w-[150px] max-h-[150px] bg-[#d9d9d9] rounded-full"></img>
                     <div class=" flex-col justify-start items-start gap-4 inline-flex">
-                        <div class="w-full  flex-col justify-start items-start flex">
-                            <div class="w-full pt-1.5 gap-2.5 inline-flex">
-                                <div class="text-[#293241] font-['Inter'] tracking-wide text-2xl">Dr. {doctor.user.first_name} {doctor.user.last_name}</div>
+                        <div class="w-full  flex-col justify-start items-start flex xs:justify-center">
+                            <div class="w-full pt-1.5 gap-2.5 inline-flex sm:justify-start xs:justify-center">
+                                <div class="text-[#293241] font-['Inter'] tracking-wide text-2xl text-center">Dr. {doctor.user.first_name} {doctor.user.last_name}</div>
                             </div>
-                            <div class="w-full justify-start items-center gap-2.5 inline-flex">
+                            <div class="w-full  items-center gap-2.5 inline-flex sm:justify-start xs:justify-center">
                                 {doctor.specialties.map(s =>
                                     <div class="text-[#293241] font-['Inter'] tracking-wide text-sm">{s.name}</div>
                                 )}
@@ -36,13 +38,16 @@ export default function About({ doctor, averageRating, reviewCount }) {
                             </div>
                             )}
                         </div> */}
-                        <div className="flex gap-2 items-center ">
-                            <AverageRatingStars averageRating={averageRating} />
-                            <div class="text-[#293241] font-['Inter'] tracking-wide text-xs">( {reviewCount} reviews )</div>
+                        <div className="flex gap-4 items-center justify-center flex-wrap">
+                            <div className="flex gap-2 items-center justify-center sm:w-auto xs:w-full"> 
+                                <AverageRatingStars averageRating={averageRating} />
+                                <div class="text-[#293241] font-['Inter'] tracking-wide text-xs">( {reviewCount} reviews )</div>                                
+                            </div>
+                            <FavoriteButton doctorId={doctor.id} isFavoritedInitially={doctor.isFavoritedInitially}/>
                         </div>
                     </div>
                 </div>
-                <div class="w-auto justify-center items-center gap-[74px] flex">
+                <div class="justify-center items-center gap-[74px] flex lg:w-auto xs:w-full">
                     <div class="w-full py-4 bg-[#3d5a80] rounded-[10px] flex-col justify-center items-start gap-4 inline-flex text-wrap break-all sm:px-8 xs:px-4">
                         <div class=" justify-start items-center gap-2.5 inline-flex">
                             <div class="text-white text-xl font-['Inter'] tracking-wide">Contact info</div>

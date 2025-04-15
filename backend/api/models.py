@@ -33,7 +33,12 @@ class User(AbstractUser):
         null=True,
         validators=[validate_square_image]  # Add validator
     )
-
+    favorite_doctors = models.ManyToManyField(
+        'Doctor',
+        related_name='favorited_by',
+        blank=True,
+        help_text="Doctors marked as favorites by the user"
+    )
     username = models.CharField(max_length=150, unique=True, blank=True, null=True)
     email = models.EmailField(unique=True)
     USERNAME_FIELD = "email"

@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class UserProfileSerializer(serializers.ModelSerializer):
     user_id = serializers.UUIDField(source='id', read_only=True)
-    
+    favorite_doctors = serializers.SerializerMethodField()
     class Meta:
         model = User
         fields = [
@@ -19,10 +19,15 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'email',
             'first_name',
             'last_name',
-            'date_joined'
+            'date_joined',
+            'favorite_doctors'
         ]
         read_only_fields = ['email', 'date_joined']  # Prevent accidental updates
 
+    def get_favorite_doctors(self, obj):
+        doctors = obj.favorite_doctors.all()
+        return DoctorSerializer(doctors, many=True).data
+    
 class SignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True,
@@ -286,12 +291,14 @@ class DoctorSerializer(serializers.ModelSerializer):
     average_rating = serializers.SerializerMethodField()
     review_count = serializers.SerializerMethodField()
     has_availability = serializers.SerializerMethodField()
+    is_favorited = serializers.SerializerMethodField()
+
     class Meta:
         model = Doctor
         fields = [
             'id', 'user', 'exequatur', 'experience', 'sex', 'taking_dates',
             'takes_virtual', 'takes_in_person',  # New fields
-            'specialties', 'clinics', 'ensurances', 'average_rating', 'review_count', 'has_availability'
+            'specialties', 'clinics', 'ensurances', 'average_rating', 'review_count', 'has_availability', 'is_favorited'
         ]
 
     def get_user(self, obj):
@@ -314,3 +321,9 @@ class DoctorSerializer(serializers.ModelSerializer):
 
     def get_has_availability(self, obj):
         return DoctorAvailability.objects.filter(doctor=obj).exists()
+    
+    def get_is_favorited(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.favorited_by.filter(id=request.user.id).exists()
+        return False

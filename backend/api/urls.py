@@ -2,7 +2,7 @@ from django.urls import path
 from .views import get_data, LoginView, UserProfileView, SignupView, LogoutView, GoogleLogin, DoctorSignupView, PasswordResetRequestView, PasswordChangeView, ValidateTokenView,AvailableSpecialtiesView, AddSpecialtyView, AddClinicView, AvailableClinicsView
 from .views import RemoveClinicView, RemoveSpecialtyView, UploadDoctorDocumentView, BookAppointmentView, CreateDoctorAvailabilityView, AvailableSlotsView, DayOfWeekListView,UpdateDoctorAvailabilityView, DeleteDoctorAvailabilityView, DeleteDoctorDocumentView
 from .views import AvailableEnsurancesView, AddEnsuranceView, RemoveEnsuranceView, DoctorSearchView, AllSpecialtiesView, AllClinicsView, AllEnsurancesView  
-from .views import DoctorDetailView, DoctorDetailView, ReviewsDetailView, CreateReviewView
+from .views import DoctorDetailView, DoctorDetailView, ReviewsDetailView, CreateReviewView, ToggleFavoriteDoctorView
 from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView, TokenObtainPairView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -39,6 +39,7 @@ urlpatterns = [
     path('auth/delete_availability/<int:availability_id>/', DeleteDoctorAvailabilityView.as_view(), name='delete_doctor_availability'),
     path('auth/available_slots/<int:doctor_id>/<str:date>/', AvailableSlotsView.as_view(), name='available_slots'),
     path('auth/book_appointment/', BookAppointmentView.as_view(), name='book_appointment'),
+    path('auth/toggle_favorite/<int:doctor_id>/', ToggleFavoriteDoctorView.as_view(), name='toggle_favorite_doctor'),
 
     path('doctors/search/', DoctorSearchView.as_view(), name='doctor_search'),
     # New endpoints for all values
