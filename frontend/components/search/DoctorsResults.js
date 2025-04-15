@@ -9,7 +9,7 @@ const Filters = ({ sortBy, setSortBy, onFiltersToggle }) => {
   };
 
   return (
-    <div className="w-full flex items-center justify-between">
+    <div className="w-full flex items-center justify-between mt-4">
       <div className="justify-start items-center gap-[5px] inline-flex">
         <div className="h-auto text-black text-md font-medium tracking-wide sm:flex xs:hidden">Sort</div>
         <select
@@ -86,7 +86,7 @@ export default function DoctorsResults({
 
         onCountChange(data.count);
         setDoctors(results);
-        setTotalPages(Math.ceil(data.count / 10));
+        setTotalPages(Math.ceil(data.count / 6));
       } catch (error) {
         console.error("Error fetching doctors:", error);
         setDoctors([]);
@@ -104,21 +104,28 @@ export default function DoctorsResults({
   };
 
   return (
-    <div className="flex-col justify-start items-center gap-4 inline-flex w-full xl:max-w-2xl lg:max-w-3xl md:max-w-2xl sm:max-w-xl">
+    <div className="flex-col xl:order-1 order-2 justify-start items-center lg:px-8 gap-4 inline-flex w-full">
       <Filters sortBy={sortBy} setSortBy={setSortBy} onFiltersToggle={onFiltersToggle} />
-      {loading ? (
-        <p className="text-[#060648]">Loading doctors...</p>
-      ) : doctors.length > 0 ? (
-        doctors.map((doctor) => <Doctor key={doctor.id} doctor={doctor} />)
-      ) : (
-        <div className="w-full h-80 flex justify-center items-center">
-          <div className="flex flex-col justify-center items-center gap-1">
-            <div className="text-[#060648] text-2xl font-semibold">No doctors found</div>
-            <p className="text-[#060648]">Try adjusting your search criteria.</p>
-            <img src="/images/dclogo.png" alt="No results" className="h-[75px] w-[75px] mt-4" />
+      <div className="w-full grid gap-4 grid-cols-1
+       xl:px-0 xl:grid-cols-3
+       md:grid-cols-2 lg:px-8
+       sm:px-16 
+       xs:px-2">
+        {loading ? (
+          <p className="text-[#060648]">Loading doctors...</p>
+        ) : doctors.length > 0 ? (
+          doctors.map((doctor) => <Doctor doctor={doctor} />)
+        ) : (
+          <div className="w-full h-80 flex justify-center items-center">
+            <div className="flex flex-col justify-center items-center gap-1">
+              <div className="text-[#060648] text-2xl font-semibold">No doctors found</div>
+              <p className="text-[#060648]">Try adjusting your search criteria.</p>
+              <img src="/images/dclogo.png" alt="No results" className="h-[75px] w-[75px] mt-4" />
+            </div>
           </div>
-        </div>
-      )}
+        )}        
+      </div>
+
       {totalPages > 0 && (
         <Pagination
           currentPage={currentPage}

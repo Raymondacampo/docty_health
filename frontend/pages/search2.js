@@ -49,7 +49,7 @@ export default function Search() {
   }, [specialty, ensurance, location, sex, takesDates, experienceValue]);
 
   return (
-    <div className="w-full flex flex-col mb-16">
+    <div className="w-full flex flex-col">
       <SearchHead
         specialty={specialty}
         location={location}
@@ -57,7 +57,7 @@ export default function Search() {
         sex={sex}
         count={count}
       />
-      <div className="w-full justify-between items-start xsLgap-14 inline-flex xl:pl-0 lg:pl-8 ">
+      <div className="w-full justify-center items-start gap-14 inline-flex xl:p-4 lg:pl-8 sm:p-4 xs:p-2">
         {showFilters && (
           <SearchFilters
             specialty={specialty}
@@ -75,7 +75,6 @@ export default function Search() {
             onClose={() => setShowFilters(false)}
           />
         )}
-        
         <DoctorsResults
           specialty={specialty}
           location={location}

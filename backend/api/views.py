@@ -825,7 +825,7 @@ class DayOfWeekListView(generics.ListAPIView):
     serializer_class = DayOfWeekSerializer
 
 class DoctorPagination(PageNumberPagination):
-    page_size = 10  # 10 doctors per page
+    page_size = 6  # 10 doctors per page
     page_size_query_param = 'page_size'
     max_page_size = 100
 

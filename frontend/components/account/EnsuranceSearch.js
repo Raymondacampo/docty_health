@@ -49,7 +49,7 @@ export default function EnsuranceSearch({ onEnsuranceAdded }) {
             setIsOpen(true);
             fetchEnsurances();
           }}
-          className="text-white text-sm font-normal font-['Inter'] bg-[#ee6c4d] px-2.5 py-2 rounded-md"
+          className="text-white text-sm font-normal font-['Inter'] bg-[#ee6c4d] px-2 py-1.5 rounded-sm"
         >
           Add +
         </button>
