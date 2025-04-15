@@ -105,7 +105,10 @@ export default function DoctorsResults({
 
   return (
     <div className="flex-col xl:order-1 order-2 justify-start items-center lg:px-8 gap-4 inline-flex w-full">
+      <div className="xl:w-full xs:w-[90%]">
       <Filters sortBy={sortBy} setSortBy={setSortBy} onFiltersToggle={onFiltersToggle} />
+      </div>
+      
       <div className="w-full grid gap-4 grid-cols-1
        xl:px-0 xl:grid-cols-3
        md:grid-cols-2 lg:px-8
