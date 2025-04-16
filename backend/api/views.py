@@ -283,6 +283,7 @@ class UserProfileView(APIView):
             response_data.update({
                 "exequatur": doctor.exequatur,
                 "experience": doctor.experience,
+                "description": doctor.description,
                 "specializations": [{"id": specialty.id, "name": specialty.name} for specialty in doctor.specialties.all()],
                 "clinics": [{"id": clinic.id, "name": clinic.name} for clinic in doctor.clinics.all()],
                 "ensurances": [{"id": ensurance.id, "name": ensurance.name, "logo": ensurance.logo.url if ensurance.logo else None} for ensurance in doctor.ensurances.all()],
@@ -345,6 +346,8 @@ class UserProfileView(APIView):
 
         if hasattr(user, 'doctor'):
             doctor = user.doctor
+            if 'description' in data:  # Handle description update
+                doctor.description = data['description']
             if 'takes_virtual' in data:
                 new_takes_virtual = data['takes_virtual']
                 if new_takes_virtual:  # If takes_virtual is being set to True
@@ -382,6 +385,7 @@ class UserProfileView(APIView):
             "phone_number": getattr(user, 'phone_number', ''),
             "born_date": getattr(user, 'born_date', ''),
             "is_doctor": hasattr(user, 'doctor'),
+            "description": user.doctor.description if hasattr(user, 'doctor') else None,  # Add description
             "taking_dates": user.doctor.taking_dates if hasattr(user, 'doctor') else None,
             "takes_virtual": user.doctor.takes_virtual if hasattr(user, 'doctor') else None,
             "takes_in_person": user.doctor.takes_in_person if hasattr(user, 'doctor') else None

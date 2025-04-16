@@ -10,18 +10,7 @@ const Filters = ({ sortBy, setSortBy, onFiltersToggle }) => {
 
   return (
     <div className="w-full flex items-center justify-between mt-4">
-      <div className="justify-start items-center gap-[5px] inline-flex">
-        <div className="h-auto text-black text-md font-medium tracking-wide sm:flex xs:hidden">Sort</div>
-        <select
-          value={sortBy}
-          onChange={handleSortChange}
-          className="text-black border border-gray-300 p-1 rounded-md text-xs tracking-wide bg-transparent focus:outline-none"
-        >
-          <option value="relevance">By relevance</option>
-          <option value="expertise">By expertise</option>
-        </select>
-      </div>
-      <button
+        <button
         onClick={onFiltersToggle}
         className="px-3 py-1.5 bg-[#293241] rounded-[5px] border border-[#293241] text-white text-sm tracking-wide xl:hidden flex items-center gap-2"
       >
@@ -41,6 +30,17 @@ const Filters = ({ sortBy, setSortBy, onFiltersToggle }) => {
           />
         </svg>
       </button>
+      <div className="justify-start items-center gap-[5px] inline-flex">
+        <div className="h-auto text-black text-md font-medium tracking-wide sm:flex xs:hidden">Sort</div>
+        <select
+          value={sortBy}
+          onChange={handleSortChange}
+          className="text-black border border-gray-300 p-1 rounded-md text-xs tracking-wide bg-transparent focus:outline-none"
+        >
+          <option value="relevance">By relevance</option>
+          <option value="expertise">By expertise</option>
+        </select>
+      </div>
     </div>
   );
 };
@@ -109,11 +109,12 @@ export default function DoctorsResults({
       <Filters sortBy={sortBy} setSortBy={setSortBy} onFiltersToggle={onFiltersToggle} />
       </div>
       
-      <div className="w-full grid gap-4 grid-cols-1
-       xl:px-0 xl:grid-cols-3
-       md:grid-cols-2 lg:px-8
-       sm:px-16 
-       xs:px-2">
+      <div className=" grid gap-4 grid-cols-1
+       xl:px-0 xl:grid-cols-3 xl:max-w-[1200px]
+       lg:px-8 
+       md:grid-cols-2 md:w-full md:max-w-[850px]
+       sm:px-16 sm:w-[95%]
+       xs:px-2 xs:w-full">
         {loading ? (
           <p className="text-[#060648]">Loading doctors...</p>
         ) : doctors.length > 0 ? (

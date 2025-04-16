@@ -18,13 +18,13 @@ const Doctor = ({ doctor }) => {
   return (
     <div className="w-full min-h-[400px] px-4 py-4 mx-auto rounded-lg bg-white shadow-[0px_4px_6px_0px_rgba(0,0,0,0.15)] flex-col justify-between items-center flex  
     md:min-w-2xl md:max-w-[380px]
-    xs:max-w-[90%]">
+    xs:max-w-[95%]">
       <div className="self-stretch p-2 pl-4 pt-4 justify-between items-center gap-4 inline-flex relative xs:flex-col">
         <img src={`${backendBaseUrl}${doctor.user.profile_picture}`} className="w-[150px] h-[150px] bg-[#d9d9d9] rounded-full"></img>
         <div className="grow shrink basis-0 flex-col justify-start items-start gap-4 inline-flex xs:w-[95%]">
-          <div className="self-stretch flex-col justify-start items-start flex">
+          <div className="self-stretch flex-col justify-start items-start flex gap-1">
             <div className="self-stretch border-b border-[#293241]/0 justify-between items-start inline-flex overflow-hidden">
-              <div className="text-[#293241] text-lg font-medium tracking-wide text-nowrap sm:text-xl">
+              <div className="text-[#293241] text-lg font-medium tracking-wide  sm:text-xl">
                 Dr. {doctor.user.first_name} {doctor.user.last_name}
               </div>
               <div className="items-end gap-2 flex py-1 absolute top-[-10px] right-0">

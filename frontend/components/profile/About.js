@@ -81,7 +81,7 @@ export default function About({ doctor, averageRating, reviewCount }) {
                             </div>                         
                         </>           
                         } */}
-                        {doctor.clinics.map(c => 
+                        {doctor.cities.map(c => 
                             <div className="flex gap-2 items-center">
                                 <div data-svg-wrapper class="relative">
                                     <svg width="12" height="16" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -89,7 +89,7 @@ export default function About({ doctor, averageRating, reviewCount }) {
                                         <path d="M11.1109 6.73114C11.1109 7.46559 10.7831 8.16995 10.1997 8.68929C9.61622 9.20862 8.8249 9.50037 7.99978 9.50037C7.17466 9.50037 6.38334 9.20862 5.79989 8.68929C5.21645 8.16995 4.88867 7.46559 4.88867 6.73114C4.88867 5.9967 5.21645 5.29233 5.79989 4.773C6.38334 4.25367 7.17466 3.96191 7.99978 3.96191C8.8249 3.96191 9.61622 4.25367 10.1997 4.773C10.7831 5.29233 11.1109 5.9967 11.1109 6.73114Z" fill="#3D5A80" stroke="#3D5A80"/>
                                     </svg>
                                 </div>
-                                <div class=" text-white font-['Inter'] tracking-wide text-wrap text-sm">{c.city}, {c.state }</div>                              
+                                <div class=" text-white font-['Inter'] tracking-wide text-wrap text-sm">{c}</div>                              
                             </div>
                             )}
                     </div>
@@ -98,11 +98,7 @@ export default function About({ doctor, averageRating, reviewCount }) {
 
                 <div class=" p-2.5 justify-center items-start gap-2.5 inline-flex flex-col">
                     <div className="text-black font-bold text-lg">{doctor.experience} years of experience</div>
-                    <div class="grow shrink basis-0 text-[#293241] font-normal font-['Inter'] tracking-wide text-base">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vulputate commodo consequat.
-                        Nam vitae consequat ante. Nullam urna libero, hendrerit eleifend ultricies quis, suscipit quis est. Aliquam placerat sem neque. Suspendisse potenti. Suspendisse rhoncus mi a rhoncus sodales. 
-                        Integer in consequat est. Aliquam non urna ex. Maecenas vitae fermentum mauris.
-                    </div>
+                    <div class="grow shrink basis-0 text-[#293241] font-normal font-['Inter'] tracking-wide text-base">{doctor.description}</div>
                 </div>
         </div>
     );

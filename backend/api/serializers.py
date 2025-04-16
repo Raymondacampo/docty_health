@@ -292,13 +292,15 @@ class DoctorSerializer(serializers.ModelSerializer):
     review_count = serializers.SerializerMethodField()
     has_availability = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
+    cities = serializers.SerializerMethodField()  # New field for unique cities
 
     class Meta:
         model = Doctor
         fields = [
             'id', 'user', 'exequatur', 'experience', 'sex', 'taking_dates',
-            'takes_virtual', 'takes_in_person',  # New fields
-            'specialties', 'clinics', 'ensurances', 'average_rating', 'review_count', 'has_availability', 'is_favorited'
+            'takes_virtual', 'takes_in_person', 'description', 'description',  # New fields
+            'specialties', 'clinics', 'ensurances', 'average_rating', 'review_count',
+            'has_availability', 'is_favorited', 'cities'
         ]
 
     def get_user(self, obj):
@@ -327,3 +329,8 @@ class DoctorSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             return obj.favorited_by.filter(id=request.user.id).exists()
         return False
+    
+    def get_cities(self, obj):
+        # Get all clinics associated with the doctor and extract unique city names
+        cities = set(clinic.city for clinic in obj.clinics.all() if clinic.city)
+        return list(cities)

@@ -83,11 +83,11 @@ export default function Settings() {
 
   return (
     <div className="w-full justify-center items-start gap-2.5 inline-flex mt-2">
-      <div className="py-4rounded-[20px] justify-center items-start gap-4 inline-flex sm:px-0 sm:w-auto xs:w-full">
-        <div className="w-full self-stretch py-8 bg-white justify-center items-start gap-20 flex flex-wrap 
+      <div className="py-4 rounded-[20px]  justify-center items-start gap-4 inline-flex sm:px-0 sm:w-auto xs:w-full">
+        <div className="w-full shadow-[0px_4px_6px_2px_rgba(0,0,0,0.15)] self-stretch py-8 bg-white justify-center items-start gap-20 flex flex-wrap 
         lg:px-20 
         md:px-10 
-        sm:px-20 sm:rounded-[20px] sm:max-w-[900px] sm:border-black/25 sm:border
+        sm:px-20 sm:rounded-[20px] sm:max-w-[900px]
         xs:px-4">
           <div className="w-full flex-col justify-start items-start gap-6 flex">
             <div className="w-full flex items-center justify-between px-4">

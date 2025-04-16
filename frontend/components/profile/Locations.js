@@ -17,15 +17,6 @@ const Location = ({ location }) => {
                     </div>
                     <div class="w-full text-black font-['Inter'] tracking-wide text-sm">{location.address}</div>
                 </div>
-                <div class="justify-start items-center gap-2 inline-flex">
-                    <div data-svg-wrapper>
-                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M17.9984 12.461L12.7284 11.851L10.2084 14.371C7.36983 12.9269 5.0625 10.6196 3.61844 7.78098L6.14844 5.25098L5.53844 0.000976562H0.0284377C-0.551562 10.181 7.81844 18.551 17.9984 17.971V12.461Z" fill="black"/>
-                    </svg>
-                    </div>
-                    <div class="text-black font-['Inter'] tracking-wide
-                    sm:text-sm xs:text-xs">809-898-8759</div>
-                </div>
             </div>
         </div>
     );
