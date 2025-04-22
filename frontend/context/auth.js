@@ -9,6 +9,7 @@
   export function AuthProvider({ children }) {
     const router = useRouter();
     const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     const initializeUser = async () => {
       const token = localStorage.getItem("access_token");
@@ -23,14 +24,17 @@
           setUser(null);
         }
       }
+      setLoading(false); // Set loading to false after initialization
     };
   
     useEffect(() => {
+      setLoading(true); // Start loading
       initializeUser(); // Run on mount
     }, []);
 
     useEffect(() => {
       const handleRouteChange = () => {
+        setLoading(true); // Start loading
         initializeUser(); // Run on route change
       };
       router.events.on("routeChangeComplete", handleRouteChange);
@@ -80,7 +84,7 @@
     };
 
     return (
-      <AuthContext.Provider value={{ user, login, logout }}>
+      <AuthContext.Provider value={{ user, login, logout, loading }}>
         {children}
       </AuthContext.Provider>
     );
