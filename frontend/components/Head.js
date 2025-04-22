@@ -39,7 +39,7 @@ export default function Head() {
     };
 
     return (
-        <div className="w-full h-auto px-8 py-4 justify-between items-center inline-flex shadow-[0px_-1px_8px_0px_rgba(0,0,0,0.15)]">
+        <div className="w-full h-auto px-8 py-4 justify-between items-center inline-flex shadow-[0px_-1px_8px_0px_rgba(0,0,0,0.15)] bg-white">
             <a href="/" className="justify-start items-center gap-[15px] inline-flex">
                 <img className="w-[45px] h-[45px]" src="/images/dclogo.png" />
                 <div className="text-[#293241] text-3xl font-bold font-['Inter']">Doctify</div>

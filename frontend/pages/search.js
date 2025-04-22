@@ -87,7 +87,7 @@ export default function Search() {
         sex={sex}
         count={count}
       />
-      <div className="w-full justify-between items-start xsLgap-14 inline-flex xl:pl-0 lg:pl-8">
+      <div className="w-full max-w-[1400px] mx-auto justify-between items-start xsLgap-14 inline-flex xl:pl-0 lg:pl-8">
         {showFilters && (
           <SearchFilters
             specialty={isXsScreen ? tempFilters.specialty : specialty}

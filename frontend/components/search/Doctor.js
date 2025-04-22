@@ -16,33 +16,38 @@ const Doctor = ({ doctor }) => {
   };
 
   return (
-    <div className="w-full min-h-[400px] px-4 py-4 mx-auto rounded-lg bg-white shadow-[0px_4px_6px_0px_rgba(0,0,0,0.15)] flex-col justify-between items-center flex  
-    md:min-w-2xl md:max-w-[380px]
+    <div className="w-full  px-4 py-2 mx-auto rounded-lg bg-white shadow-[0px_4px_4px_0px_rgba(0,0,0,0.1)] justify-between items-center flex  
+    sm:max-w-[900px]
     xs:max-w-[95%]">
-      <div className="self-stretch p-2 pl-4 pt-4 justify-between items-center gap-4 inline-flex relative xs:flex-col">
-        <img src={`${backendBaseUrl}${doctor.user.profile_picture}`} className="w-[150px] h-[150px] bg-[#d9d9d9] rounded-full"></img>
+      <div className="self-stretch p-2 pl-4 pt-4 justify-between items-start gap-6 inline-flex relative ">
+        <div className="flex-col items-center flex gap-2.5">
+          <img src={`${backendBaseUrl}${doctor.user.profile_picture}`} className="w-[125px] h-[125px] bg-[#d9d9d9] rounded-full"></img>
+          {/* RATING */}
+          <div className="items-end gap-2 flex py-1">
+                  <div className="h-auto justify-center items-center gap-1 flex">
+                    <svg width="17" height="16" viewBox="0 0 15 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M7.4999 11.24L3.8699 13.432C3.76324 13.4846 3.66424 13.506 3.5729 13.496C3.48224 13.4853 3.3939 13.454 3.3079 13.402C3.22124 13.3486 3.1559 13.2733 3.1119 13.176C3.0679 13.0786 3.0639 12.9723 3.0999 12.857L4.0659 8.74695L0.870902 5.97695C0.780902 5.90362 0.721569 5.81595 0.692902 5.71395C0.664236 5.61195 0.670569 5.51429 0.711903 5.42095C0.753236 5.32762 0.808236 5.25095 0.876902 5.19095C0.946236 5.13295 1.03957 5.09362 1.1569 5.07295L5.3729 4.70495L7.0169 0.812953C7.06224 0.702953 7.12757 0.62362 7.2129 0.574953C7.29824 0.526286 7.3939 0.501953 7.4999 0.501953C7.6059 0.501953 7.7019 0.526286 7.7879 0.574953C7.8739 0.62362 7.9389 0.702953 7.9829 0.812953L9.6269 4.70495L13.8419 5.07295C13.9599 5.09295 14.0536 5.13262 14.1229 5.19195C14.1922 5.25062 14.2476 5.32695 14.2889 5.42095C14.3296 5.51429 14.3356 5.61195 14.3069 5.71395C14.2782 5.81595 14.2189 5.90362 14.1289 5.97695L10.9339 8.74695L11.8999 12.857C11.9372 12.971 11.9336 13.077 11.8889 13.175C11.8442 13.273 11.7786 13.3483 11.6919 13.401C11.6066 13.4543 11.5182 13.486 11.4269 13.496C11.3362 13.506 11.2376 13.4846 11.1309 13.432L7.4999 11.24Z" fill="#293241"/>
+                    </svg>
+                    <p className="text-[#3d5a80] text-xs items-end font-light">{averageRating}</p>
+                  </div>
+                  <div className="h-[17px] justify-start items-center gap-2.5 flex">
+                    <div data-svg-wrapper>
+                      <svg width="7" height="8" viewBox="0 0 7 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3.33 0.669922C2.44683 0.669922 1.59983 1.02076 0.975335 1.64526C0.350839 2.26975 0 3.11675 0 3.99992C0 4.88309 0.350839 5.73009 0.975335 6.35459C1.59983 6.97908 2.44683 7.32992 3.33 7.32992C5.17815 7.32992 6.66 5.84807 6.66 3.99992C6.66 3.11675 6.30916 2.26975 5.68466 1.64526C5.06017 1.02076 4.21317 0.669922 3.33 0.669922Z" fill="#3D5A80"/>
+                      </svg>
+                    </div>
+                    <div className="text-[#3d5a80] text-xs font-light tracking-wide whitespace-nowrap">{reviewCount} reviews</div>
+                  </div>
+          </div>          
+        </div>
+
         <div className="grow shrink basis-0 flex-col justify-start items-start gap-4 inline-flex xs:w-[95%]">
           <div className="self-stretch flex-col justify-start items-start flex gap-1">
             <div className="self-stretch border-b border-[#293241]/0 justify-between items-start inline-flex overflow-hidden">
-              <div className="text-[#293241] text-lg font-medium tracking-wide  sm:text-xl">
+              <button onClick={handleViewProfile} className="text-[#293241] text-lg font-medium tracking-wide  sm:text-xl">
                 Dr. {doctor.user.first_name} {doctor.user.last_name}
-              </div>
-              <div className="items-end gap-2 flex py-1 absolute top-[-10px] right-0">
-                <div className="h-auto justify-center items-center gap-1 flex">
-                  <svg width="17" height="16" viewBox="0 0 15 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M7.4999 11.24L3.8699 13.432C3.76324 13.4846 3.66424 13.506 3.5729 13.496C3.48224 13.4853 3.3939 13.454 3.3079 13.402C3.22124 13.3486 3.1559 13.2733 3.1119 13.176C3.0679 13.0786 3.0639 12.9723 3.0999 12.857L4.0659 8.74695L0.870902 5.97695C0.780902 5.90362 0.721569 5.81595 0.692902 5.71395C0.664236 5.61195 0.670569 5.51429 0.711903 5.42095C0.753236 5.32762 0.808236 5.25095 0.876902 5.19095C0.946236 5.13295 1.03957 5.09362 1.1569 5.07295L5.3729 4.70495L7.0169 0.812953C7.06224 0.702953 7.12757 0.62362 7.2129 0.574953C7.29824 0.526286 7.3939 0.501953 7.4999 0.501953C7.6059 0.501953 7.7019 0.526286 7.7879 0.574953C7.8739 0.62362 7.9389 0.702953 7.9829 0.812953L9.6269 4.70495L13.8419 5.07295C13.9599 5.09295 14.0536 5.13262 14.1229 5.19195C14.1922 5.25062 14.2476 5.32695 14.2889 5.42095C14.3296 5.51429 14.3356 5.61195 14.3069 5.71395C14.2782 5.81595 14.2189 5.90362 14.1289 5.97695L10.9339 8.74695L11.8999 12.857C11.9372 12.971 11.9336 13.077 11.8889 13.175C11.8442 13.273 11.7786 13.3483 11.6919 13.401C11.6066 13.4543 11.5182 13.486 11.4269 13.496C11.3362 13.506 11.2376 13.4846 11.1309 13.432L7.4999 11.24Z" fill="#293241"/>
-                  </svg>
-                  <p className="text-[#3d5a80] text-xs items-end font-light">{averageRating}</p>
-                </div>
-                <div className="h-[17px] justify-start items-center gap-2.5 flex">
-                  <div data-svg-wrapper>
-                    <svg width="7" height="8" viewBox="0 0 7 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M3.33 0.669922C2.44683 0.669922 1.59983 1.02076 0.975335 1.64526C0.350839 2.26975 0 3.11675 0 3.99992C0 4.88309 0.350839 5.73009 0.975335 6.35459C1.59983 6.97908 2.44683 7.32992 3.33 7.32992C5.17815 7.32992 6.66 5.84807 6.66 3.99992C6.66 3.11675 6.30916 2.26975 5.68466 1.64526C5.06017 1.02076 4.21317 0.669922 3.33 0.669922Z" fill="#3D5A80"/>
-                    </svg>
-                  </div>
-                  <div className="text-[#3d5a80] text-xs font-light tracking-wide whitespace-nowrap">{reviewCount} reviews</div>
-                </div>
-              </div>
+              </button>
+
             </div>
             <div className="self-stretch justify-start items-center gap-[9px] inline-flex">
               <div className="text-[#3D5A80] text-xs font-bold tracking-wide">{specialties.toUpperCase()} </div>
@@ -83,12 +88,21 @@ const Doctor = ({ doctor }) => {
           </div>
         </div>
       </div>
-      <button
-        onClick={handleViewProfile}
-        className="w-[95%] py-1.5 hover:bg-[#ff7653] bg-[#ee6c4d] rounded-md border border-[#ee6c4d] justify-center items-center gap-2.5 bottom-0 inline-flex "
-      >
-        <span className="text-white text-base tracking-wide">View profile</span>
-      </button>
+      <div className="w-auto flex flex-col gap-2.5">
+        <button
+          onClick={handleViewProfile}
+          className="w-auto py-1.5 px-4 hover:bg-[#ee6c4d]/85 bg-[#ee6c4d] rounded-md border border-[#ee6c4d] justify-center items-center gap-2.5 bottom-0 inline-flex "
+        >
+          <span className="text-white text-sm text-nowrap tracking-wide">View profile</span>
+        </button>  
+        <button
+          onClick={handleViewProfile}
+          className="w-auto py-1.5 px-4 hover:bg-[#ff7653]/10 bg-[#ffffff] rounded-md border border-[#ee6c4d] justify-center items-center gap-2.5 bottom-0 inline-flex "
+        >
+          <span className="text-[#ff7653] font-bold text-sm text-nowrap tracking-wide">Make appointments</span>
+        </button>      
+      </div>
+
     </div>
   );
 };

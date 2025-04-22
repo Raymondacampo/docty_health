@@ -57,7 +57,7 @@ export default function Search() {
         sex={sex}
         count={count}
       />
-      <div className="w-full justify-center items-start gap-14 inline-flex xl:p-4 lg:pl-8 sm:p-4 xs:p-2">
+      <div className="w-full max-w-[1400px]justify-center items-start gap-14 inline-flex xl:p-4 lg:pl-8 sm:p-4 xs:p-2">
         {showFilters && (
           <SearchFilters
             specialty={specialty}
