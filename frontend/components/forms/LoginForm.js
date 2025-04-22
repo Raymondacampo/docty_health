@@ -1,10 +1,12 @@
 "use client";
 import { useState } from "react";
+import { useAuth } from "@/context/auth";
 import { useRouter } from "next/router";
 import { apiClient } from "@/utils/api";
 import GoogleButton from "../GoogleLogin";
 
 export default function LoginForm() {
+  const { login } = useAuth();
   const router = useRouter();
   const [credentials, setCredentials] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
@@ -14,20 +16,17 @@ export default function LoginForm() {
     e.preventDefault();
     e.stopPropagation();
     setLoading(true);
-    setError(""); // Clear previous errors
-
+    setError("");
     try {
-      const { data } = await apiClient.post("/api/auth/login/", credentials);
-      localStorage.setItem("access_token", data.access);
-      localStorage.setItem("refresh_token", data.refresh);
-      router.push("/account");
+      const { data } = await apiClient.post("/auth/login/", credentials);
+      localStorage.setItem("refresh_token", data.refresh);  // Store refresh token
+      await login(data.access);
     } catch (err) {
-      console.error(err);
+      console.error("Login failed:", err.response?.data || err.message);
       setError("Invalid email or password");
       setLoading(false);
     }
   };
-
   return (
     <div className="border-black/25 border py-8 bg-white rounded-[15px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] flex-col justify-center items-center gap-6 inline-flex sm:w-[418px] sm:px-8 xs:w-full xs:max-w-[400px] xs:px-4">
       <div className="self-stretch text-center text-[#293241] text-xl font-['Inter'] tracking-wide">Login to your account!</div>

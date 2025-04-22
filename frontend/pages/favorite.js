@@ -87,7 +87,7 @@ export default function FavouriteDoctors() {
         <div className="self-stretch w-full text-[#293241] text-2xl font-['Inter'] tracking-wide font-bold border-b mb-4">
           Favourite doctors
         </div>
-        <div className="self-stretch w-full flex-col justify-start items-center gap-3 flex">
+        <div className="self-stretch w-[95%] flex-col justify-start items-center gap-3 flex mx-auto">
           {doctors.length === 0 ? (
             <div className="text-[#293241] font-['Inter'] text-center">
               No favorite doctors found.

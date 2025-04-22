@@ -85,13 +85,15 @@ class DoctorSignupView(APIView):
 # Login API
 class LoginView(APIView):
     permission_classes = [AllowAny]
-
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
-
-        user = authenticate(email=email, password=password)
-        
+        if not email or not password:
+            return Response(
+                {'error': 'Email and password are required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        user = authenticate(username=email, password=password)  # Use username=email
         if user:
             refresh = RefreshToken.for_user(user)
             return Response({
@@ -100,10 +102,9 @@ class LoginView(APIView):
                 'user': {
                     'id': user.id,
                     'email': user.email,
-                    'email': user.email
+                    'username': user.username
                 }
             }, status=status.HTTP_200_OK)
-        
         return Response(
             {'error': 'Invalid credentials'},
             status=status.HTTP_401_UNAUTHORIZED
@@ -1058,3 +1059,13 @@ class AllEnsurancesView(APIView):
         ensurances = Ensurance.objects.all()
         serializer = EnsuranceSerializer(ensurances, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class IsDoctorView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        is_doctor = hasattr(user, 'doctor')
+        return Response({
+            "is_doctor": is_doctor
+        }, status=status.HTTP_200_OK)

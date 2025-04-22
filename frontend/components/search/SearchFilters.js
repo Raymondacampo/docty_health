@@ -7,11 +7,15 @@ import ExperienceFilter from "./ExperienceFilter";
 
 export default function SearchFilters({ specialty, onSpecialty, location, onLocation, ensurance, onEnsurance, sex, onSex, takes_dates, onTake,experienceValue, setExperienceValue, onClose }) {
     return(
-        <div className="xl:w-auto xl:h-auto xl:relative xs:fixed xs:w-[100%] xs:h-[100%] xs:top-0 xs:left-0 backdrop-blur-md bg-white/30 z-10 flex justify-center items-center gap-5 ">
+        <div className="xl:w-auto xl:h-auto  xl:static
+        sm:w-[350px] sm:top-0 sm:absolute
+        xs:fixed xs:w-[100%] xs:h-[100%] xs:top-0 xs:left-0 
+        z-10 flex justify-center xl:items-center gap-5 
+        ">
             <div class=" p-4 bg-white flex-col justify-start items-start gap-8 flex
-            xl:w-80 xl:shadow-[0px_4px_4px_0px_rgba(0,0,0,0.15)]
-            sm:w-[60%] sm:shadow-[0px_4px_4px_4px_rgba(0,0,0,0.30)] sm:h-auto sm:rounded-lg sm:overflow-none
-            xs:w-full xs:h-full xs:rounded-none xs:overflow-y-auto">
+            xl:w-80 xl:shadow-[0px_4px_4px_0px_rgba(0,0,0,0.15)] xl:h-auto
+            sm:w-full sm:shadow-[0px_4px_30px_4px_rgba(0,0,0,0.50)]  sm:rounded-lg sm:overflow-none sm:left-0
+            xs:w-full xs:h-screen xs:rounded-none xs:overflow-y-auto">
                 <div class="self-stretch flex-col justify-start items-start gap-[21px] flex">
                     <div className="relative self-stretch justify-between gap-2 flex">
                         <div class="text-[#060648] text-2xl font-['Inter'] tracking-wider">Search filters</div>   

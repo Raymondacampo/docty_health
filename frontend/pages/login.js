@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import LoginForm from "@/components/forms/LoginForm";
-
+import { useAuth } from "@/context/auth";
 // const isTokenExpired = (token) => {
 //     if (!token) return true; // No token means it's "expired" or invalid
 //     try {
@@ -15,6 +15,8 @@ import LoginForm from "@/components/forms/LoginForm";
 //   };
 
 export default function LoginPage() {
+    const { user } = useAuth();
+    console.log(user)
     //  const { user, loading } = useUser(); // Use the hook
     // console.log(user)
     // if (loading) return <div>Loading profile...</div>;

@@ -105,16 +105,17 @@ export default function DoctorsResults({
 
   return (
     <div className="flex-col xl:order-1 order-2 justify-start items-center lg:px-8 gap-4 inline-flex w-full">
-      <div className="xl:w-full xs:w-[90%]">
+      <div className="xl:w-full xs:w-[90%] max-w-[95%]">
       <Filters sortBy={sortBy} setSortBy={setSortBy} onFiltersToggle={onFiltersToggle} />
       </div>
       
-      <div className=" grid gap-4 grid-cols-1
-       xl:px-0 xl:grid-cols-3 xl:max-w-[1200px]
+      <div className={`grid gap-4 grid-cols-1
+       xl:px-0 xl:max-w-[1200px]
        lg:px-8 
-       md:grid-cols-2 md:w-full md:max-w-[850px]
-       sm:px-16 sm:w-[95%]
-       xs:px-2 xs:w-full">
+       md:w-full md:max-w-[850px]
+       sm:px-12 sm:w-[95%]
+       xs:px-2 xs:w-full
+       ${doctors.length > 0 ? "xl:grid-cols-3 md:grid-cols-2" : "grid-cols-1"}`}>
         {loading ? (
           <p className="text-[#060648]">Loading doctors...</p>
         ) : doctors.length > 0 ? (

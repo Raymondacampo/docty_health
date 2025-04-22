@@ -11,7 +11,7 @@ export default function GoogleButton({ setError }) {
             onSuccess={async (credentialResponse) => {
             console.log("Google Credential:", credentialResponse.credential);
             try {
-              await login(credentialResponse.credential);
+              await login(credentialResponse.credential, true);
             } catch (error) {
               setError("Google login failed. Please try again.");
             }

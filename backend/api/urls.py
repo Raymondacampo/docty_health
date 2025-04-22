@@ -2,7 +2,7 @@ from django.urls import path
 from .views import get_data, LoginView, UserProfileView, SignupView, LogoutView, GoogleLogin, DoctorSignupView, PasswordResetRequestView, PasswordChangeView, ValidateTokenView,AvailableSpecialtiesView, AddSpecialtyView, AddClinicView, AvailableClinicsView
 from .views import RemoveClinicView, RemoveSpecialtyView, UploadDoctorDocumentView, BookAppointmentView, CreateDoctorAvailabilityView, AvailableSlotsView, DayOfWeekListView,UpdateDoctorAvailabilityView, DeleteDoctorAvailabilityView, DeleteDoctorDocumentView
 from .views import AvailableEnsurancesView, AddEnsuranceView, RemoveEnsuranceView, DoctorSearchView, AllSpecialtiesView, AllClinicsView, AllEnsurancesView  
-from .views import DoctorDetailView, DoctorDetailView, ReviewsDetailView, CreateReviewView, ToggleFavoriteDoctorView
+from .views import DoctorDetailView, DoctorDetailView, ReviewsDetailView, CreateReviewView, ToggleFavoriteDoctorView, IsDoctorView
 from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView, TokenObtainPairView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -19,7 +19,7 @@ urlpatterns = [
     path('auth/password_reset/', PasswordResetRequestView.as_view(), name='password_reset_request'),
     path('auth/password_change/', PasswordChangeView.as_view(), name='password_change'),
     path('auth/validate_token/', ValidateTokenView.as_view(), name='validate_token'),
-    
+    path('auth/is_doctor/', IsDoctorView.as_view(), name='is_doctor'),
     path('auth/available_specialties/', AvailableSpecialtiesView.as_view(), name='available_specialties'),
     path('auth/add_specialty/', AddSpecialtyView.as_view(), name='add_specialty'),
     path('auth/available_clinics/', AvailableClinicsView.as_view(), name='available_clinics'),

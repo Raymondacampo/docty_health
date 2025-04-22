@@ -1,39 +1,37 @@
 import { apiClient } from "./api";
 
 export async function getValidToken() {
-    let token = localStorage.getItem("token");
-    const refreshToken = localStorage.getItem("refresh_token");
-  
-    if (!token || !refreshToken) {
-      console.log("No token found, user needs to log in.");
-      return null;
-    }
-  
-    // ✅ Ensure this points to `/api/token/verify/`
-    const { res } = await apiClient.post('token/verify/', {
-      body: JSON.stringify({ token }),     
+  let token = localStorage.getItem("access_token"); // Fix token key
+  const refreshToken = localStorage.getItem("refresh_token");
+
+  if (!token || !refreshToken) {
+    console.log("No token found, user needs to log in.");
+    return null;
+  }
+
+  const res = await apiClient.post("/api/token/verify/", { // Add /api/ prefix for consistency
+    body: JSON.stringify({ token }),
+  });
+
+  if (res.status !== 200) {
+    console.log("Token expired! Trying to refresh...");
+
+    const refreshRes = await apiClient.post("/api/token/refresh/", {
+      body: JSON.stringify({ refresh: refreshToken }),
     });
 
-    if (res.status !== 200) {
-      console.log("Token expired! Trying to refresh...");
-  
-      // Token expired, refresh it
-      const {refreshRes} = await apiClient.post('token/refresh/', {
-        body: JSON.stringify({ refresh: refreshToken }),
-      });
-  
-      if (refreshRes.ok) {
-        const data = await refreshRes.json();
-        localStorage.setItem("token", data.access);
-        return data.access;
-      } else {
-        console.log("Refresh token invalid. User needs to log in.");
-        return null;
-      }
+    if (refreshRes.ok) {
+      const data = await refreshRes.json();
+      localStorage.setItem("access_token", data.access); // Fix token key
+      return data.access;
+    } else {
+      console.log("Refresh token invalid. User needs to log in.");
+      return null;
     }
-  
-    return token;
   }
+
+  return token;
+}
   
 
 export async function logoutUser() {
@@ -44,20 +42,23 @@ export async function logoutUser() {
     return;
   }
 
-  apiClient.post('logout/', {
-    body: JSON.stringify({ refresh: refreshToken }),
-  });
+  try {
+    await apiClient.post("/api/auth/logout/", { // Match AuthProvider endpoint
+      body: JSON.stringify({ refresh: refreshToken }),
+    });
+  } catch (error) {
+    console.error("Logout failed:", error.response?.data || error.message);
+  }
 
-  // ✅ Clear tokens from localStorage
-  localStorage.removeItem("token");
+  localStorage.removeItem("access_token"); // Fix token key
   localStorage.removeItem("refresh_token");
 
   console.log("User logged out successfully.");
-  }
+}
 
 export function isAuthenticated() {
   if (typeof window !== "undefined") {
-    return !!localStorage.getItem("token");  // ✅ Checks if user is logged in
+    return !!localStorage.getItem("access_token"); // Fix token key
   }
   return false;
 }
