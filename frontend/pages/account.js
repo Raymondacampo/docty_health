@@ -84,7 +84,7 @@ export default function MyAccountConfig() {
   return (
     <div className="w-full bg-[#98c1d1]/20 flex-col justify-center items-center gap-16 inline-flex md:px-9 sm:py-24 xs:py-16 xs:px-4">
       {user &&  
-        <div className="flex-col max-w-sm justify-center items-center gap-11 flex sm:w-auto xs:w-full">
+        <div className="flex-col justify-center items-center gap-11 flex sm:w-auto xs:w-full">
           <div className="w-full flex-col justify-center items-start gap-2 flex order-first">
             <div className="text-[#293241] text-xl font-bold font-['Inter']">My account</div>     
             <div className="text-[#293241] text-xl font-normal font-['Inter'] break-all ">{user.email}</div>

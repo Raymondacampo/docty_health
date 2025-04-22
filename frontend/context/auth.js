@@ -15,7 +15,6 @@
       if (token && !user) {
         try {
           const { data } = await apiClient.get("/auth/me/");
-          console.log("auth/me response:", data);
           setUser({ email: data.email, id: data.id, username: data.username });
         } catch (error) {
           console.error("Failed to initialize user:", error.response?.data || error.message);
@@ -89,7 +88,6 @@
 
   export const useAuth = () => {
     const context = useContext(AuthContext);
-    console.log(context)
     if (!context) {
       throw new Error("useAuth must be used within AuthProvider");
     }

@@ -16,7 +16,6 @@ export default function CityStateSearchBar({ value, onChange, round }) {
       try {
         const response = await publicApiClient.get("/all_clinics/");
         const clinics = response.data;
-        console.log(clinics)
         // Extract unique city/state combinations
         const uniqueLocations = [
           ...new Set(

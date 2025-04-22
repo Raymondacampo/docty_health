@@ -13,7 +13,6 @@ export default function Head() {
     const loginUrl = "/login";
 
     useEffect(() => {
-        console.log('eee',user)
         setIsUser(!!user); // Set isUser true if user exists, false if null
       }, [user]);
 

@@ -115,7 +115,8 @@ export default function DoctorsResults({
        md:w-full md:max-w-[850px]
        sm:px-12 sm:w-[95%]
        xs:px-2 xs:w-full
-       ${doctors.length > 0 ? "xl:grid-cols-3 md:grid-cols-2" : "grid-cols-1"}`}>
+       ${doctors.length >1 ? "xl:grid-cols-3 md:grid-cols-2" : "grid-cols-1"}
+       `}>
         {loading ? (
           <p className="text-[#060648]">Loading doctors...</p>
         ) : doctors.length > 0 ? (

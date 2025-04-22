@@ -13,8 +13,17 @@ export default function Search() {
   const [sex, setSex] = useState("both");
   const [takesDates, setTakesDates] = useState("any");
   const [experienceValue, setExperienceValue] = useState("any");
+  const [tempFilters, setTempFilters] = useState({
+    specialty: "",
+    ensurance: "",
+    location: "",
+    sex: "both",
+    takesDates: "any",
+    experienceValue: "any",
+  });
   const [showFilters, setShowFilters] = useState(false);
   const [count, setCount] = useState(0);
+  const [isXsScreen, setIsXsScreen] = useState(false);
 
   useEffect(() => {
     if (router.isReady) {
@@ -22,12 +31,19 @@ export default function Search() {
       const newLocation = router.query.location || "";
       setSpecialty(newSpecialty);
       setLocation(newLocation);
+      setTempFilters((prev) => ({
+        ...prev,
+        specialty: newSpecialty,
+        location: newLocation,
+      }));
     }
   }, [router.isReady, router.query.specialty, router.query.location]);
 
   useEffect(() => {
     const handleResize = () => {
-      setShowFilters(window.innerWidth >= 1280);
+      const isXs = window.innerWidth < 640; // Match Tailwind xs breakpoint
+      setIsXsScreen(isXs);
+      setShowFilters(window.innerWidth >= 1280); // Show filters on xl or xs
     };
     handleResize();
     window.addEventListener("resize", handleResize);
@@ -35,7 +51,7 @@ export default function Search() {
   }, []);
 
   useEffect(() => {
-    if (specialty || location) {
+    if (!isXsScreen && (specialty || location)) {
       const query = {
         specialty,
         ensurance,
@@ -46,7 +62,21 @@ export default function Search() {
       };
       router.push({ query }, undefined, { shallow: true });
     }
-  }, [specialty, ensurance, location, sex, takesDates, experienceValue]);
+  }, [specialty, ensurance, location, sex, takesDates, experienceValue, isXsScreen]);
+
+  const applyFilters = () => {
+    setSpecialty(tempFilters.specialty);
+    setEnsurance(tempFilters.ensurance);
+    setLocation(tempFilters.location);
+    setSex(tempFilters.sex);
+    setTakesDates(tempFilters.takesDates);
+    setExperienceValue(tempFilters.experienceValue);
+    setShowFilters(false); // Close filters on xs after applying
+  };
+
+  const updateTempFilters = (newFilters) => {
+    setTempFilters((prev) => ({ ...prev, ...newFilters }));
+  };
 
   return (
     <div className="w-full flex flex-col mb-16">
@@ -57,25 +87,50 @@ export default function Search() {
         sex={sex}
         count={count}
       />
-      <div className="w-full justify-between items-start xsLgap-14 inline-flex xl:pl-0 lg:pl-8 ">
+      <div className="w-full justify-between items-start xsLgap-14 inline-flex xl:pl-0 lg:pl-8">
         {showFilters && (
           <SearchFilters
-            specialty={specialty}
-            onSpecialty={setSpecialty}
-            location={location}
-            onLocation={setLocation}
-            ensurance={ensurance}
-            onEnsurance={setEnsurance}
-            sex={sex}
-            onSex={setSex}
-            takes_dates={takesDates}
-            onTake={setTakesDates}
-            experienceValue={experienceValue}
-            setExperienceValue={setExperienceValue}
+            specialty={isXsScreen ? tempFilters.specialty : specialty}
+            onSpecialty={(value) =>
+              isXsScreen
+                ? updateTempFilters({ specialty: value })
+                : setSpecialty(value)
+            }
+            location={isXsScreen ? tempFilters.location : location}
+            onLocation={(value) =>
+              isXsScreen
+                ? updateTempFilters({ location: value })
+                : setLocation(value)
+            }
+            ensurance={isXsScreen ? tempFilters.ensurance : ensurance}
+            onEnsurance={(value) =>
+              isXsScreen
+                ? updateTempFilters({ ensurance: value })
+                : setEnsurance(value)
+            }
+            sex={isXsScreen ? tempFilters.sex : sex}
+            onSex={(value) =>
+              isXsScreen ? updateTempFilters({ sex: value }) : setSex(value)
+            }
+            takes_dates={isXsScreen ? tempFilters.takesDates : takesDates}
+            onTake={(value) =>
+              isXsScreen
+                ? updateTempFilters({ takesDates: value })
+                : setTakesDates(value)
+            }
+            experienceValue={
+              isXsScreen ? tempFilters.experienceValue : experienceValue
+            }
+            setExperienceValue={(value) =>
+              isXsScreen
+                ? updateTempFilters({ experienceValue: value })
+                : setExperienceValue(value)
+            }
             onClose={() => setShowFilters(false)}
+            onApply={isXsScreen ? applyFilters : null}
+            isXsScreen={isXsScreen}
           />
         )}
-        
         <DoctorsResults
           specialty={specialty}
           location={location}
