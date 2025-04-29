@@ -21,7 +21,7 @@ const Doctor = ({ doctor }) => {
     xs:max-w-[95%] xs:flex-col xs:gap-4">
       <div className="self-stretch justify-between items-start gap-6 inline-flex relative sm:pt-4  sm:p-2 sm:pl-4 xs:pt-6">
         <div className="flex-col items-center flex gap-2.5">
-          <img src={`${backendBaseUrl}${doctor.user.profile_picture}`} className="w-[125px] h-[125px] bg-[#d9d9d9] rounded-sm xs:w-[100px] xs:h-[100px]"></img>
+          <img src={`${backendBaseUrl}${doctor.user.profile_picture}`} className="w-[105px] h-[115px] bg-[#d9d9d9] rounded-sm"></img>
           {/* RATING */}
           <div className="items-end gap-2 flex py-1 sm:relative xs:absolute xs:top-[-5px] xs:right-0">
                   <div className="h-auto justify-center items-center gap-1 flex">
@@ -88,7 +88,9 @@ const Doctor = ({ doctor }) => {
           </div>
         </div>
       </div>
-      <div className="flex flex-col justify-center gap-2.5 sm:flex-col sm:w-auto xs:flex-row xs:flex-wrap xs:w-full sm:border-none xs:border-t xs:pt-2">
+      <div className="flex flex-col justify-center 
+      sm:flex-col sm:w-auto sm:border-none sm:gap-2.5 
+      xs:flex-row xs:flex-wrap xs:w-full xs:border-t xs:pt-2 xs:gap-x-4 xs:gap-y-2">
         <button
           onClick={handleViewProfile}
           className=" py-1.5 px-4 hover:bg-[#ee6c4d]/85 bg-[#ee6c4d] rounded-md border border-[#ee6c4d] justify-center items-center gap-2.5 bottom-0 inline-flex max-w-[160px] sm:w-auto xs:w-full"
@@ -99,7 +101,7 @@ const Doctor = ({ doctor }) => {
           onClick={handleViewProfile}
           className="py-1.5 px-4 hover:bg-[#ff7653]/10 bg-[#ffffff] rounded-md border border-[#ee6c4d] justify-center items-center gap-2.5 bottom-0 inline-flex max-w-[160px] sm:w-auto xs:w-full"
         >
-          <span className="text-[#ff7653] font-bold text-sm text-nowrap tracking-wide">Make appointments</span>
+          <span className="text-[#ff7653] font-bold text-sm text-nowrap tracking-wide">Make appointment</span>
         </button>      
       </div>
 
