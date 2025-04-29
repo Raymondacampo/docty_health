@@ -20,8 +20,8 @@ export default function About({ doctor, averageRating, reviewCount }) {
                                 <div class="text-[#293241] font-['Inter'] tracking-wide text-2xl text-center">Dr. {doctor.user.first_name} {doctor.user.last_name}</div>
                             </div>
                             <div class="w-full  items-center gap-2.5 inline-flex sm:justify-start xs:justify-center">
-                                {doctor.specialties.map(s =>
-                                    <div class="text-[#293241] font-['Inter'] tracking-wide text-sm">{s.name}</div>
+                                {doctor.specialties.map((s, index) =>
+                                    <div key={index} class="text-[#293241] font-['Inter'] tracking-wide text-sm">{s.name}</div>
                                 )}
                             </div>
                         </div>
@@ -43,7 +43,7 @@ export default function About({ doctor, averageRating, reviewCount }) {
                                 <AverageRatingStars averageRating={averageRating} />
                                 <div class="text-[#293241] font-['Inter'] tracking-wide text-xs">( {reviewCount} reviews )</div>                                
                             </div>
-                            <FavoriteButton doctorId={doctor.id} isFavoritedInitially={doctor.isFavoritedInitially}/>
+                            <FavoriteButton doctorId={doctor.id} isFavoritedInitially={doctor.is_favorited}/>
                         </div>
                     </div>
                 </div>
@@ -81,8 +81,8 @@ export default function About({ doctor, averageRating, reviewCount }) {
                             </div>                         
                         </>           
                         } */}
-                        {doctor.cities.map(c => 
-                            <div className="flex gap-2 items-center">
+                        {doctor.cities.map((c, index) => 
+                            <div key={index} className="flex gap-2 items-center">
                                 <div data-svg-wrapper class="relative">
                                     <svg width="12" height="16" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M8 18.5C11.8889 13.6538 15 9.5 15 6.73077C15 5.07827 14.2625 3.49345 12.9497 2.32495C11.637 1.15645 9.85652 0.5 8 0.5C6.14348 0.5 4.36301 1.15645 3.05025 2.32495C1.7375 3.49345 1 5.07827 1 6.73077C1 9.5 4.11111 13.6538 8 18.5Z" fill="white" stroke="white"/>

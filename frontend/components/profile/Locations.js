@@ -36,8 +36,8 @@ export default function Locations({ clinics }) {
             </div>
             <div class="w-full justify-center items-center inline-flex gap-x-8 gap-y-12 flex-wrap
             xs:px-2 ">
-                {clinics.map(c => 
-                    <Location location={c} />
+                {clinics.map((c, index) => 
+                    <Location location={c} key={index} />
                 )}
             </div>
         </div>

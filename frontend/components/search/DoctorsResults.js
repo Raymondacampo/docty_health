@@ -109,7 +109,7 @@ export default function DoctorsResults({
       <Filters sortBy={sortBy} setSortBy={setSortBy} onFiltersToggle={onFiltersToggle} />
       </div>
       
-      <div className="gap-4 flex flex-col w-full ">
+      <div className="gap-4 flex flex-col w-full lg:px-0 sm:px-4 ">
         {loading ? (
           <p className="text-[#060648]">Loading doctors...</p>
         ) : doctors.length > 0 ? (

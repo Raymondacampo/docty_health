@@ -18,8 +18,8 @@ export default function Insurances({ insurances, name }) {
                 </div>
             </div>
             <div class="w-full justify-start items-start gap-5 inline-flex flex-wrap">
-                {insurances.map(e => 
-                    <div class=" px-4 justify-start items-center gap-4 flex">
+                {insurances.map((e, index) => 
+                    <div key={index} class=" px-4 justify-start items-center gap-4 flex">
                         <img src={`${img_src}${e.logo}`} class="w-[75px] h-[75px] bg-[#5c5c5c]"></img>
                         <div class="text-center text-[#293241] text-base font-normal font-['Inter'] tracking-wide">{e.name}</div>
                     </div>

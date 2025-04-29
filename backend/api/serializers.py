@@ -292,45 +292,59 @@ class DoctorSerializer(serializers.ModelSerializer):
     review_count = serializers.SerializerMethodField()
     has_availability = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
-    cities = serializers.SerializerMethodField()  # New field for unique cities
+    cities = serializers.SerializerMethodField()
 
     class Meta:
         model = Doctor
-        fields = [
-            'id', 'user', 'exequatur', 'experience', 'sex', 'taking_dates',
-            'takes_virtual', 'takes_in_person', 'description', 'description',  # New fields
-            'specialties', 'clinics', 'ensurances', 'average_rating', 'review_count',
-            'has_availability', 'is_favorited', 'cities'
-        ]
+        fields = ['id', 'user', 'exequatur', 'experience', 'sex', 'taking_dates',
+                  'takes_virtual', 'takes_in_person', 'description', 'specialties',
+                  'clinics', 'ensurances', 'average_rating', 'review_count',
+                  'has_availability', 'is_favorited', 'cities']
+
+    def get_is_favorited(self, obj):
+        request = self.context.get('request')
+        if not request:
+            print("⚡ NO request in context")
+            return False
+
+        user = getattr(request, 'user', None)
+        if not user:
+            print("⚡ NO user in request")
+            return False
+
+        if not user.is_authenticated:
+            print(f"⚡ User not authenticated: {user}")
+            return False
+
+        # Print user and doctor info
+        print(f"⚡ Authenticated user ID: {user.id}")
+        print(f"⚡ Favorite doctors IDs: {list(user.favorite_doctors.values_list('id', flat=True))}")
+        print(f"⚡ Checking doctor ID: {obj.id}")
+
+        is_favorited = user.favorite_doctors.filter(pk=obj.pk).exists()
+        print(f"⚡ is_favorited result: {is_favorited}")
+        
+        return is_favorited
+
+
 
     def get_user(self, obj):
         return {
+            'id': obj.user.id,
             'first_name': obj.user.first_name,
             'last_name': obj.user.last_name,
-            "phone_number": obj.user.phone_number,
-            "email": obj.user.email,
-            "profile_picture": obj.user.profile_picture.url if obj.user.profile_picture else None,
+            'email': obj.user.email
         }
 
     def get_average_rating(self, obj):
         reviews = obj.reviews_received.all()
-        if reviews.exists():
-            return round(sum(review.rating for review in reviews) / reviews.count(), 1)
-        return 0
+        return sum(review.rating for review in reviews) / len(reviews) if reviews else None
 
     def get_review_count(self, obj):
         return obj.reviews_received.count()
 
     def get_has_availability(self, obj):
-        return DoctorAvailability.objects.filter(doctor=obj).exists()
-    
-    def get_is_favorited(self, obj):
-        request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            return obj.favorited_by.filter(id=request.user.id).exists()
-        return False
-    
+        return obj.taking_dates
+
     def get_cities(self, obj):
-        # Get all clinics associated with the doctor and extract unique city names
-        cities = set(clinic.city for clinic in obj.clinics.all() if clinic.city)
-        return list(cities)
+        return list(set(clinic.city for clinic in obj.clinics.all() if clinic.city))

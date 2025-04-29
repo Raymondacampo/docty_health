@@ -3,7 +3,6 @@ from rest_framework.response import Response
 from rest_framework import status, generics
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from django.contrib.auth.models import User
 from rest_framework import status
 from django.core.mail import send_mail
 from django.conf import settings
@@ -909,16 +908,26 @@ class DoctorSearchView(APIView):
         return paginator.get_paginated_response(serializer.data)
     
 class DoctorDetailView(APIView):
-    permission_classes = [AllowAny]  # Adjust permissions as needed
+    permission_classes = [AllowAny]
 
     def get(self, request, doctor_id):
+        logger.debug("Entering DoctorDetailView for doctor_id: %s", doctor_id)
+        logger.debug("Request user: %s, Authenticated: %s", request.user, request.user.is_authenticated)
         try:
             doctor = Doctor.objects.get(id=doctor_id)
-            serializer = DoctorSerializer(doctor)
+            if request.user.is_authenticated:
+                favorite_doctors = list(request.user.favorite_doctors.values_list('id', flat=True))
+                logger.debug("User %s favorite doctors: %s", request.user.id, favorite_doctors)
+            else:
+                logger.debug("No authenticated user, skipping favorite check")
+            serializer = DoctorSerializer(doctor, context={'request': request})
+            logger.debug("Serializer data: %s", serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Doctor.DoesNotExist:
+            logger.error("Doctor with id %s not found", doctor_id)
             return Response({"error": "Doctor not found"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
+            logger.error("Error in DoctorDetailView: %s", str(e))
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 class ReviewPagination(PageNumberPagination):

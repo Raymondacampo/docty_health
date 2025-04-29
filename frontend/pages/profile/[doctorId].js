@@ -5,7 +5,8 @@ import About from "@/components/profile/About";
 import Insurances from "@/components/profile/Insurances";
 import Locations from "@/components/profile/Locations";
 import Reviews from "@/components/profile/Reviews";
-import { publicApiClient } from "@/utils/api";
+import { publicApiClient, apiClient } from "@/utils/api";
+import { useAuth } from "@/context/auth";
 
 export default function Profile() {
   const router = useRouter();
@@ -20,12 +21,22 @@ export default function Profile() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const user = useAuth().user; // Get user from context
 
   const fetchDoctorData = async (id) => {
     try {
-      const response = await publicApiClient.get(`/doctors/${id}/`);
+      const token = localStorage.getItem('access_token');
+
+      let response;
+      if (token) {
+        // If token exists, fetch using apiClient with auth
+        response = await apiClient.get(`/doctors/${id}/`);
+      } else {
+        // Otherwise public fetch
+        response = await publicApiClient.get(`/doctors/${id}/`);
+      }
+      
       setDoctorData(response.data);
-      console.log(response.data);
     } catch (err) {
       setError(err.response?.data?.error || "Failed to fetch doctor data");
     }
