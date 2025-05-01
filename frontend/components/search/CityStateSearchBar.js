@@ -7,10 +7,13 @@ export default function CityStateSearchBar({ value, onChange, round }) {
   const [filteredLocations, setFilteredLocations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+
+  const [tempValue, setTempValue] = useState(value);
   const [inputValue, setInputValue] = useState(value); // Sync with parent
 
   // Fetch clinics and extract unique city/state pairs on mount
   useEffect(() => {
+
     const fetchLocations = async () => {
       setLoading(true);
       try {
@@ -35,19 +38,9 @@ export default function CityStateSearchBar({ value, onChange, round }) {
     fetchLocations();
   }, []);
 
-  // Sync inputValue with parent value and filter locations
-  useEffect(() => {
-    setInputValue(value);
-    const filtered = locations.filter((loc) =>
-      loc.name.toLowerCase().includes(value.toLowerCase())
-    );
-    setFilteredLocations(filtered);
-  }, [value, locations]);
-
   const handleInputChange = (e) => {
     const newValue = e.target.value;
-    setInputValue(newValue);
-    onChange(newValue); // Notify parent
+    setTempValue(newValue);
     const filtered = locations.filter((loc) =>
       loc.name.toLowerCase().includes(newValue.toLowerCase())
     );
@@ -56,6 +49,7 @@ export default function CityStateSearchBar({ value, onChange, round }) {
   };
 
   const handleOptionClick = (locationName) => {
+    setTempValue(locationName);
     setInputValue(locationName);
     onChange(locationName); // Notify parent
     setIsOpen(false);
@@ -63,9 +57,8 @@ export default function CityStateSearchBar({ value, onChange, round }) {
 
   const handleBlur = () => {
     setTimeout(() => {
-      if (!locations.some((item) => item.name === inputValue)) {
-        setInputValue("");
-        onChange("");
+      if (!locations.some((item) => item.name === tempValue)) {
+        setTempValue(inputValue);
       }
       setIsOpen(false);
     }, 100);
@@ -76,7 +69,7 @@ export default function CityStateSearchBar({ value, onChange, round }) {
       <input
         type="text"
         placeholder="Search for a city or state"
-        value={inputValue}
+        value={tempValue}
         onChange={handleInputChange}
         onFocus={() => setIsOpen(true)}
         onBlur={handleBlur}

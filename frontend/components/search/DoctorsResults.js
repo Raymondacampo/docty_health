@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { publicApiClient } from "@/utils/api";
 import Pagination from "../Pagination";
 import Doctor from "./Doctor";
+import LoadingComponent from "../LoadingComponent";
+
 const Filters = ({ sortBy, setSortBy, onFiltersToggle }) => {
   const handleSortChange = (e) => {
     setSortBy(e.target.value);
@@ -111,7 +113,7 @@ export default function DoctorsResults({
       
       <div className="gap-4 flex flex-col w-full lg:px-0 sm:px-4 ">
         {loading ? (
-          <p className="text-[#060648]">Loading doctors...</p>
+          <LoadingComponent isLoading={loading} />
         ) : doctors.length > 0 ? (
           doctors.map((doctor) => <Doctor doctor={doctor} />)
         ) : (

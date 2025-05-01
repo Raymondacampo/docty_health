@@ -14,6 +14,7 @@ export default function UserProfileForm({ initialUser, finish }) {
   const [removePicture, setRemovePicture] = useState(false);
   const [error, setError] = useState(null);
 
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -64,18 +65,12 @@ export default function UserProfileForm({ initialUser, finish }) {
     }
 
     try {
-      const accessToken = localStorage.getItem('access_token');
-      const { data: response } = await apiClient.put('/auth/me/', data, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      console.log("Profile updated:", response);
-      finish();
+      await apiClient.put('/auth/me/', data);
     } catch (err) {
       setError(err.response?.data?.error || err.message);
       console.error(err);
+    }finally{
+      finish();
     }
   };
 
@@ -114,6 +109,7 @@ export default function UserProfileForm({ initialUser, finish }) {
       </div>
       {error && <div className="text-red-500 text-sm">{error}</div>}
       <button type="submit" className="mt-4 bg-[#ee6c4d] text-white px-4 py-2 rounded-md hover:bg-[#ff7653]">Save</button>
-    </form>
+    </form>    
+
   );
 }

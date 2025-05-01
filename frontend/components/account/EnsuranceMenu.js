@@ -33,7 +33,7 @@ export const EnsuranceMenu = ({ ensurance, onDelete }) => {
   const handleDelete = async () => {
     try {
       await apiClient.delete(`/auth/remove_ensurance/${ensurance.id}/`);
-      onDelete(ensurance.id);
+      onDelete({msg: `Ensurance ${ensurance.name} deleted successfully`, status: 'success'});
       setIsMenuOpen(false);
     } catch (error) {
       console.error("Failed to delete ensurance:", error);

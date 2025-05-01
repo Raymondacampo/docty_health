@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useUser } from "@/hooks/User"; // Note: Should this be useAuth?
 import UserProfileForm from "@/components/forms/UserProfileForm";
-import LogoutButton from "@/components/LogoutButton";
 import { apiClient } from "@/utils/api";
 import { getApiImgUrl } from "@/utils/api";
 import NavBar from "@/components/account/NavBar";
 import SidebarToggle from "@/components/account/SideBarToggle";
+import LoadingComponent from "@/components/LoadingComponent";
+import CustomAlert from "@/components/CustomAlert";
+import useAlert from "@/hooks/useAlert";
 
 const Pencil = () => (
   <svg
@@ -65,7 +67,9 @@ export default function Settings() {
   const [isNavOpen, setIsNavOpen] = useState(true); // State for NavBar toggle
   const backendBaseUrl = getApiImgUrl();
 
-  if (loading) return <div>Loading...</div>;
+  const {alert, showAlert} = useAlert(); // Custom hook for alert management
+
+  if (loading) return <LoadingComponent isLoading={loading}/>;
   if (!user) return <div>Error loading user data.</div>;
 
   const handlePasswordChangeRequest = async () => {
@@ -80,12 +84,15 @@ export default function Settings() {
   };
 
   const handleEditFinish = () => {
+    showAlert("Profile updated successfully!", "success");
     setEdit(false);
     reload();
   };
 
   return (
     <div className="flex w-full min-h-screen">
+      <CustomAlert message={alert.msg} status={alert.status} />
+
       {/* Sidebar Toggle for lg screens */}
       {!isNavOpen && (
         <SidebarToggle onToggle={() => setIsNavOpen(true)} />

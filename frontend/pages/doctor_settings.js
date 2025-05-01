@@ -13,6 +13,9 @@ import { EnsuranceMenu } from "@/components/account/EnsuranceMenu";
 import { getApiImgUrl } from "@/utils/api";
 import NavBar from "@/components/account/NavBar";
 import SidebarToggle from "@/components/account/SideBarToggle";
+import LoadingComponent from "@/components/LoadingComponent";
+import useAlert from "@/hooks/useAlert";
+import CustomAlert from "@/components/CustomAlert";
 
 const ProfessionalData = ({ data, onReload }) => {
   const backendBaseUrl = getApiImgUrl();
@@ -29,7 +32,7 @@ const ProfessionalData = ({ data, onReload }) => {
         { description },
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
-      onReload();
+      onReload({msg: 'Description updated successfully', status: 'success'});
       setIsEditingDescription(false);
     } catch (error) {
       console.error('Failed to update description:', error);
@@ -299,11 +302,19 @@ export default function Settings() {
   const { user, loading, reload } = useUser(); // Note: Verify if this should be useAuth
   const [isNavOpen, setIsNavOpen] = useState(true); // State for NavBar toggle
 
-  if (loading) return <div>Loading...</div>;
+  const {alert, showAlert} = useAlert(); // Custom hook for alert management
+
+  if (loading) return <LoadingComponent isLoading={loading}/>;
   if (!user) return <div>Error loading user data.</div>;
+
+  const change = ({msg, status}) => {
+    showAlert(msg, status);
+    reload();
+  }
 
   return (
     <div className="flex w-full min-h-screen">
+      <CustomAlert message={alert.msg} status={alert.status} />
       {/* Sidebar Toggle for lg screens */}
       {!isNavOpen && (
         <SidebarToggle onToggle={() => setIsNavOpen(true)} />
@@ -318,11 +329,11 @@ export default function Settings() {
             md:px-10 
             sm:px-20 sm:rounded-[20px] sm:max-w-[900px] 
             xs:px-4">
-            <ProfessionalData data={user} onReload={reload} />
+            <ProfessionalData data={user} onReload={change} />
             {/* <Scheduling user={user} onReload={reload} /> */}
             <div className="w-full">
-              <DocumentsSection data={user} onReload={reload} />
-              <DoctorDocumentUpload onUpload={reload} />
+              <DocumentsSection data={user} onReload={change} />
+              <DoctorDocumentUpload onUpload={change} />
             </div>
           </div>
         </div>

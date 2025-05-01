@@ -1,38 +1,29 @@
+import { FaFacebookF, FaInstagram, FaTwitter } from 'react-icons/fa';
+
 export default function Footer() {
     return (
-      <div className="w-full h-[313px] py-[50px] bg-[#5c5c5c] flex-col justify-start items-center gap-[19px] inline-flex">
-        <div className="h-[171px] justify-center items-start gap-[93px] inline-flex">
-          <div className="w-[214px] h-[171px] flex-col justify-start items-start gap-[19px] inline-flex">
-            <div className="h-7 bg-white border border-black"></div>
-            <div className="w-[180px] h-[124px] flex-col justify-start items-start gap-[11px] inline-flex">
-              <div className="h-4 bg-white border border-black"></div>
-              <div className="h-4 bg-white border border-black"></div>
-              <div className="h-4 bg-white border border-black"></div>
-              <div className="h-4 bg-white border border-black"></div>
-              <div className="h-4 bg-white border border-black"></div>
-            </div>
-          </div>
-          <div className="w-[214px] h-[117px] flex-col justify-start items-start gap-[19px] inline-flex">
-            <div className="h-7 bg-white border border-black"></div>
-            <div className="w-[180px] h-[70px] flex-col justify-start items-start gap-[11px] inline-flex">
-              <div className="h-4 bg-white border border-black"></div>
-              <div className="h-4 bg-white border border-black"></div>
-              <div className="h-4 bg-white border border-black"></div>
-            </div>
-          </div>
-          <div className="w-[214px] h-[83px] flex-col justify-start items-start gap-[25px] inline-flex">
-            <div className="h-7 bg-white border border-black"></div>
-            <div className="h-[30px] justify-start items-center gap-[13px] inline-flex">
-              <div className="w-[30px] h-[30px] bg-[#d9d9d9] border-4 border-black"></div>
-              <div className="w-[30px] h-[30px] bg-[#d9d9d9] border-4 border-black"></div>
-              <div className="w-[30px] h-[30px] bg-[#d9d9d9] border-4 border-black"></div>
-              <div className="w-[30px] h-[30px] bg-[#d9d9d9] border-4 border-black"></div>
-            </div>
+      <div className="w-full py-[50px] bg-[#293241] flex-wrap p-4 justify-center items-start gap-20 inline-flex">
+        <div className="flex flex-col items-start gap-2">
+          <div className="text-lg text-[#EDEDED] font-semibold border-b border-white/20">Doctify © 2023 All rights reserved</div>
+          <div className="flex flex-col items-start gap-2">
+            <a href='service' className="text-sm text-[#EDEDED]">Terms of Service</a>
+            <a href='support' className="text-sm text-[#EDEDED]">Support</a>
+            <a href='feedback' className="text-sm text-[#EDEDED]">Feedback</a>
+            <a href='about' className="text-sm text-[#EDEDED]">About Us</a>
           </div>
         </div>
-        <div className="w-[227px] h-[31px] justify-center items-center gap-[15px] inline-flex">
-          <div className="w-[15px] h-[15px] bg-[#d9d9d9] border-4 border-black"></div>
-          <div className="w-[180px] h-4 bg-white border border-black"></div>
+        <div className="flex flex-col items-start gap-2">
+          <div className="text-lg text-[#EDEDED] font-semibold border-b border-white/20">Contact us</div>
+          <div className="text-sm text-[#EDEDED]">829-662-2197</div>
+          <div className="text-sm text-[#EDEDED]">raymondacamposandoval@gmail.com</div>
+        </div>
+        <div className="flex flex-col items-start gap-2">
+          <div className="text-lg text-[#EDEDED] font-semibold border-b border-white/20">Social media</div>
+          <div className="flex gap-4">
+            <a href='https://www.facebook.com'><FaFacebookF className="text-white bg-[#293241] p-2 rounded-full w-8 h-8" /></a>
+            <a href='https://www.instagram.com'><FaInstagram className="text-white bg-[#293241] p-2 rounded-full w-8 h-8" /></a>
+            <a href='https://www.x.com'><FaTwitter className="text-white bg-[#293241] p-2 rounded-full w-8 h-8" /></a>
+          </div>
         </div>
       </div>
     );

@@ -32,7 +32,7 @@ export const SpecializationMenu = ({ specialization, onDelete }) => {
   const handleDelete = async () => {
     try {
       await apiClient.delete(`/auth/remove_specialty/${specialization.id}/`);
-      onDelete(specialization.id);
+      onDelete({msg: `Specialization ${specialization.name} deleted successfully`, status: 'success'});
       setIsMenuOpen(false);
     } catch (error) {
       console.error("Failed to delete specialization:", error);

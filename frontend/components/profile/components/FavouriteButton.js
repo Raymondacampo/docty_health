@@ -10,7 +10,7 @@ export default function FavoriteButton({ doctorId, isFavoritedInitially }) {
   const { user } = useAuth();
   const [isFavorited, setIsFavorited] = useState(isFavoritedInitially);
   const [loading, setLoading] = useState(false);
-  const [alert, setAlert] = useState({ msg: "", status: null }); // Initialize with empty message
+  const [alert, setAlert] = useState({ msg: "", status: null });
   const router = useRouter();
 
   useEffect(() => {
@@ -19,7 +19,6 @@ export default function FavoriteButton({ doctorId, isFavoritedInitially }) {
 
   const showAlert = (message, status) => {
     setAlert({ msg: message, status });
-    // Auto-dismiss after 3 seconds
     setTimeout(() => setAlert({ msg: "", status: null }), 3000);
   };
 
@@ -42,11 +41,17 @@ export default function FavoriteButton({ doctorId, isFavoritedInitially }) {
     }
   };
 
+  const handleNonLoggedInClick = () => {
+    // Redirect to login with current page as redirect query param
+    const redirectUrl = encodeURIComponent(router.asPath); // Current URL (e.g., /profile/[doctorId])
+    router.push(`/login?redirect=${redirectUrl}`);
+  };
+
   if (!user) {
     return (
       <>
         <button
-          onClick={() => showAlert("Login to add to favorites", "error")}
+          onClick={handleNonLoggedInClick}
           className="flex items-center gap-2 px-4 py-2 rounded-md font-['Inter'] text-sm bg-[#293241]/10 text-[#293241] hover:bg-[#293241]/20 transition-colors duration-200"
           aria-label="Login to add to favorites"
           title="Login to add to favorites"

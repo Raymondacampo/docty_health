@@ -6,6 +6,8 @@ export default function EnsuranceSearchBar({ value, onChange, round }) {
   const [filteredEnsurances, setFilteredEnsurances] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+
+  const [tempValue, setTempValue] = useState(value);
   const [inputValue, setInputValue] = useState(value); // Local state to sync with parent
 
   // Fetch ensurances on mount
@@ -26,19 +28,11 @@ export default function EnsuranceSearchBar({ value, onChange, round }) {
     fetchEnsurances();
   }, []);
 
-  // Sync local inputValue with parent value and filter ensurances
-  useEffect(() => {
-    setInputValue(value);
-    const filtered = ensurances.filter((ensurance) =>
-      ensurance.name.toLowerCase().includes(value.toLowerCase())
-    );
-    setFilteredEnsurances(filtered);
-  }, [value, ensurances]);
+
 
   const handleInputChange = (e) => {
     const newValue = e.target.value;
-    setInputValue(newValue);
-    onChange(newValue); // Notify parent of change
+    setTempValue(newValue);
     const filtered = ensurances.filter((ensurance) =>
       ensurance.name.toLowerCase().includes(newValue.toLowerCase())
     );
@@ -47,6 +41,14 @@ export default function EnsuranceSearchBar({ value, onChange, round }) {
   };
 
   const handleOptionClick = (ensuranceName) => {
+    if(!ensuranceName) {
+      setTempValue("");
+      setInputValue("");
+      onChange(""); // Notify parent of selection
+      setIsOpen(false);
+      return;
+    }
+    setTempValue(ensuranceName);
     setInputValue(ensuranceName);
     onChange(ensuranceName); // Notify parent of selection
     setIsOpen(false);
@@ -55,9 +57,8 @@ export default function EnsuranceSearchBar({ value, onChange, round }) {
   // Reset only if input is invalid on blur
   const handleBlur = () => {
     setTimeout(() => {
-      if (!ensurances.some((item) => item.name === inputValue)) {
-        setInputValue("");
-        onChange("");
+      if (!ensurances.some((item) => item.name === tempValue)) {
+        setTempValue(inputValue); // Clear local state
       }
       setIsOpen(false);
     }, 100);
@@ -68,7 +69,7 @@ export default function EnsuranceSearchBar({ value, onChange, round }) {
       <input
         type="text"
         placeholder="Search for an ensurance"
-        value={inputValue}
+        value={tempValue}
         onChange={handleInputChange}
         onFocus={() => setIsOpen(true)}
         onBlur={handleBlur}
@@ -77,6 +78,12 @@ export default function EnsuranceSearchBar({ value, onChange, round }) {
       />
       {isOpen && !loading && filteredEnsurances.length > 0 && (
         <ul className="text-black text-sm absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+            <li
+              onMouseDown={() => handleOptionClick(null)}
+              className="px-2 py-3 hover:bg-gray-100 cursor-pointer"
+            >
+              None
+            </li>
           {filteredEnsurances.map((ensurance) => (
             <li
               key={ensurance.id}

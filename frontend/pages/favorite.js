@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { apiClient, getApiImgUrl } from "@/utils/api";
 import { useRouter } from "next/router";
+import LoadingComponent from "@/components/LoadingComponent";
+import CustomAlert from "@/components/CustomAlert";
+import useAlert from "@/hooks/useAlert";
+import { FaSearch } from 'react-icons/fa';
+import AbsoluteSearchOverlay from "@/components/AbsoluteSearchOverlay";
 
 const Doctor = ({ doctor, onRemove }) => {
     const backendBaseUrl = getApiImgUrl();
@@ -47,19 +52,23 @@ const Doctor = ({ doctor, onRemove }) => {
   );
 };
 
-export default function FavouriteDoctors() {
+export default function FavoriteDoctors() {
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [show, setShow] = useState(false);
+  const {alert, showAlert} = useAlert();
+
   const router = useRouter();
   const fetchFavoriteDoctors = async () => {
     setLoading(true);
     setError(null);
+    const redirectUrl = router.query.redirect || '/';
     try {
       const response = await apiClient.get("/auth/me/");
       setDoctors(response.data.favorite_doctors || []);
     } catch (err) {
-      router.push("/login");
+      router.push(redirectUrl);
     } finally {
       setLoading(false);
     }
@@ -75,23 +84,42 @@ export default function FavouriteDoctors() {
       setDoctors(doctors.filter((doctor) => doctor.id !== doctorId));
     } catch (err) {
       setError(err.response?.data?.error || "Failed to remove doctor");
+    }finally{
+      showAlert("Doctor removed from favorites", "success"); 
     }
   };
 
-  if (loading) return <div className="text-[#293241] font-['Inter'] text-center">Loading...</div>;
+  if (loading) return <LoadingComponent isLoading={loading}/>;
   if (error) return <div className="text-red-500 font-['Inter'] text-center">Error: {error}</div>;
 
   return (
     <div className="w-full flex-col justify-center items-center gap-4 inline-flex my-8">
+      <CustomAlert message={alert.msg} status={alert.status}/>
       <div className="w-full max-w-3xl flex flex-col justify-center items-center gap-4 sm:px-4 xs:px-2">
         <div className="self-stretch w-full text-[#293241] text-2xl font-['Inter'] tracking-wide font-bold border-b mb-4">
-          Favourite doctors
+          Favorite doctors
         </div>
-        <div className="self-stretch w-[95%] flex-col justify-start items-center gap-3 flex mx-auto">
+        <div className="self-stretch w-[95%] flex-col justify-start items-center gap-8 flex mx-auto">
           {doctors.length === 0 ? (
-            <div className="text-[#293241] font-['Inter'] text-center">
-              No favorite doctors found.
+          <div className="w-full h-80 flex justify-center items-center">
+            <div className="flex flex-col justify-center items-center gap-4">
+              <img src="/images/dclogo.png" alt="No results" className="h-[75px] w-[75px] mt-4" />
+              <div className="text-[#060648] text-2xl font-semibold">No doctors found</div>
+              <div className="flex items-center gap-4">
+                <p className="text-[#060648]">Look up for doctors here!</p>
+                {show && (
+                  <AbsoluteSearchOverlay
+
+                    onClick={() => router.push("/search")}
+                    setShow={setShow}
+                  />                  
+                )}
+
+                <button onClick={() => setShow(true)} className="text-white bg-[#293241] px-3.5 py-1.5 rounded-sm flex items-center gap-2">Search <FaSearch/></button>                
+              </div>
+
             </div>
+          </div>
           ) : (
             doctors.map((doctor) => (
               <Doctor key={doctor.id} doctor={doctor} onRemove={handleRemove} />

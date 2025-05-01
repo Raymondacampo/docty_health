@@ -24,12 +24,12 @@ export default function SpecialtySearch({ onSpecialtyAdded }) {
     }
   };
 
-  const handleAddSpecialty = async (specialtyId) => {
+  const handleAddSpecialty = async (specialtyId, name) => {
     try {
       await apiClient.post('/auth/add_specialty/', { specialty_id: specialtyId });
       setIsOpen(false);
       setSearchTerm('');
-      onSpecialtyAdded();
+      onSpecialtyAdded({msg: `Specialty ${name} added successfully`, status:'success'});
     } catch (err) {
       setError('Failed to add specialty');
       console.error(err);
@@ -68,7 +68,7 @@ export default function SpecialtySearch({ onSpecialtyAdded }) {
               {filteredSpecialties.map((specialty) => (
                 <li
                   key={specialty.id}
-                  onClick={() => handleAddSpecialty(specialty.id)}
+                  onClick={() => handleAddSpecialty(specialty.id, specialty.name)}
                   className="px-3 py-2 text-sm font-normal font-['Inter'] text-black hover:bg-[#98c1d1]/25 cursor-pointer"
                 >
                   {specialty.name}

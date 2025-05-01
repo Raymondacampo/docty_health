@@ -22,7 +22,7 @@ const CustomAlert = ({ message, status }) => {
     };
 
     return (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-white p-4 rounded-lg shadow-lg flex items-center max-w-sm">
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-white p-4 rounded-lg shadow-xl flex items-center max-w-sm">
             {getIcon()}
             <span className="text-gray-800">{message}</span>
         </div>

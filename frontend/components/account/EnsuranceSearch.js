@@ -25,12 +25,12 @@ export default function EnsuranceSearch({ onEnsuranceAdded }) {
     }
   };
 
-  const handleAddEnsurance = async (ensuranceId) => {
+  const handleAddEnsurance = async (ensuranceId, name) => {
     try {
       await apiClient.post('/auth/add_ensurance/', { ensurance_id: ensuranceId });
       setIsOpen(false);
       setSearchTerm('');
-      onEnsuranceAdded();
+      onEnsuranceAdded({msg: `Ensurance ${name} added successfully`, status: 'success'});
     } catch (err) {
       setError('Failed to add ensurance');
       console.error(err);
@@ -69,7 +69,7 @@ export default function EnsuranceSearch({ onEnsuranceAdded }) {
               {filteredEnsurances.map((ensurance) => (
                 <li
                   key={ensurance.id}
-                  onClick={() => handleAddEnsurance(ensurance.id)}
+                  onClick={() => handleAddEnsurance(ensurance.id, ensurance.name)}
                   className="px-3 py-2 text-sm font-normal font-['Inter'] text-black hover:bg-[#98c1d1]/25 cursor-pointer flex items-center gap-2"
                 >
                   {ensurance.name}

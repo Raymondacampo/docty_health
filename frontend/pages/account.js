@@ -1,5 +1,6 @@
 import { useUser } from "@/hooks/User";
 import LogoutButton from "@/components/LogoutButton";
+import LoadingComponent from "@/components/LoadingComponent";
 
 const ConfigBox = ({ title, description, icon, link }) => (
   <a
@@ -71,7 +72,7 @@ const ConfigValues = ({ is_doc }) => (
           />
         </svg>
       }
-      link="/favourite"
+      link="/favorite"
     />
   </div>
 );
@@ -79,7 +80,7 @@ const ConfigValues = ({ is_doc }) => (
 export default function MyAccountConfig() {
   const { user, loading } = useUser(); // Use the hook
 
-  if (loading) return <div>Loading profile...</div>;
+  if (loading) return <LoadingComponent isLoading={loading}/>; // Show loading component while fetching user data
 
   return (
     <div className="w-full bg-[#98c1d1]/20 flex-col justify-center items-center gap-16 inline-flex md:px-9 sm:py-24 xs:py-16 xs:px-4">

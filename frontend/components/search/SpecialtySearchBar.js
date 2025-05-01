@@ -6,6 +6,8 @@ export default function SpecialtySearchBar({ value, onChange, round }) {
   const [filteredSpecialties, setFilteredSpecialties] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+
+  const [tempValue, setTempValue] = useState(value);
   const [inputValue, setInputValue] = useState(value); // Local state to sync with parent
 
   // Fetch specialties on mount
@@ -26,20 +28,10 @@ export default function SpecialtySearchBar({ value, onChange, round }) {
     fetchSpecialties();
   }, []);
 
-  // Sync local inputValue with parent value
-  useEffect(() => {
-    setInputValue(value);
-    // Filter specialties based on the new value
-    const filtered = specialties.filter((specialty) =>
-      specialty.name.toLowerCase().includes(value.toLowerCase())
-    );
-    setFilteredSpecialties(filtered);
-  }, [value, specialties]);
 
   const handleInputChange = (e) => {
     const newValue = e.target.value;
-    setInputValue(newValue);
-    onChange(newValue); // Notify parent of change
+    setTempValue(newValue);
     const filtered = specialties.filter((specialty) =>
       specialty.name.toLowerCase().includes(newValue.toLowerCase())
     );
@@ -48,6 +40,7 @@ export default function SpecialtySearchBar({ value, onChange, round }) {
   };
 
   const handleOptionClick = (specialtyName) => {
+    setTempValue(specialtyName);
     setInputValue(specialtyName);
     onChange(specialtyName); // Notify parent of selection
     setIsOpen(false);
@@ -56,9 +49,8 @@ export default function SpecialtySearchBar({ value, onChange, round }) {
   // Optional: Reset only if input is cleared manually and dropdown closes
   const handleBlur = () => {
     setTimeout(() => {
-      if (!specialties.some((item) => item.name === inputValue)) {
-        setInputValue(""); // Clear local state
-        onChange(""); // Notify parent only if invalid
+      if (!specialties.some((item) => item.name === tempValue)) {
+        setTempValue(inputValue); // Clear local state
       }
       setIsOpen(false);
     }, 100);
@@ -69,7 +61,7 @@ export default function SpecialtySearchBar({ value, onChange, round }) {
       <input
         type="text"
         placeholder="Search for a specialty"
-        value={inputValue} // Use local state synced with parent
+        value={tempValue} // Use local state synced with parent
         onChange={handleInputChange}
         onFocus={() => setIsOpen(true)}
         onBlur={handleBlur}

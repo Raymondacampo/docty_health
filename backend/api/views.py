@@ -1018,6 +1018,85 @@ class CreateReviewView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
         
+class UpdateReviewView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, review_id):
+        try:
+            review = Review.objects.get(id=review_id, user=request.user)
+            data = {
+                'user_id': request.user.id,
+                'doctor_id': review.doctor.id,
+                'rating': request.data.get('rating', review.rating),
+                'headline': request.data.get('headline', review.headline),
+                'body': request.data.get('body', review.body)
+            }
+            serializer = ReviewSerializer(review, data=data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {"message": "Review updated successfully"},
+                    status=status.HTTP_200_OK
+                )
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Review.DoesNotExist:
+            return Response(
+                {"error": "Review not found or not authorized"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+class DeleteReviewView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, review_id):
+        try:
+            review = Review.objects.get(id=review_id, user=request.user)
+            review.delete()
+            return Response(
+                {"message": "Review deleted successfully"},
+                status=status.HTTP_200_OK
+            )
+        except Review.DoesNotExist:
+            return Response(
+                {"error": "Review not found or not authorized"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+class UserReviewView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, doctor_id):
+        try:
+            doctor = Doctor.objects.get(id=doctor_id)
+            review = Review.objects.filter(user=request.user, doctor=doctor).first()
+            if review:
+                serializer = ReviewSerializer(review)
+                return Response({"review": serializer.data}, status=status.HTTP_200_OK)
+            return Response({"review": null}, status=status.HTTP_200_OK)
+        except Doctor.DoesNotExist:
+            return Response(
+                {"error": "Doctor not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
 class ToggleFavoriteDoctorView(APIView):
     permission_classes = [IsAuthenticated]
 

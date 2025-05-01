@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
+import LoadingComponent from '@/components/LoadingComponent';
 
 export default function ChangePassword() {
   const [password, setPassword] = useState('');
@@ -79,7 +80,7 @@ export default function ChangePassword() {
 
   // Loading state while validating token
   if (!router.isReady || isTokenValid === null) {
-    return <div>Loading...</div>;
+    return <LoadingComponent isLoading={true} />; // Show loading component while validating token
   }
 
   // Only show form if token is valid

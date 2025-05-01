@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { apiClient } from '@/utils/api';
 
+
 const ThreeDotsIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="3" cy="8" r="1.5" fill="black" />
@@ -32,10 +33,12 @@ export const ClinicMenu = ({ clinic, onDelete }) => {
   const handleDelete = async () => {
     try {
       await apiClient.delete(`/auth/remove_clinic/${clinic.id}/`);
-      onDelete(clinic.id);
+      onDelete({msg: `Clinic ${clinic.name} deleted successfully`, status: 'success'});
       setIsMenuOpen(false);
     } catch (error) {
       console.error("Failed to delete clinic:", error);
+    }finally{
+
     }
   };
 

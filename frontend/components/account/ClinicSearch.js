@@ -24,12 +24,12 @@ export default function ClinicSearch({ onClinicAdded }) {
     }
   };
 
-  const handleAddClinic = async (clinicId) => {
+  const handleAddClinic = async (clinicId, name) => {
     try {
       await apiClient.post('/auth/add_clinic/', { clinic_id: clinicId });
       setIsOpen(false);
       setSearchTerm('');
-      onClinicAdded();
+      onClinicAdded({msg: `Clinic ${name} added successfully`, status: 'success'});
     } catch (err) {
       setError('Failed to add clinic');
       console.error(err);
@@ -68,7 +68,7 @@ export default function ClinicSearch({ onClinicAdded }) {
               {filteredClinics.map((clinic) => (
                 <li
                   key={clinic.id}
-                  onClick={() => handleAddClinic(clinic.id)}
+                  onClick={() => handleAddClinic(clinic.id, clinic.name)}
                   className="px-3 py-2 text-sm font-normal font-['Inter'] text-black hover:bg-[#98c1d1]/25 cursor-pointer"
                 >
                   {clinic.name}

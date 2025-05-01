@@ -45,6 +45,7 @@
 
     const login = async (token, isGoogle = false) => {
       try {
+        const redirectUrl = router.query.redirect || "/";
         if (isGoogle) {
           const { data } = await publicApiClient.post("/auth/google/", { token });
           localStorage.setItem("access_token", data.access);
@@ -56,7 +57,7 @@
           console.log(data)
           setUser({ email: data.email, id: data.id, username: data.username });
         }
-        router.push("/account");
+        router.push(redirectUrl);
       } catch (error) {
         console.error("Login failed:", error.response?.data || error.message);
         throw error;
@@ -73,7 +74,7 @@
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
         setUser(null);
-        router.push("/login");
+        router.push("/");
       } catch (error) {
         console.error("Logout failed:", error.response?.data || error.message);
         localStorage.removeItem("access_token");
