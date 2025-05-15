@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { publicApiClient } from "@/utils/api";
+import { motion, AnimatePresence } from 'framer-motion';
+
 
 export default function LocationSearchBar({ value, onChange, round }) {
   const [clinics, setClinics] = useState([]);
@@ -76,17 +78,19 @@ export default function LocationSearchBar({ value, onChange, round }) {
         disabled={loading}
       />
       {isOpen && !loading && filteredClinics.length > 0 && (
-        <ul className="text-black text-sm absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-          {filteredClinics.map((clinic) => (
-            <li
-              key={clinic.id}
-              onMouseDown={() => handleOptionClick(clinic.name)}
-              className="px-2 py-3 hover:bg-gray-100 cursor-pointer"
-            >
-              {clinic.name}
-            </li>
-          ))}
-        </ul>
+        <AnimatePresence>
+          <ul className="text-black text-sm absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+            {filteredClinics.map((clinic) => (
+              <li
+                key={clinic.id}
+                onMouseDown={() => handleOptionClick(clinic.name)}
+                className="px-2 py-3 hover:bg-gray-100 cursor-pointer"
+              >
+                {clinic.name}
+              </li>
+            ))}
+          </ul>
+        </AnimatePresence>
       )}
       {isOpen && !loading && filteredClinics.length === 0 && (
         <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg p-2 text-gray-500">

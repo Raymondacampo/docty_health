@@ -29,7 +29,7 @@ const Field = ({ title, value, setEdit }) => (
   <div className="w-full justify-between items-center gap-4 flex">
     <div className="text-[#3d5a80] font-normal font-['Inter'] sm:text-base xs:text-sm">{title}</div>
     {value ? (
-      <div className="w-[209px] text-right self-stretch text-black font-['Inter'] text-wrap break-all sm:text-sm xs:text-xs">
+      <div className="max-w-[200px] text-right self-stretch text-black font-['Inter'] text-wrap break-all sm:text-sm xs:text-xs">
         {value}
       </div>
     ) : (
@@ -67,7 +67,7 @@ export default function Settings() {
   const [isNavOpen, setIsNavOpen] = useState(true); // State for NavBar toggle
   const backendBaseUrl = getApiImgUrl();
 
-  const {alert, showAlert} = useAlert(); // Custom hook for alert management
+  const {alert, showAlert } = useAlert(); // Custom hook for alert management
 
   if (loading) return <LoadingComponent isLoading={loading}/>;
   if (!user) return <div>Error loading user data.</div>;
@@ -76,10 +76,10 @@ export default function Settings() {
     try {
       await apiClient.post("/auth/password_reset/", { email: user.email });
       setShowPasswordModal(false);
-      alert("Password reset email sent successfully!");
+      showAlert("Password reset email sent successfully!", "success");
     } catch (error) {
       console.error("Error requesting password change:", error);
-      alert("Failed to send password reset email.");
+      showAlert("Failed to send password reset email.", "error");
     }
   };
 
@@ -90,7 +90,7 @@ export default function Settings() {
   };
 
   return (
-    <div className="flex w-full min-h-screen">
+    <div className="flex w-full min-h-screen overflow-x-auto">
       <CustomAlert message={alert.msg} status={alert.status} />
 
       {/* Sidebar Toggle for lg screens */}
@@ -102,12 +102,12 @@ export default function Settings() {
       {/* Main Content */}
       <div className="flex-1 justify-center items-start gap-2.5 inline-flex mt-2">
         <div className="py-4 rounded-[20px] justify-center items-start gap-4 inline-flex sm:px-0 sm:w-auto xs:w-full">
-          <div className="w-full shadow-[0px_4px_6px_2px_rgba(0,0,0,0.15)] self-stretch py-8 bg-white justify-center items-start gap-20 flex flex-wrap 
-            lg:px-20 
-            md:px-10 
-            sm:px-20 sm:rounded-[20px] sm:max-w-[900px]
-            xs:px-4">
-            <div className="w-full flex-col justify-start items-start gap-6 flex">
+          <div className="w-full shadow-[0px_4px_6px_2px_rgba(0,0,0,0.15)] self-stretch py-8 bg-white justify-center items-start gap-6 flex flex-wrap 
+            lg:px-10 
+            md:px-8 
+            sm:px-8 sm:rounded-[20px] sm:max-w-[800px]
+            xs:px-2">
+            <div className="w-full xs:w-[95%] flex-col justify-start items-start gap-6 flex">
               <div className="w-full flex items-center justify-between px-4">
                 <div className="self-stretch text-black font-normal font-['Inter'] sm:text-3xl xs:text-2xl">
                   Personal data
@@ -158,7 +158,7 @@ export default function Settings() {
                 )}
               </div>
             </div>
-            <div className="w-full flex-col justify-start items-start gap-2 flex">
+            <div className="w-full px-4 flex-col justify-start items-start gap-2 flex">
               <div className="self-stretch text-black font-normal font-['Inter'] sm:text-2xl xs:text-xl">
                 Security & privacy
               </div>

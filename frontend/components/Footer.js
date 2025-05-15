@@ -2,13 +2,14 @@ import { FaFacebookF, FaInstagram, FaTwitter } from 'react-icons/fa';
 
 export default function Footer() {
     return (
-      <div className="w-full py-[50px] bg-[#293241] flex-wrap p-4 justify-center items-start gap-20 inline-flex">
+      <div className="w-full py-[50px] bg-[#293241] flex-wrap p-4  items-start gap-20 inline-flex 
+      md:justify-center
+      xs:justify-start xs:px-8">
         <div className="flex flex-col items-start gap-2">
           <div className="text-lg text-[#EDEDED] font-semibold border-b border-white/20">Doctify © 2023 All rights reserved</div>
           <div className="flex flex-col items-start gap-2">
             <a href='service' className="text-sm text-[#EDEDED]">Terms of Service</a>
             <a href='support' className="text-sm text-[#EDEDED]">Support</a>
-            <a href='feedback' className="text-sm text-[#EDEDED]">Feedback</a>
             <a href='about' className="text-sm text-[#EDEDED]">About Us</a>
           </div>
         </div>

@@ -8,9 +8,11 @@ export default function MainContent() {
     return (
         <>
             <SearchBar />
-            <Why_Docify />
+            
             <About_us />
+            
             <Opinions />
+            <Why_Docify />
             <JoinUs />
         </>
     )

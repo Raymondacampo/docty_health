@@ -1,5 +1,6 @@
 import { useRouter } from "next/router";
 import { getApiImgUrl } from "@/utils/api";
+
 const Doctor = ({ doctor }) => {
   const backendBaseUrl = getApiImgUrl();
   const router = useRouter();
@@ -14,6 +15,7 @@ const Doctor = ({ doctor }) => {
   const handleViewProfile = () => {
     router.push(`/profile/${doctor.id}`);
   };
+  console.log(doctor)
 
   return (
     <div className="w-full  px-4 py-2 mx-auto rounded-lg bg-white shadow-[0px_4px_4px_0px_rgba(0,0,0,0.1)] justify-between items-center flex  
@@ -21,7 +23,9 @@ const Doctor = ({ doctor }) => {
     xs:max-w-[95%] xs:flex-col xs:gap-4">
       <div className="self-stretch justify-between items-start gap-6 inline-flex relative sm:pt-4  sm:p-2 sm:pl-4 xs:pt-6">
         <div className="flex-col items-center flex gap-2.5">
-          <img src={`${backendBaseUrl}${doctor.user.profile_picture}`} className="w-[105px] h-[125px] bg-[#d9d9d9] rounded-sm"></img>
+          <img src={`${backendBaseUrl}${doctor.user.profile_picture}`} 
+          className="w-[105px] h-[125px] bg-[#d9d9d9] rounded-sm object-cover object-center"
+          alt={`Profile picture of Dr. ${doctor.user.first_name} ${doctor.user.last_name}`}></img>
           {/* RATING */}
           <div className="items-end gap-2 flex py-1  sm:relative xs:absolute xs:top-[-5px] xs:right-0">
                   <div className="h-auto justify-center items-center gap-1 flex">

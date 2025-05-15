@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { publicApiClient } from "@/utils/api";
+import { motion, AnimatePresence } from 'framer-motion';
+
 
 export default function SpecialtySearchBar({ value, onChange, round }) {
   const [specialties, setSpecialties] = useState([]);
@@ -69,8 +71,15 @@ export default function SpecialtySearchBar({ value, onChange, round }) {
         disabled={loading}
       />
       {isOpen && !loading && filteredSpecialties.length > 0 && (
-        <ul className="text-black text-sm absolute top-full z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-          {filteredSpecialties.map((specialty) => (
+        <AnimatePresence>
+        <motion.ul
+          initial={{ height: 0, opacity: 0, scaleY: 0, transformOrigin: 'top' }}
+          animate={{ height: 'auto', opacity: 1, scaleY: 1 }}
+          exit={{ height: 0, opacity: 0, scaleY: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="text-black text-sm absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
+        >          
+        {filteredSpecialties.map((specialty) => (
             <li
               key={specialty.id}
               onMouseDown={() => handleOptionClick(specialty.name)}
@@ -79,7 +88,8 @@ export default function SpecialtySearchBar({ value, onChange, round }) {
               {specialty.name}
             </li>
           ))}
-        </ul>
+        </motion.ul>
+        </AnimatePresence>
       )}
       {isOpen && !loading && filteredSpecialties.length === 0 && (
         <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg p-2 text-gray-500">

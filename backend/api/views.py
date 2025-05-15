@@ -331,7 +331,15 @@ class UserProfileView(APIView):
         if hasattr(user, 'phone_number'):
             user.phone_number = data.get('phone_number', user.phone_number)
         if hasattr(user, 'born_date'):
-            user.born_date = data.get('born_date', user.born_date)
+            born_date = data.get('born_date')
+            if born_date:
+                try:
+                    user.born_date = datetime.strptime(born_date, '%Y-%m-%d').date()
+                except ValueError:
+                    return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                user.born_date = None
+
 
         if 'profile_picture' in request.FILES:
             try:
@@ -1085,7 +1093,7 @@ class UserReviewView(APIView):
             if review:
                 serializer = ReviewSerializer(review)
                 return Response({"review": serializer.data}, status=status.HTTP_200_OK)
-            return Response({"review": null}, status=status.HTTP_200_OK)
+            return Response({"review": None}, status=status.HTTP_200_OK)
         except Doctor.DoesNotExist:
             return Response(
                 {"error": "Doctor not found"},

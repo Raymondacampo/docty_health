@@ -11,17 +11,22 @@ import requests
 from django.contrib.gis.geos import Point
 import logging
 import os
-
+from django.core.files.base import ContentFile
+import io
 
 logger = logging.getLogger(__name__)
 
 
 def validate_square_image(image):
     """Ensure the uploaded image is square (width == height)."""
-    with Image.open(image) as img:
-        width, height = img.size
-        if width != height:
-            raise ValidationError("Profile picture must be square (width must equal height).")
+    try:
+        with Image.open(image) as img:
+            width, height = img.size
+            if width != height:
+                raise ValidationError("Profile picture must be square (width must equal height).")
+    except Exception as e:
+        logger.error("validate_square_image error: %s", str(e))
+        raise ValidationError(f"Invalid image file: {str(e)}")
 
 # User Model
 class User(AbstractUser):
@@ -31,7 +36,7 @@ class User(AbstractUser):
         upload_to='profile_pics/',
         blank=True,
         null=True,
-        validators=[validate_square_image]  # Add validator
+        default='profile_pics/default.jpg'
     )
     favorite_doctors = models.ManyToManyField(
         'Doctor',
@@ -44,24 +49,68 @@ class User(AbstractUser):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ['username']
 
-     # ✅ Fix reverse accessor clashes by setting `related_name="+"`
     groups = models.ManyToManyField(
         "auth.Group",
-        related_name="+",  # Prevents conflicts
+        related_name="+",
         blank=True
     )
     user_permissions = models.ManyToManyField(
         "auth.Permission",
-        related_name="+",  # Prevents conflicts
+        related_name="+",
         blank=True
     )
 
     def save(self, *args, **kwargs):
-        """Auto-generate a unique username if not provided"""
+        """Auto-generate a unique username if not provided and crop/resize profile picture."""
         if not self.username:
-            self.username = f"user_{uuid.uuid4().hex[:8]}"  # ✅ Generate unique username
+            self.username = f"user_{uuid.uuid4().hex[:8]}"
+        
+        # Crop and resize profile picture only if present and not default
+        if self.profile_picture and hasattr(self.profile_picture, 'file') and self.profile_picture.name != 'profile_pics/default.jpg':
+            try:
+                self._crop_profile_picture()
+                logger.info("User.save: Profile picture processed")
+            except Exception as e:
+                logger.error("User.save: Error processing profile picture: %s", str(e))
+                self.profile_picture = None  # Fallback to None on error
+        
         super().save(*args, **kwargs)
 
+    def _crop_profile_picture(self):
+        """Crop and resize the profile picture to a 200x200 square."""
+        with Image.open(self.profile_picture.file) as img:
+            # Crop to square
+            width, height = img.size
+            if width != height:
+                size = min(width, height)
+                left = (width - size) / 2
+                top = (height - size) / 2
+                right = (width + size) / 2
+                bottom = (height + size) / 2
+                img = img.crop((left, top, right, bottom))
+                logger.info("Profile picture cropped to %dx%d", size, size)
+            
+            # Resize to 200x200
+            img = img.resize((200, 200), Image.LANCZOS)
+            logger.info("Profile picture resized to 200x200")
+            
+            # Convert to RGB for JPEG
+            img = img.convert('RGB')
+            
+            # Save image to a bytes buffer
+            img_byte_arr = io.BytesIO()
+            img.save(img_byte_arr, format='JPEG', quality=90, optimize=True)
+            img_byte_arr.seek(0)
+            
+            # Update the ImageField with the processed image
+            filename = os.path.basename(self.profile_picture.name)
+            self.profile_picture.save(
+                filename,
+                ContentFile(img_byte_arr.read()),
+                save=False
+            )
+            
+            logger.info("Profile picture saved as JPEG, quality=90")
 
     def __str__(self):
         return self.email

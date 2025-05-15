@@ -20,7 +20,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'date_joined',
-            'favorite_doctors'
+            'favorite_doctors',
+            'profile_picture'
         ]
         read_only_fields = ['email', 'date_joined']  # Prevent accidental updates
 
@@ -333,7 +334,8 @@ class DoctorSerializer(serializers.ModelSerializer):
             'id': obj.user.id,
             'first_name': obj.user.first_name,
             'last_name': obj.user.last_name,
-            'email': obj.user.email
+            'email': obj.user.email,
+            'profile_picture': obj.user.profile_picture.url if obj.user.profile_picture else None,
         }
 
     def get_average_rating(self, obj):

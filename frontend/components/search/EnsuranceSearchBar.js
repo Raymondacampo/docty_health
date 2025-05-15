@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { publicApiClient } from "@/utils/api";
+import { motion, AnimatePresence } from 'framer-motion';
+
 
 export default function EnsuranceSearchBar({ value, onChange, round }) {
   const [ensurances, setEnsurances] = useState([]);
@@ -77,8 +79,15 @@ export default function EnsuranceSearchBar({ value, onChange, round }) {
         disabled={loading}
       />
       {isOpen && !loading && filteredEnsurances.length > 0 && (
-        <ul className="text-black text-sm absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-            <li
+        <AnimatePresence>
+        <motion.ul
+          initial={{ height: 0, opacity: 0, scaleY: 0, transformOrigin: 'top' }}
+          animate={{ height: 'auto', opacity: 1, scaleY: 1 }}
+          exit={{ height: 0, opacity: 0, scaleY: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="text-black text-sm absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
+        >             
+        <li
               onMouseDown={() => handleOptionClick(null)}
               className="px-2 py-3 hover:bg-gray-100 cursor-pointer"
             >
@@ -93,7 +102,8 @@ export default function EnsuranceSearchBar({ value, onChange, round }) {
               {ensurance.name}
             </li>
           ))}
-        </ul>
+        </motion.ul>
+        </AnimatePresence>
       )}
       {isOpen && !loading && filteredEnsurances.length === 0 && (
         <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg p-2 text-gray-500">
