@@ -7,7 +7,7 @@ from rest_framework import status
 from django.core.mail import send_mail
 from django.conf import settings
 from rest_framework.generics import RetrieveUpdateAPIView
-from .serializers import UserProfileSerializer, SignupSerializer, DoctorSignupSerializer, DoctorAvailabilitySerializer, DayOfWeekSerializer, EnsuranceSerializer, ClinicSerializer, SpecialtySerializer, DoctorSerializer, ReviewSerializer
+from .serializers import UserProfileSerializer, SignupSerializer, DoctorSignupSerializer, DoctorAvailabilitySerializer, DayOfWeekSerializer, EnsuranceSerializer, ClinicSerializer, SpecialtySerializer, DoctorSerializer, ReviewSerializer, ScheduleSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view
 from django.contrib.auth import get_user_model
@@ -21,7 +21,7 @@ import logging
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from django.utils import timezone
 from datetime import timedelta, datetime
-from .models import PasswordResetToken, Specialty, Clinic, DoctorDocument, Doctor, DoctorAvailability, Appointment, DayOfWeek, Ensurance, Review
+from .models import PasswordResetToken, Specialty, Clinic, DoctorDocument, Doctor, DoctorAvailability, Appointment, DayOfWeek, Ensurance, Review, Schedule
 from rest_framework.pagination import PageNumberPagination
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.measure import D  # Distance measure
@@ -1165,3 +1165,68 @@ class IsDoctorView(APIView):
         return Response({
             "is_doctor": is_doctor
         }, status=status.HTTP_200_OK)
+    
+class CreateScheduleView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        if not hasattr(user, 'doctor'):
+            return Response({"error": "User is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
+
+        data = request.data.copy()
+        data['doctor'] = user.doctor.id
+        serializer = ScheduleSerializer(data=data)
+        if serializer.is_valid():
+            schedule = serializer.save()
+            return Response({
+                "message": "Schedule created successfully",
+                "id": schedule.id,
+                "title": schedule.title,
+                "hours": schedule.hours,
+                "place": schedule.place.id if schedule.place else None,
+                "created_at": schedule.created_at.isoformat()
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UpdateScheduleView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, schedule_id):
+        user = request.user
+        if not hasattr(user, 'doctor'):
+            return Response({"error": "User is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            schedule = Schedule.objects.get(id=schedule_id, doctor=user.doctor)
+            data = request.data.copy()
+            data['doctor'] = user.doctor.id
+            serializer = ScheduleSerializer(schedule, data=data, partial=True)
+            if serializer.is_valid():
+                schedule = serializer.save()
+                return Response({
+                    "message": "Schedule updated successfully",
+                    "id": schedule.id,
+                    "title": schedule.title,
+                    "hours": schedule.hours,
+                    "place": schedule.place.id if schedule.place else None,
+                    "created_at": schedule.created_at.isoformat()
+                }, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Schedule.DoesNotExist:
+            return Response({"error": "Schedule not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+class DeleteScheduleView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, schedule_id):
+        user = request.user
+        if not hasattr(user, 'doctor'):
+            return Response({"error": "User is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            schedule = Schedule.objects.get(id=schedule_id, doctor=user.doctor)
+            schedule.delete()
+            return Response({"message": "Schedule deleted successfully"}, status=status.HTTP_200_OK)
+        except Schedule.DoesNotExist:
+            return Response({"error": "Schedule not found"}, status=status.HTTP_404_NOT_FOUND)

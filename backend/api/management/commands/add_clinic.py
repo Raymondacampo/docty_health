@@ -4,7 +4,16 @@ from api.models import Clinic
 import logging
 import requests
 import os
+import unicodedata
 
+# Configure logging with UTF-8 encoding
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler()  # Ensure the handler supports UTF-8
+    ]
+)
 logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
@@ -49,12 +58,14 @@ class Command(BaseCommand):
         try:
             logger.info("Calling Google Places API")
             response = requests.post(url, json=data, headers=headers)
+            response.encoding = 'utf-8'  # Explicitly set response encoding to UTF-8
             result = response.json()
             logger.info(f"Raw API response: {result}")
             if response.status_code == 200 and result.get('places'):
                 place = result['places'][0]
-                clinic.name = place['displayName']['text']
-                clinic.address = place.get('formattedAddress', '')
+                # Normalize Unicode characters to handle special cases
+                clinic.name = unicodedata.normalize('NFKC', place['displayName']['text'])
+                clinic.address = unicodedata.normalize('NFKC', place.get('formattedAddress', ''))
                 lat = place['location']['latitude']
                 lng = place['location']['longitude']
                 clinic.set_location(lat, lng)
@@ -64,7 +75,7 @@ class Command(BaseCommand):
                 logger.info(f"Address components: {address_components}")
                 for component in address_components:
                     types = component.get('types', [])
-                    name = component.get('longText', '')  # Fix: Use 'longText' instead of 'text'
+                    name = unicodedata.normalize('NFKC', component.get('longText', ''))
                     logger.info(f"Processing component: {name} with types {types}")
                     if 'locality' in types or 'postal_town' in types:
                         clinic.city = name

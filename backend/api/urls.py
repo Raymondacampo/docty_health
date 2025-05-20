@@ -3,6 +3,7 @@ from .views import get_data, LoginView, UserProfileView, SignupView, LogoutView,
 from .views import RemoveClinicView, RemoveSpecialtyView, UploadDoctorDocumentView, BookAppointmentView, CreateDoctorAvailabilityView, AvailableSlotsView, DayOfWeekListView,UpdateDoctorAvailabilityView, DeleteDoctorAvailabilityView, DeleteDoctorDocumentView
 from .views import AvailableEnsurancesView, AddEnsuranceView, RemoveEnsuranceView, DoctorSearchView, AllSpecialtiesView, AllClinicsView, AllEnsurancesView  
 from .views import DoctorDetailView, DoctorDetailView, ReviewsDetailView, CreateReviewView, UpdateReviewView, DeleteReviewView,UserReviewView, ToggleFavoriteDoctorView, IsDoctorView
+from .views import CreateScheduleView, UpdateScheduleView, DeleteScheduleView
 from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView, TokenObtainPairView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -57,5 +58,9 @@ urlpatterns = [
     path('reviews/update/<int:review_id>/', UpdateReviewView.as_view(), name='update-review'),
     path('reviews/delete/<int:review_id>/', DeleteReviewView.as_view(), name='delete-review'),
     path('reviews/user_review/<int:doctor_id>/', UserReviewView.as_view(), name='user-review'),
+
+    path('auth/create_schedule/', CreateScheduleView.as_view(), name='create_schedule'),
+    path('auth/update_schedule/<int:schedule_id>/', UpdateScheduleView.as_view(), name='update_schedule'),
+    path('auth/delete_schedule/<int:schedule_id>/', DeleteScheduleView.as_view(), name='delete_schedule'),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

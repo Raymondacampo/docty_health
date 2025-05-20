@@ -2,7 +2,8 @@ from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
 import uuid
-from .models import Doctor, DoctorAvailability, Clinic, DayOfWeek, Specialty, Ensurance, Review
+import re
+from .models import Doctor, DoctorAvailability, Clinic, DayOfWeek, Specialty, Ensurance, Review, Schedule
 User = get_user_model()
 import logging
 logger = logging.getLogger(__name__)
@@ -350,3 +351,48 @@ class DoctorSerializer(serializers.ModelSerializer):
 
     def get_cities(self, obj):
         return list(set(clinic.city for clinic in obj.clinics.all() if clinic.city))
+    
+class ScheduleSerializer(serializers.ModelSerializer):
+    doctor = serializers.PrimaryKeyRelatedField(queryset=Doctor.objects.all())
+    place = serializers.PrimaryKeyRelatedField(queryset=Clinic.objects.all(), allow_null=True)
+    hours = serializers.JSONField()
+
+    class Meta:
+        model = Schedule
+        fields = ['id', 'doctor', 'place', 'hours', 'title', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+    def validate(self, attrs):
+        # Ensure doctor exists and is valid
+        doctor = attrs.get('doctor')
+        if not doctor:
+            raise serializers.ValidationError({"doctor": "Doctor is required."})
+
+        # Validate place (optional, can be null for virtual schedules)
+        place = attrs.get('place')
+        if place and not Clinic.objects.filter(id=place.id).exists():
+            raise serializers.ValidationError({"place": "Selected clinic does not exist."})
+
+        # Validate hours
+        hours = attrs.get('hours')
+        if not hours:
+            raise serializers.ValidationError({"hours": "Hours cannot be empty."})
+        if not isinstance(hours, list) or not all(isinstance(h, str) for h in hours):
+            raise serializers.ValidationError({"hours": "Hours must be a list of time strings (e.g., ['09:00', '10:00'])."})
+        
+        for hour in hours:
+            if not re.match(r'^\d{2}:\d{2}$', hour):
+                raise serializers.ValidationError({"hours": f"Invalid time format in hours: {hour}"})
+            try:
+                hours_int, minutes = map(int, hour.split(':'))
+                if hours_int > 23 or minutes > 59:
+                    raise serializers.ValidationError({"hours": f"Invalid time value in hours: {hour}"})
+            except ValueError:
+                raise serializers.ValidationError({"hours": f"Invalid time format in hours: {hour}"})
+
+        return attrs
+
+    def create(self, validated_data):
+        schedule = Schedule.objects.create(**validated_data)
+        schedule.save()  # Triggers title generation and validation in model's save method
+        return schedule

@@ -13,6 +13,8 @@ import logging
 import os
 from django.core.files.base import ContentFile
 import io
+import json
+
 
 logger = logging.getLogger(__name__)
 
@@ -227,6 +229,86 @@ class Ensurance(models.Model):
         return self.name
     
 # DATES SYSTEM
+class Schedule(models.Model):
+    doctor = models.ForeignKey(
+        'Doctor',
+        on_delete=models.CASCADE,
+        help_text="The doctor associated with this schedule."
+    )
+    place = models.ForeignKey(
+        'Clinic',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        help_text="The clinic where the schedule is set. Null for virtual schedules."
+    )
+    hours = models.JSONField(
+        help_text="List of time slots (e.g., ['09:00', '10:00']) for the schedule."
+    )
+    title = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Optional title for the schedule. Auto-generated if not provided."
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="Timestamp when the schedule was created."
+    )
+
+    def clean(self):
+        """Validate the hours field."""
+        try:
+            if not self.hours:
+                raise ValidationError("Hours cannot be empty.")
+            if not isinstance(self.hours, list) or not all(isinstance(h, str) for h in self.hours):
+                raise ValidationError("Hours must be a list of time strings (e.g., ['09:00', '10:00']).")
+            # Validate time format (HH:MM, 24-hour)
+            for hour in self.hours:
+                if not len(hour) == 5 or hour[2] != ':' or not hour[:2].isdigit() or not hour[3:].isdigit():
+                    raise ValidationError(f"Invalid time format in hours: {hour}")
+                 
+                hours, minutes = map(int, hour.split(':'))
+                if hours > 23 or minutes > 59:
+                    raise ValidationError(f"Invalid time value in hours: {hour}")
+            
+        except (TypeError, ValueError) as e:
+            logger.error("Schedule.clean: Invalid hours format: %s", str(e))
+            raise ValidationError("Hours must be a JSON list of valid time strings.")
+
+    def save(self, *args, **kwargs):
+        """Generate default title if not provided."""
+        if not self.title:
+            place_str = "Virtual" if self.place is None else str(self.place.name)
+            try:
+                if self.hours:
+                    start_time = min(self.hours)
+                    end_time = max(self.hours)
+                    if not self.place:
+                        self.title = f"Dr {self.doctor.user.first_name} {self.doctor.user.last_name} Virtual schedule in from {start_time} to {end_time}"
+                    else:
+                        self.title = f"Dr {self.doctor.user.first_name} {self.doctor.user.last_name} schedule in {place_str} from {start_time} to {end_time}"
+                else:
+                    self.title = f"Schedule in {place_str}"
+            except ValueError as e:
+                logger.error("Schedule.save: Error generating title: %s", str(e))
+                self.title = f"Schedule in {place_str}"
+        try:
+            self.full_clean()  # Run validation before saving
+        except ValidationError as e:
+            logger.error("Schedule.save: Validation error: %s", str(e))
+            raise
+        super().save(*args, **kwargs)
+        logger.info("Schedule.save: Saved schedule %s", self.title)
+
+    
+    def __str__(self):
+        return self.title or "Untitled Schedule"
+
+    class Meta:
+        ordering = ['created_at']
+
+
 class DayOfWeek(models.Model):
     name = models.CharField(max_length=10, unique=True)
 
