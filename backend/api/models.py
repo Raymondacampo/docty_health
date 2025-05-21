@@ -13,7 +13,7 @@ import logging
 import os
 from django.core.files.base import ContentFile
 import io
-import json
+from django.contrib.postgres.fields import ArrayField
 
 
 logger = logging.getLogger(__name__)
@@ -309,6 +309,56 @@ class Schedule(models.Model):
 
     class Meta:
         ordering = ['created_at']
+
+class WeekAvailability(models.Model):
+    doctor = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="week_availabilities",
+        help_text="Doctor associated with this week availability.",
+    )
+    week = models.DateField(
+        help_text="Start date of the week (Monday).",
+    )
+
+    class Meta:
+        db_table = "week_availability"
+        verbose_name = "Week Availability"
+        verbose_name_plural = "Week Availabilities"
+
+    def __str__(self):
+        return f"Week of {self.week.strftime('%B %d, %Y')} for {self.doctor.first_name} {self.doctor.last_name}"
+
+class WeekDay(models.Model):
+    week_availability = models.ForeignKey(
+        WeekAvailability,
+        on_delete=models.CASCADE,
+        related_name="weekdays",
+        help_text="Week this day belongs to.",
+    )
+    day = models.DateField(
+        help_text="Specific date of availability (e.g., Wednesday, May 21, 2025).",
+    )
+    hours = models.JSONField(
+        help_text="List of available hours (e.g., ['09:00', '10:00']).",
+    )
+    place = models.ForeignKey(
+        Clinic,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="weekday_availabilities",
+        help_text="Clinic for in-person appointments; null for virtual.",
+    )
+
+    class Meta:
+        db_table = "week_day"
+        verbose_name = "Week Day"
+        verbose_name_plural = "Week Days"
+
+    def __str__(self):
+        place_str = self.place.name if self.place else "Virtual"
+        return f"{self.day.strftime('%A, %B %d, %Y')} at {place_str}"
 
 
 class DayOfWeek(models.Model):
