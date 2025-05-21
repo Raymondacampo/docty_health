@@ -1230,3 +1230,15 @@ class DeleteScheduleView(APIView):
             return Response({"message": "Schedule deleted successfully"}, status=status.HTTP_200_OK)
         except Schedule.DoesNotExist:
             return Response({"error": "Schedule not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+class MySchedulesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        if not hasattr(user, 'doctor'):
+            return Response({"error": "User is not a doctor"}, status=status.HTTP_403_FORBIDDEN)
+
+        schedules = Schedule.objects.filter(doctor=user.doctor)
+        serializer = ScheduleSerializer(schedules, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

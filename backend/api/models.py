@@ -279,15 +279,17 @@ class Schedule(models.Model):
     def save(self, *args, **kwargs):
         """Generate default title if not provided."""
         if not self.title:
-            place_str = "Virtual" if self.place is None else str(self.place.name)
+            if not self.place:
+                place_str = 'virtual schedule'
+            else:
+                place_str = f'schedule in {self.place.name}'
             try:
-                if self.hours:
+                if len(self.hours) > 1:
                     start_time = min(self.hours)
                     end_time = max(self.hours)
-                    if not self.place:
-                        self.title = f"Dr {self.doctor.user.first_name} {self.doctor.user.last_name} Virtual schedule in from {start_time} to {end_time}"
-                    else:
-                        self.title = f"Dr {self.doctor.user.first_name} {self.doctor.user.last_name} schedule in {place_str} from {start_time} to {end_time}"
+                    self.title = f"Dr {self.doctor.user.first_name} {self.doctor.user.last_name} {place_str} in from {start_time} to {end_time}"
+                elif len(self.hours) == 1:
+                    self.title = f"Dr {self.doctor.user.first_name} {self.doctor.user.last_name} {place_str} at {self.hours[0]}"
                 else:
                     self.title = f"Schedule in {place_str}"
             except ValueError as e:
