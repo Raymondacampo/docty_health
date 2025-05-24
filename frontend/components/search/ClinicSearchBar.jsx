@@ -1,6 +1,7 @@
 import { useState, useEffect, use } from 'react';
 import { apiClient, publicApiClient } from '@/utils/api';
 import { motion, AnimatePresence } from 'framer-motion';
+// import { v } from 'framer-motion/dist/types.d-CQt5spQA';
 
 export default function ClinicSearchBar({ value, onChange, round, restrictToDoctorClinics = false }) {
   const [clinics, setClinics] = useState([]); // List of clinics
@@ -9,6 +10,7 @@ export default function ClinicSearchBar({ value, onChange, round, restrictToDoct
   const [isOpen, setIsOpen] = useState(false);
   const [tempValue, setTempValue] = useState(value);
   const [inputValue, setInputValue] = useState(value); // Sync with parent
+
 
   // Fetch clinics on mount based on restrictToDoctorClinics
   useEffect(() => {
@@ -23,13 +25,23 @@ export default function ClinicSearchBar({ value, onChange, round, restrictToDoct
             setClinics([]);
           } else {
             // Map clinics to match the expected format
-            console.log(profile.clinics);
             setClinics(
               profile.clinics.map(clinic => ({
                 id: clinic.id,
                 name: `${clinic.name} `
               }))
             );
+            if (typeof value === 'number'){
+              for (let i = 0; i < profile.clinics.length; i++){
+                if (profile.clinics[i].id === value){
+                  console.log(profile.clinics[i].name, value)
+                  setTempValue(profile.clinics[i].name);
+                  setInputValue(profile.clinics[i].name);
+                  onChange(profile.clinics[i]); // Notify parent
+                  break;
+                }
+              }
+            }
           }
         } else {
           // Fetch all clinics (public endpoint)
@@ -42,7 +54,6 @@ export default function ClinicSearchBar({ value, onChange, round, restrictToDoct
           );
         }
       } catch (error) {
-        console.error('Error fetching clinics:', error);
         setClinics([]);
       } finally {
         setLoading(false);
@@ -52,7 +63,6 @@ export default function ClinicSearchBar({ value, onChange, round, restrictToDoct
   }, [restrictToDoctorClinics]);
 
   useEffect(() => { 
-    console.log(clinics);
     setFilteredClinics(clinics);
   }, [clinics]);
 

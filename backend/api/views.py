@@ -7,7 +7,8 @@ from rest_framework import status
 from django.core.mail import send_mail
 from django.conf import settings
 from rest_framework.generics import RetrieveUpdateAPIView
-from .serializers import UserProfileSerializer, SignupSerializer, DoctorSignupSerializer, DoctorAvailabilitySerializer, DayOfWeekSerializer, EnsuranceSerializer, ClinicSerializer, SpecialtySerializer, DoctorSerializer, ReviewSerializer, ScheduleSerializer
+from .serializers import UserProfileSerializer, SignupSerializer, DoctorSignupSerializer, DoctorAvailabilitySerializer, DayOfWeekSerializer, EnsuranceSerializer
+from .serializers import ClinicSerializer, SpecialtySerializer, DoctorSerializer, ReviewSerializer, ScheduleSerializer, WeekAvailabilitySerializer, WeekDaySerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view
 from django.contrib.auth import get_user_model
@@ -1242,3 +1243,47 @@ class MySchedulesView(APIView):
         schedules = Schedule.objects.filter(doctor=user.doctor)
         serializer = ScheduleSerializer(schedules, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class CreateWeekAvailabilityView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        if not hasattr(user, 'doctor'):
+            return Response({"error": "User is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
+
+        data = request.data.copy()
+        data['doctor'] = user.id
+        serializer = WeekAvailabilitySerializer(data=data)
+        if serializer.is_valid():
+            week_availability = serializer.save()
+            return Response({
+                "message": "Week availability created successfully",
+                "id": week_availability.id,
+                "week": week_availability.week.isoformat(),
+                "doctor": week_availability.doctor.id
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class CreateWeekDayView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        if not hasattr(user, 'doctor'):
+            return Response({"error": "User is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = WeekDaySerializer(data=request.data)
+        if serializer.is_valid():
+            week_availability = serializer.validated_data['week_availability']
+            if week_availability.doctor != user:
+                return Response({"error": "Unauthorized week availability"}, status=status.HTTP_403_FORBIDDEN)
+            week_day = serializer.save()
+            return Response({
+                "message": "Week day created successfully",
+                "id": week_day.id,
+                "day": week_day.day.isoformat(),
+                "hours": week_day.hours,
+                "place": week_day.place.id if week_day.place else None
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

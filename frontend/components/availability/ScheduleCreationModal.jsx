@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { apiClient, publicApiClient } from '@/utils/api';
 import ClinicSearchBar from '../search/ClinicSearchBar';
+import WeekDayForm from './WeekDayForm';
 
 export default function ScheduleCreationModal({
   initialData = {
@@ -27,7 +28,6 @@ export default function ScheduleCreationModal({
 
   // Sync modalOpen with isOpen prop
   useEffect(() => {
-    console.log('Modal isOpen:', isOpen);
     setModalOpen(isOpen);
   }, [isOpen]);
 
@@ -36,7 +36,6 @@ export default function ScheduleCreationModal({
     const checkDoctorStatus = async () => {
       try {
         const response = await apiClient.get('/auth/is_doctor/');
-        console.log('Doctor status:', response.data);
         setIsDoctor(response.data.is_doctor);
         if (!response.data.is_doctor) {
           setError('Only doctors can create schedules');
@@ -96,21 +95,18 @@ export default function ScheduleCreationModal({
     // Validate form
     if (!formData.inPerson && !formData.virtual) {
       setError('Select at least one of In-Person or Virtual');
-      console.log('Validation error: Select at least one of In-Person or Virtual');
       onError('Select at least one of In-Person or Virtual');
       setLoading(false);
       return;
     }
     if (formData.inPerson && !formData.location) {
       setError('Please select a clinic for in-person schedule');
-      console.log('Validation error: Please select a clinic for in-person schedule');
       onError('Please select a clinic for in-person schedule');
       setLoading(false);
       return;
     }
     if (formData.hours.length === 0) {
       setError('Select at least one hour');
-      console.log('Validation error: Select at least one hour');
       onError('Select at least one hour');
       setLoading(false);
       return;
@@ -120,7 +116,6 @@ export default function ScheduleCreationModal({
       let placeId = null;
       if (formData.inPerson && formData.location) {
         if (!formData.location) {
-          console.log(clinics, formData.location);
           setError('Selected a clinic');
           setLoading(false);
           return;
@@ -137,11 +132,9 @@ export default function ScheduleCreationModal({
       let response;
       if (isEditMode) {
         response = await apiClient.put(`/auth/update_schedule/${scheduleId}/`, payload);
-        console.log('Schedule updated:', response.data);
         onUpdate();
       } else {
         response = await apiClient.post('/auth/create_schedule/', payload);
-        console.log('Schedule created:', response.data);
         onCreate();
       }
 
@@ -168,7 +161,6 @@ export default function ScheduleCreationModal({
         errorMessage = err.response.data.error;
       }
       setError(errorMessage);
-      console.log('API error:', errorMessage);
       onError(errorMessage);
     } finally {
       setLoading(false);
@@ -278,10 +270,11 @@ export default function ScheduleCreationModal({
                     <label className="block text-sm font-medium text-gray-700">
                       Clinic
                     </label>
+
                     <ClinicSearchBar
                       value={formData.location}
                       onChange={handleLocationChange}
-                      round="rounded-md"
+                      round="rounded-md border px-3 py-2"
                       restrictToDoctorClinics={true}
                     />
                   </div>

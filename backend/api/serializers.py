@@ -3,7 +3,8 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
 import uuid
 import re
-from .models import Doctor, DoctorAvailability, Clinic, DayOfWeek, Specialty, Ensurance, Review, Schedule
+from .models import Doctor, DoctorAvailability, Clinic, DayOfWeek, Specialty, Ensurance, Review, Schedule, WeekAvailability, WeekDay
+from datetime import timedelta
 User = get_user_model()
 import logging
 logger = logging.getLogger(__name__)
@@ -396,3 +397,55 @@ class ScheduleSerializer(serializers.ModelSerializer):
         schedule = Schedule.objects.create(**validated_data)
         schedule.save()  # Triggers title generation and validation in model's save method
         return schedule
+    
+class WeekAvailabilitySerializer(serializers.ModelSerializer):
+    doctor = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+
+    class Meta:
+        model = WeekAvailability
+        fields = ['id', 'doctor', 'week']
+        read_only_fields = ['id']
+
+    def validate_doctor(self, value):
+        if not hasattr(value, 'doctor'):
+            raise serializers.ValidationError("User is not a doctor")
+        return value
+
+    def validate_week(self, value):
+        # Ensure week is a Monday
+        if value.weekday() != 0:  # 0 = Monday
+            raise serializers.ValidationError("Week must start on a Monday")
+        return value
+
+class WeekDaySerializer(serializers.ModelSerializer):
+    week_availability = serializers.PrimaryKeyRelatedField(queryset=WeekAvailability.objects.all())
+    place = serializers.PrimaryKeyRelatedField(queryset=Clinic.objects.all(), allow_null=True)
+
+    class Meta:
+        model = WeekDay
+        fields = ['id', 'week_availability', 'day', 'hours', 'place']
+        read_only_fields = ['id']
+
+    def validate_hours(self, value):
+        if not isinstance(value, list) or not all(isinstance(h, str) for h in value):
+            raise serializers.ValidationError("Hours must be a list of time strings")
+        for hour in value:
+            if not re.match(r'^\d{2}:\d{2}$', hour):
+                raise serializers.ValidationError(f"Invalid time format: {hour}")
+            try:
+                hours, minutes = map(int, hour.split(':'))
+                if hours > 23 or minutes > 59:
+                    raise serializers.ValidationError(f"Invalid time value: {hour}")
+            except ValueError:
+                raise serializers.ValidationError(f"Invalid time format: {hour}")
+        return value
+
+    def validate(self, attrs):
+        week_availability = attrs.get('week_availability')
+        day = attrs.get('day')
+        if week_availability and day:
+            week_start = week_availability.week
+            week_end = week_start + timedelta(days=6)
+            if not (week_start <= day <= week_end):
+                raise serializers.ValidationError({"day": "Day must be within the week's range"})
+        return attrs
