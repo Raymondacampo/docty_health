@@ -449,3 +449,8 @@ class WeekDaySerializer(serializers.ModelSerializer):
             if not (week_start <= day <= week_end):
                 raise serializers.ValidationError({"day": "Day must be within the week's range"})
         return attrs
+    
+class ClinicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Clinic
+        fields = ['id', 'name']

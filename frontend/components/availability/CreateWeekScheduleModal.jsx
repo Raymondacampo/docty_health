@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { startOfWeek, addWeeks, addDays, format } from 'date-fns';
+import { apiClient } from '@/utils/api';
 import ClinicSearchBar from '../search/ClinicSearchBar';
+import ScheduleSelect from './ScheduleSelect';
 
 const CreateWeekScheduleModal = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,6 +15,10 @@ const CreateWeekScheduleModal = () => {
   const [selectedHours, setSelectedHours] = useState([]);
   const [selectedClinic, setSelectedClinic] = useState(null);
   const [appointmentType, setAppointmentType] = useState('inPerson');
+  const [selectedSchedule, setSelectedSchedule] = useState('');
+  const [schedules, setSchedules] = useState([]);
+  const [isLoadingSchedules, setIsLoadingSchedules] = useState(false);
+  const [scheduleError, setScheduleError] = useState(null);
   const dropdownRef = useRef(null);
 
   const currentDate = new Date(2025, 4, 22);
@@ -51,6 +57,9 @@ const CreateWeekScheduleModal = () => {
     setSelectedHours([]);
     setSelectedClinic(null);
     setAppointmentType('inPerson');
+    setSelectedSchedule('');
+    setSchedules([]);
+    setScheduleError(null);
     setIsDropdownOpen(false);
   };
 
@@ -63,6 +72,22 @@ const CreateWeekScheduleModal = () => {
     };
   }, [isDropdownOpen]);
 
+  useEffect(() => {
+    if (isOpen) {
+      setIsLoadingSchedules(true);
+      apiClient.get('/auth/schedules/')
+        .then((response) => {
+          setSchedules(response.data);
+          setIsLoadingSchedules(false);
+        })
+        .catch((error) => {
+          console.error('Error fetching schedules:', error);
+          setScheduleError('Failed to load schedules. Please try again.');
+          setIsLoadingSchedules(false);
+        });
+    }
+  }, [isOpen]);
+
   const handleWeekSelect = (weekIndex) => {
     setSelectedWeek(weekIndex);
     setSelectedDay(null);
@@ -71,6 +96,7 @@ const CreateWeekScheduleModal = () => {
     setSelectedHours([]);
     setSelectedClinic(null);
     setAppointmentType('inPerson');
+    setSelectedSchedule('');
     setIsDropdownOpen(false);
   };
 
@@ -101,7 +127,39 @@ const CreateWeekScheduleModal = () => {
     setSelectedHours(existingDay ? existingDay.hours : []);
     setSelectedClinic(existingDay ? existingDay.place : null);
     setAppointmentType(existingDay ? existingDay.appointmentType : 'inPerson');
+    setSelectedSchedule('');
     setShowActionButtons(true);
+  };
+
+  const handleScheduleSelect = async (scheduleId) => {
+    setSelectedSchedule(scheduleId);
+    if (!scheduleId) {
+      setSelectedHours([]);
+      setSelectedClinic(null);
+      setAppointmentType('inPerson');
+      return;
+    }
+
+    try {
+      const schedule = schedules.find((s) => s.id === parseInt(scheduleId));
+      if (!schedule) return;
+
+      setSelectedHours(schedule.hours);
+      setAppointmentType(schedule.place ? 'inPerson' : 'virtual');
+
+      if (schedule.place) {
+        const response = await apiClient.get(`/clinics/${schedule.place}/`);
+        const clinic = response.data;
+        setSelectedClinic({ id: clinic.id, name: clinic.name });
+        console.log('Selected clinic:', { id: clinic.id, name: clinic.name }); // Debug
+      } else {
+        setSelectedClinic(null);
+      }
+    } catch (error) {
+      console.error('Error applying schedule or fetching clinic:', error);
+      setScheduleError('Failed to load schedule or clinic details. Please try again.');
+      setSelectedClinic(null);
+    }
   };
 
   const handleHourChange = (hour) => {
@@ -128,6 +186,7 @@ const CreateWeekScheduleModal = () => {
     setSelectedHours([]);
     setSelectedClinic(null);
     setAppointmentType('inPerson');
+    setSelectedSchedule('');
     setShowActionButtons(false);
   };
 
@@ -152,6 +211,7 @@ const CreateWeekScheduleModal = () => {
     setSelectedHours([]);
     setSelectedClinic(null);
     setAppointmentType('inPerson');
+    setSelectedSchedule('');
     setShowActionButtons(false);
   };
 
@@ -161,6 +221,7 @@ const CreateWeekScheduleModal = () => {
     setSelectedHours([]);
     setSelectedClinic(null);
     setAppointmentType('inPerson');
+    setSelectedSchedule('');
     setShowActionButtons(false);
   };
 
@@ -241,6 +302,15 @@ const CreateWeekScheduleModal = () => {
                       <p className="text-gray-700 mb-2">
                         {getDaysForWeek(weeks[selectedWeek].start).find((d) => d.date === selectedDay)?.label}
                       </p>
+                      <ScheduleSelect
+                        value={selectedSchedule}
+                        onChange={handleScheduleSelect}
+                        schedules={schedules}
+                        className="mb-4"
+                      />
+                      {scheduleError && (
+                        <p className="text-red-500 text-sm mb-4">{scheduleError}</p>
+                      )}
                       <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Select Hours
@@ -296,6 +366,8 @@ const CreateWeekScheduleModal = () => {
                             restrictToDoctorClinics={true}
                             value={selectedClinic?.name || ''}
                             onChange={handleClinicChange}
+                            initialClinic={selectedClinic} // Pass full clinic object
+                            key={selectedClinic?.id || 'empty'} // Force re-render
                             round="rounded-md"
                           />
                           {!selectedClinic && (

@@ -1287,3 +1287,18 @@ class CreateWeekDayView(APIView):
                 "place": week_day.place.id if week_day.place else None
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ClinicDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, clinic_id):
+        try:
+            clinic = Clinic.objects.get(id=clinic_id)
+            doctor = request.user.doctor
+            # Ensure the clinic is associated with the authenticated doctor
+            if clinic not in doctor.clinics.all():
+                return Response({'error': 'Clinic not associated with this doctor'}, status=status.HTTP_403_FORBIDDEN)
+            serializer = ClinicSerializer(clinic)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Clinic.DoesNotExist:
+            return Response({'error': 'Clinic not found'}, status=status.HTTP_404_NOT_FOUND)

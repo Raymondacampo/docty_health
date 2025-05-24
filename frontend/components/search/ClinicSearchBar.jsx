@@ -79,6 +79,7 @@ export default function ClinicSearchBar({ value, onChange, round, restrictToDoct
 
   // Handle clinic selection
   const handleOptionClick = (clinic) => {
+    console.log('clinic', clinic);
     setTempValue(clinic.name);
     setInputValue(clinic.name);
     onChange(clinic); // Notify parent
