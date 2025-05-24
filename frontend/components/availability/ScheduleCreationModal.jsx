@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { apiClient, publicApiClient } from '@/utils/api';
 import ClinicSearchBar from '../search/ClinicSearchBar';
-import WeekDayForm from './WeekDayForm';
 
 export default function ScheduleCreationModal({
   initialData = {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { startOfWeek, addWeeks, addDays, format } from 'date-fns';
+import { startOfWeek, addDays, format } from 'date-fns';
 import { apiClient } from '@/utils/api';
 import ClinicSearchBar from '../search/ClinicSearchBar';
 import ScheduleSelect from './ScheduleSelect';
@@ -14,31 +14,17 @@ const CreateWeekScheduleModal = () => {
   const [showActionButtons, setShowActionButtons] = useState(false);
   const [selectedHours, setSelectedHours] = useState([]);
   const [selectedClinic, setSelectedClinic] = useState(null);
-  const [appointmentType, setAppointmentType] = useState('inPerson');
   const [selectedSchedule, setSelectedSchedule] = useState('');
   const [schedules, setSchedules] = useState([]);
   const [isLoadingSchedules, setIsLoadingSchedules] = useState(false);
   const [scheduleError, setScheduleError] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+  const [saveSuccess, setSaveSuccess] = useState(null);
+  const [availableWeeks, setAvailableWeeks] = useState([]);
+  const [isLoadingWeeks, setIsLoadingWeeks] = useState(false);
+  const [weekError, setWeekError] = useState(null);
   const dropdownRef = useRef(null);
-
-  const currentDate = new Date(2025, 4, 22);
-  const weeks = [
-    {
-      label: 'This Week',
-      start: startOfWeek(currentDate, { weekStartsOn: 1 }),
-      end: addDays(startOfWeek(currentDate, { weekStartsOn: 1 }), 6),
-    },
-    {
-      label: 'Next Week',
-      start: addWeeks(startOfWeek(currentDate, { weekStartsOn: 1 }), 1),
-      end: addDays(addWeeks(startOfWeek(currentDate, { weekStartsOn: 1 }), 1), 6),
-    },
-    {
-      label: 'Third Week',
-      start: addWeeks(startOfWeek(currentDate, { weekStartsOn: 1 }), 2),
-      end: addDays(addWeeks(startOfWeek(currentDate, { weekStartsOn: 1 }), 2), 6),
-    },
-  ];
 
   const hoursOfDay = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`);
 
@@ -56,11 +42,13 @@ const CreateWeekScheduleModal = () => {
     setShowActionButtons(false);
     setSelectedHours([]);
     setSelectedClinic(null);
-    setAppointmentType('inPerson');
     setSelectedSchedule('');
     setSchedules([]);
     setScheduleError(null);
+    setSaveError(null);
+    setSaveSuccess(null);
     setIsDropdownOpen(false);
+    setWeekError(null);
   };
 
   useEffect(() => {
@@ -74,6 +62,7 @@ const CreateWeekScheduleModal = () => {
 
   useEffect(() => {
     if (isOpen) {
+      // Fetch schedules
       setIsLoadingSchedules(true);
       apiClient.get('/auth/schedules/')
         .then((response) => {
@@ -85,6 +74,28 @@ const CreateWeekScheduleModal = () => {
           setScheduleError('Failed to load schedules. Please try again.');
           setIsLoadingSchedules(false);
         });
+
+      // Fetch available weeks
+      setIsLoadingWeeks(true);
+      apiClient.get('/auth/available-weeks/')
+        .then((response) => {
+          const weeks = response.data.available_weeks.map((weekStr, index) => {
+            const start = new Date(weekStr);
+            return {
+              label: `Week of ${format(start, 'MMMM do, yyyy')}`,
+              start,
+              end: addDays(start, 6),
+            };
+          });
+          setAvailableWeeks(weeks);
+          setIsLoadingWeeks(false);
+        })
+        .catch((error) => {
+          console.error('Error fetching available weeks:', error);
+          const errorMessage = error.response?.data?.error || 'Failed to load available weeks. Please try again.';
+          setWeekError(errorMessage);
+          setIsLoadingWeeks(false);
+        });
     }
   }, [isOpen]);
 
@@ -95,15 +106,18 @@ const CreateWeekScheduleModal = () => {
     setShowActionButtons(false);
     setSelectedHours([]);
     setSelectedClinic(null);
-    setAppointmentType('inPerson');
     setSelectedSchedule('');
     setIsDropdownOpen(false);
+    setSaveError(null);
+    setSaveSuccess(null);
   };
 
   const getSelectedWeekText = () => {
     if (selectedWeek === null) return 'Select a week';
-    const week = weeks[selectedWeek];
-    return `${week.label} (${format(week.start, 'MMMM do')} to ${format(week.end, 'MMMM do')})`;
+    if (isLoadingWeeks) return 'Loading weeks...';
+    if (weekError) return 'Error loading weeks';
+    const week = availableWeeks[selectedWeek];
+    return week ? `${week.label} (${format(week.start, 'MMMM do')} to ${format(week.end, 'MMMM do')})` : 'Select a week';
   };
 
   const getDaysForWeek = (weekStart) => {
@@ -126,9 +140,10 @@ const CreateWeekScheduleModal = () => {
     const existingDay = weekDays.find((wd) => wd.day === date);
     setSelectedHours(existingDay ? existingDay.hours : []);
     setSelectedClinic(existingDay ? existingDay.place : null);
-    setAppointmentType(existingDay ? existingDay.appointmentType : 'inPerson');
     setSelectedSchedule('');
     setShowActionButtons(true);
+    setSaveError(null);
+    setSaveSuccess(null);
   };
 
   const handleScheduleSelect = async (scheduleId) => {
@@ -136,7 +151,6 @@ const CreateWeekScheduleModal = () => {
     if (!scheduleId) {
       setSelectedHours([]);
       setSelectedClinic(null);
-      setAppointmentType('inPerson');
       return;
     }
 
@@ -145,13 +159,12 @@ const CreateWeekScheduleModal = () => {
       if (!schedule) return;
 
       setSelectedHours(schedule.hours);
-      setAppointmentType(schedule.place ? 'inPerson' : 'virtual');
 
       if (schedule.place) {
         const response = await apiClient.get(`/clinics/${schedule.place}/`);
         const clinic = response.data;
         setSelectedClinic({ id: clinic.id, name: clinic.name });
-        console.log('Selected clinic:', { id: clinic.id, name: clinic.name }); // Debug
+        console.log('Selected clinic:', { id: clinic.id, name: clinic.name });
       } else {
         setSelectedClinic(null);
       }
@@ -170,35 +183,26 @@ const CreateWeekScheduleModal = () => {
     );
   };
 
-  const handleAppointmentTypeChange = (type) => {
-    setAppointmentType(type);
-    if (type === 'virtual') {
-      setSelectedClinic(null);
-    }
-  };
-
   const handleClinicChange = (clinic) => {
-    setSelectedClinic({ id: clinic.id, name: clinic.name });
+    setSelectedClinic(clinic ? { id: clinic.id, name: clinic.name } : null);
   };
 
   const handleCancelAction = () => {
     setSelectedDay(null);
     setSelectedHours([]);
     setSelectedClinic(null);
-    setAppointmentType('inPerson');
     setSelectedSchedule('');
     setShowActionButtons(false);
   };
 
   const handleDoneAction = () => {
-    if (selectedHours.length === 0 || (appointmentType === 'inPerson' && !selectedClinic)) return;
+    if (selectedHours.length === 0) return;
     setWeekDays((prev) => {
       const existingIndex = prev.findIndex((wd) => wd.day === selectedDay);
       const newEntry = {
         day: selectedDay,
         hours: selectedHours,
-        place: appointmentType === 'inPerson' ? selectedClinic : null,
-        appointmentType
+        place: selectedClinic
       };
       if (existingIndex >= 0) {
         const updated = [...prev];
@@ -210,7 +214,6 @@ const CreateWeekScheduleModal = () => {
     setSelectedDay(null);
     setSelectedHours([]);
     setSelectedClinic(null);
-    setAppointmentType('inPerson');
     setSelectedSchedule('');
     setShowActionButtons(false);
   };
@@ -220,9 +223,42 @@ const CreateWeekScheduleModal = () => {
     setSelectedDay(null);
     setSelectedHours([]);
     setSelectedClinic(null);
-    setAppointmentType('inPerson');
     setSelectedSchedule('');
     setShowActionButtons(false);
+  };
+
+  const handleSaveSchedule = async () => {
+    if (selectedWeek === null || weekDays.length === 0) {
+      setSaveError('Please select a week and at least one day.');
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveError(null);
+    setSaveSuccess(null);
+
+    try {
+      const data = {
+        week: format(availableWeeks[selectedWeek].start, 'yyyy-MM-dd'),
+        weekdays: weekDays.map((day) => ({
+          day: day.day,
+          hours: day.hours,
+          place: day.place ? day.place.id : null
+        }))
+      };
+
+      console.log('Sending week schedule data:', data);
+
+      const response = await apiClient.post('/auth/weekschedule/', data);
+      setSaveSuccess('Week schedule saved successfully!');
+      resetForm();
+    } catch (error) {
+      console.error('Error saving week schedule:', error);
+      const errorMessage = error.response?.data?.error || 'Failed to save week schedule. Please try again.';
+      setSaveError(errorMessage);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -261,26 +297,38 @@ const CreateWeekScheduleModal = () => {
                 />
                 {isDropdownOpen && (
                   <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-40 overflow-auto">
-                    {weeks.map((week, index) => (
-                      <div
-                        key={index}
-                        onClick={() => handleWeekSelect(index)}
-                        className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${
-                          selectedWeek === index ? 'bg-blue-100' : ''
-                        }`}
-                      >
-                        {`${week.label} (${format(week.start, 'MMMM do')} to ${format(week.end, 'MMMM do')})`}
-                      </div>
-                    ))}
+                    {isLoadingWeeks ? (
+                      <div className="px-4 py-2 text-gray-500">Loading weeks...</div>
+                    ) : weekError ? (
+                      <div className="px-4 py-2 text-red-500">{weekError}</div>
+                    ) : availableWeeks.length === 0 ? (
+                      <div className="px-4 py-2 text-gray-500">No available weeks</div>
+                    ) : (
+                      availableWeeks.map((week, index) => (
+                        <div
+                          key={index}
+                          onClick={() => handleWeekSelect(index)}
+                          className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${
+                            selectedWeek === index ? 'bg-blue-100' : ''
+                          }`}
+                        >
+                          {`${week.label} (${format(week.start, 'MMMM do')} to ${format(week.end, 'MMMM do')})`}
+                        </div>
+                      ))
+                    )}
                   </div>
                 )}
               </div>
+
+              {weekError && (
+                <p className="text-red-500 text-sm mt-2">{weekError}</p>
+              )}
 
               {selectedWeek !== null && (
                 <div>
                   <h3 className="text-lg font-medium text-gray-700 mb-2">Select Days</h3>
                   <div className="flex flex-wrap gap-2">
-                    {getDaysForWeek(weeks[selectedWeek].start).map((day) => (
+                    {getDaysForWeek(availableWeeks[selectedWeek].start).map((day) => (
                       <button
                         key={day.date}
                         onClick={() => handleDayClick(day.date)}
@@ -300,7 +348,7 @@ const CreateWeekScheduleModal = () => {
                   {showActionButtons && (
                     <div className="mt-4">
                       <p className="text-gray-700 mb-2">
-                        {getDaysForWeek(weeks[selectedWeek].start).find((d) => d.date === selectedDay)?.label}
+                        {getDaysForWeek(availableWeeks[selectedWeek].start).find((d) => d.date === selectedDay)?.label}
                       </p>
                       <ScheduleSelect
                         value={selectedSchedule}
@@ -334,47 +382,17 @@ const CreateWeekScheduleModal = () => {
                       </div>
                       <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Appointment Type
+                          Select Clinic (Optional)
                         </label>
-                        <div className="flex gap-4">
-                          <label className="flex items-center">
-                            <input
-                              type="checkbox"
-                              checked={appointmentType === 'inPerson'}
-                              onChange={() => handleAppointmentTypeChange('inPerson')}
-                              className="mr-2"
-                            />
-                            In Person
-                          </label>
-                          <label className="flex items-center">
-                            <input
-                              type="checkbox"
-                              checked={appointmentType === 'virtual'}
-                              onChange={() => handleAppointmentTypeChange('virtual')}
-                              className="mr-2"
-                            />
-                            Virtual
-                          </label>
-                        </div>
+                        <ClinicSearchBar
+                          restrictToDoctorClinics={true}
+                          value={selectedClinic?.name || ''}
+                          onChange={handleClinicChange}
+                          initialClinic={selectedClinic}
+                          key={selectedClinic?.id || 'empty'}
+                          round="rounded-md"
+                        />
                       </div>
-                      {appointmentType === 'inPerson' && (
-                        <div className="mb-4">
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Select Clinic
-                          </label>
-                          <ClinicSearchBar
-                            restrictToDoctorClinics={true}
-                            value={selectedClinic?.name || ''}
-                            onChange={handleClinicChange}
-                            initialClinic={selectedClinic} // Pass full clinic object
-                            key={selectedClinic?.id || 'empty'} // Force re-render
-                            round="rounded-md"
-                          />
-                          {!selectedClinic && (
-                            <p className="text-red-500 text-sm mt-2">Please select a clinic.</p>
-                          )}
-                        </div>
-                      )}
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={handleCancelAction}
@@ -390,9 +408,9 @@ const CreateWeekScheduleModal = () => {
                         </button>
                         <button
                           onClick={handleDoneAction}
-                          disabled={selectedHours.length === 0 || (appointmentType === 'inPerson' && !selectedClinic)}
+                          disabled={selectedHours.length === 0}
                           className={`px-3 py-1 rounded-md ${
-                            selectedHours.length === 0 || (appointmentType === 'inPerson' && !selectedClinic)
+                            selectedHours.length === 0
                               ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
                               : 'bg-blue-600 text-white hover:bg-blue-700'
                           }`}
@@ -406,6 +424,13 @@ const CreateWeekScheduleModal = () => {
               )}
             </div>
 
+            {saveSuccess && (
+              <p className="text-green-500 text-sm mt-4">{saveSuccess}</p>
+            )}
+            {saveError && (
+              <p className="text-red-500 text-sm mt-4">{saveError}</p>
+            )}
+
             <div className="mt-6 flex justify-end gap-4">
               <button
                 onClick={resetForm}
@@ -414,18 +439,15 @@ const CreateWeekScheduleModal = () => {
                 Cancel
               </button>
               <button
-                onClick={() => {
-                  if (selectedWeek !== null) {
-                    console.log('Data to post:', {
-                      week: format(weeks[selectedWeek].start, 'yyyy-MM-dd'),
-                      weekdays: weekDays
-                    });
-                  }
-                  resetForm();
-                }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                onClick={handleSaveSchedule}
+                disabled={isSaving || selectedWeek === null || weekDays.length === 0}
+                className={`px-4 py-2 rounded-md ${
+                  isSaving || selectedWeek === null || weekDays.length === 0
+                    ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
               >
-                Save Schedule
+                {isSaving ? 'Saving...' : 'Save Schedule'}
               </button>
             </div>
           </div>

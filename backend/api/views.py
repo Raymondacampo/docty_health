@@ -22,12 +22,14 @@ import logging
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from django.utils import timezone
 from datetime import timedelta, datetime
-from .models import PasswordResetToken, Specialty, Clinic, DoctorDocument, Doctor, DoctorAvailability, Appointment, DayOfWeek, Ensurance, Review, Schedule
+from .models import PasswordResetToken, Specialty, Clinic, DoctorDocument, Doctor, DoctorAvailability, Appointment, DayOfWeek, Ensurance, Review, Schedule, WeekAvailability
 from rest_framework.pagination import PageNumberPagination
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.measure import D  # Distance measure
 from django.contrib.gis.geos import Point
 from django.db.models import Q, Count
+from django.db import transaction
+
 
 logger = logging.getLogger(__name__)
 serializer = URLSafeTimedSerializer(settings.SECRET_KEY)
@@ -1287,6 +1289,84 @@ class CreateWeekDayView(APIView):
                 "place": week_day.place.id if week_day.place else None
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class WeekScheduleView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        logger.info("Authenticated user: %s, Email: %s, Is doctor: %s", user.id, user.email, hasattr(user, 'doctor'))
+        
+        if not hasattr(user, 'doctor'):
+            return Response({"error": "User is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        doctor = user.doctor
+
+        week = request.data.get('week')
+        weekdays = request.data.get('weekdays', [])
+
+        if not week or not weekdays:
+            return Response({"error": "Week and at least one weekday are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                # Create WeekAvailability
+                week_data = {
+                    'doctor': user.id,
+                    'week': week
+                }
+                week_serializer = WeekAvailabilitySerializer(data=week_data)
+                if not week_serializer.is_valid():
+                    logger.error("WeekAvailability serializer errors: %s", week_serializer.errors)
+                    return Response(week_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                # Explicitly pass doctor to save
+                week_availability = week_serializer.save(doctor=user)
+
+                # Validate that all clinics belong to the doctor
+                doctor_clinics = doctor.clinics.values_list('id', flat=True)
+                for weekday in weekdays:
+                    place_id = weekday.get('place')
+                    if place_id and place_id not in doctor_clinics:
+                        return Response(
+                            {"error": f"Clinic ID {place_id} is not associated with this doctor"},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+
+                # Create WeekDay entries
+                created_weekdays = []
+                for weekday in weekdays:
+                    weekday_data = {
+                        'week_availability': week_availability.id,
+                        'day': weekday['day'],
+                        'hours': weekday['hours'],
+                        'place': weekday.get('place'),
+                    }
+                    weekday_serializer = WeekDaySerializer(data=weekday_data)
+                    if not weekday_serializer.is_valid():
+                        logger.error("WeekDay serializer errors: %s", weekday_serializer.errors)
+                        return Response(weekday_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    # Explicitly pass doctor to save
+                    week_day = weekday_serializer.save()
+                    created_weekdays.append({
+                        'id': week_day.id,
+                        'day': week_day.day,
+                        'hours': week_day.hours,
+                        'place': week_day.place.id if week_day.place else None,
+                    })
+
+                return Response({
+                    "message": "Week schedule created successfully",
+                    "week_availability": {
+                        'id': week_availability.id,
+                        'week': week_availability.week,
+                        'doctor': week_availability.doctor.id
+                    },
+                    "weekdays": created_weekdays
+                }, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            logger.error("Error creating week schedule: %s", str(e))
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ClinicDetailView(APIView):
     permission_classes = [IsAuthenticated]
@@ -1302,3 +1382,46 @@ class ClinicDetailView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Clinic.DoesNotExist:
             return Response({'error': 'Clinic not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class AvailableWeeksView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        logger.info("AvailableWeeksView: Authenticated user: %s, Email: %s, Is doctor: %s", 
+                    user.id, user.email, hasattr(user, 'doctor'))
+        
+        if not hasattr(user, 'doctor'):
+            return Response({"error": "User is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        doctor = user.doctor
+        logger.info("AvailableWeeksView: Doctor ID: %s", doctor.id)
+
+        # Define the range: current week to 12 months from now
+        today = timezone.now().date()
+        # Find the Monday of the current week
+        current_monday = today - timedelta(days=today.weekday())
+        end_date = current_monday + timedelta(weeks=52)  # 12 months ~ 52 weeks
+
+        # Generate list of Monday dates for each week
+        all_weeks = []
+        current_week = current_monday
+        while current_week <= end_date:
+            all_weeks.append(current_week)
+            current_week += timedelta(weeks=1)
+
+        # Get weeks already used by the doctor
+        used_weeks = WeekAvailability.objects.filter(doctor=user).values_list('week', flat=True)
+        used_weeks = set(used_weeks)  # Convert to set for efficient lookup
+
+        # Filter out used weeks
+        available_weeks = [
+            week.isoformat() for week in all_weeks if week not in used_weeks
+        ]
+
+        logger.info("AvailableWeeksView: Found %d available weeks for doctor %s", 
+                    len(available_weeks), doctor.id)
+
+        return Response({
+            "available_weeks": available_weeks
+        }, status=status.HTTP_200_OK)
