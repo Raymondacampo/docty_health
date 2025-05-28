@@ -66,7 +66,7 @@ const ProfessionalData = ({ data, onReload }) => {
   return (
     <div className="w-full rounded-[10px] flex-col justify-start items-start gap-6 inline-flex">
       <div className="w-full flex items-center justify-between">
-        <div className="self-stretch text-black font-normal font-['Inter'] sm:text-3xl xs:text-2xl">
+        <div className="self-stretch text-black font-bold font-['Inter'] sm:text-3xl xs:text-2xl">
           Professional data
         </div>
       </div>

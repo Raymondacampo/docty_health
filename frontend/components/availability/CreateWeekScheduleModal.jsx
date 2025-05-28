@@ -79,15 +79,23 @@ const CreateWeekScheduleModal = () => {
       setIsLoadingWeeks(true);
       apiClient.get('/auth/available-weeks/')
         .then((response) => {
-          const weeks = response.data.available_weeks.map((weekStr, index) => {
-            const start = new Date(weekStr);
-            return {
-              label: `Week of ${format(start, 'MMMM do, yyyy')}`,
-              start,
-              end: addDays(start, 6),
-            };
-          });
+          console.log('Available weeks response:', response.data);
+          const weeks = response.data.available_weeks
+            .slice(1)  // Skip the first item
+            .map((weekStr, index) => {
+              console.log(`SSSSS ${index + 2}:`, weekStr); // +2 because slice removed first, but you want original index
+              const rawDate = new Date(weekStr);
+              const start = startOfWeek(rawDate, { weekStartsOn: 1 }); // Set to Sunday-based startOfWeek if intended
+              console.log('WWWWWW', start);
+              return {
+                label: `Week of ${format(start, 'MMMM do, yyyy')}`,
+                start,
+                end: addDays(start, 6),
+              };
+            });
+
           setAvailableWeeks(weeks);
+          console.log('Available weeks:', weeks);
           setIsLoadingWeeks(false);
         })
         .catch((error) => {
@@ -265,14 +273,16 @@ const CreateWeekScheduleModal = () => {
     <div>
       <button
         onClick={() => setIsOpen(true)}
-        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+        className="px-4 py-2 bg-[#ee6c4d] text-white rounded-md transition-colors"
       >
         Create Week Schedule
       </button>
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="relative bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+          <div className="relative bg-white shadow-xl p-6 w-full max-w-xl 
+          sm:mx-4 sm:rounded-lg sm:w-auto sm:h-auto
+          xs:h-screen xs:w-full ">
             <button
               onClick={resetForm}
               className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
@@ -309,7 +319,7 @@ const CreateWeekScheduleModal = () => {
                           key={index}
                           onClick={() => handleWeekSelect(index)}
                           className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${
-                            selectedWeek === index ? 'bg-blue-100' : ''
+                            selectedWeek === index ? 'bg-[#ee6c4d]' : ''
                           }`}
                         >
                           {`${week.label} (${format(week.start, 'MMMM do')} to ${format(week.end, 'MMMM do')})`}
@@ -334,9 +344,9 @@ const CreateWeekScheduleModal = () => {
                         onClick={() => handleDayClick(day.date)}
                         className={`px-3 py-1 rounded-md transition-colors ${
                           selectedDay === day.date
-                            ? 'bg-blue-600 text-white'
+                            ? 'bg-[#ee6c4d] text-white'
                             : weekDays.some((wd) => wd.day === day.date)
-                            ? 'bg-blue-600 text-white border-2 border-blue-800'
+                            ? 'bg-[#ee6c4d] text-white border-2 border-[#ee6c4d]'
                             : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                         }`}
                       >
@@ -346,7 +356,7 @@ const CreateWeekScheduleModal = () => {
                     ))}
                   </div>
                   {showActionButtons && (
-                    <div className="mt-4">
+                    <div className="mt-4 border p-4 rounded-lg">
                       <p className="text-gray-700 mb-2">
                         {getDaysForWeek(availableWeeks[selectedWeek].start).find((d) => d.date === selectedDay)?.label}
                       </p>
@@ -356,6 +366,19 @@ const CreateWeekScheduleModal = () => {
                         schedules={schedules}
                         className="mb-4"
                       />
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Select Clinic (Optional)
+                        </label>
+                        <ClinicSearchBar
+                          restrictToDoctorClinics={true}
+                          value={selectedClinic?.name || ''}
+                          onChange={handleClinicChange}
+                          initialClinic={selectedClinic}
+                          key={selectedClinic?.id || 'empty'}
+                          round="rounded-md"
+                        />
+                      </div>
                       {scheduleError && (
                         <p className="text-red-500 text-sm mb-4">{scheduleError}</p>
                       )}
@@ -380,20 +403,7 @@ const CreateWeekScheduleModal = () => {
                           <p className="text-red-500 text-sm mt-2">Please select at least one hour.</p>
                         )}
                       </div>
-                      <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Select Clinic (Optional)
-                        </label>
-                        <ClinicSearchBar
-                          restrictToDoctorClinics={true}
-                          value={selectedClinic?.name || ''}
-                          onChange={handleClinicChange}
-                          initialClinic={selectedClinic}
-                          key={selectedClinic?.id || 'empty'}
-                          round="rounded-md"
-                        />
-                      </div>
-                      <div className="flex justify-end gap-2">
+                      <div className="flex justify-end gap-2 xs:relative ">
                         <button
                           onClick={handleCancelAction}
                           className="px-3 py-1 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
@@ -412,7 +422,7 @@ const CreateWeekScheduleModal = () => {
                           className={`px-3 py-1 rounded-md ${
                             selectedHours.length === 0
                               ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
-                              : 'bg-blue-600 text-white hover:bg-blue-700'
+                              : 'bg-blue-600 text-white'
                           }`}
                         >
                           Done
@@ -430,26 +440,29 @@ const CreateWeekScheduleModal = () => {
             {saveError && (
               <p className="text-red-500 text-sm mt-4">{saveError}</p>
             )}
-
-            <div className="mt-6 flex justify-end gap-4">
-              <button
-                onClick={resetForm}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveSchedule}
-                disabled={isSaving || selectedWeek === null || weekDays.length === 0}
-                className={`px-4 py-2 rounded-md ${
-                  isSaving || selectedWeek === null || weekDays.length === 0
-                    ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                }`}
-              >
-                {isSaving ? 'Saving...' : 'Save Schedule'}
-              </button>
-            </div>
+            {!showActionButtons && (
+              <div className="mt-6 flex justify-end gap-4 
+                sm:static
+                xs:absolute xs:bottom-4 xs:left-0 xs:w-full xs:px-4">
+                <button
+                  onClick={resetForm}
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveSchedule}
+                  disabled={isSaving || selectedWeek === null || weekDays.length === 0}
+                  className={`px-4 py-2 rounded-md ${
+                    isSaving || selectedWeek === null || weekDays.length === 0
+                      ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
+                      : 'bg-[#ee6c4d] text-white'
+                  }`}
+                >
+                  {isSaving ? 'Saving...' : 'Save Schedule'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

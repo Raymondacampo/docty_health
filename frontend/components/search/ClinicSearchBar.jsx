@@ -97,7 +97,7 @@ export default function ClinicSearchBar({ value, onChange, round, restrictToDoct
   };
 
   return (
-    <div className="w-full h-full relative text-black">
+    <div className="w-full h-full relative text-black border border-gray-300 rounded-md shadow-sm">
       <input
         type="text"
         placeholder="Search for a clinic"

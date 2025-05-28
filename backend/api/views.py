@@ -21,8 +21,8 @@ import re
 import logging
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from django.utils import timezone
-from datetime import timedelta, datetime
-from .models import PasswordResetToken, Specialty, Clinic, DoctorDocument, Doctor, DoctorAvailability, Appointment, DayOfWeek, Ensurance, Review, Schedule, WeekAvailability
+from datetime import timedelta, datetime, date
+from .models import PasswordResetToken, Specialty, Clinic, DoctorDocument, Doctor, DoctorAvailability, Appointment, DayOfWeek, Ensurance, Review, Schedule, WeekAvailability, WeekDay
 from rest_framework.pagination import PageNumberPagination
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.measure import D  # Distance measure
@@ -1303,6 +1303,12 @@ class WeekScheduleView(APIView):
         doctor = user.doctor
 
         week = request.data.get('week')
+        try:
+            parsed_week = datetime.strptime(week, "%Y-%m-%d").date()
+        except ValueError:
+            return Response({"error": "Invalid date format for 'week'. Expected YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
+
+        normalized_week = parsed_week - timedelta(days=parsed_week.weekday())
         weekdays = request.data.get('weekdays', [])
 
         if not week or not weekdays:
@@ -1313,7 +1319,7 @@ class WeekScheduleView(APIView):
                 # Create WeekAvailability
                 week_data = {
                     'doctor': user.id,
-                    'week': week
+                    'week': normalized_week
                 }
                 week_serializer = WeekAvailabilitySerializer(data=week_data)
                 if not week_serializer.is_valid():
@@ -1367,6 +1373,118 @@ class WeekScheduleView(APIView):
         except Exception as e:
             logger.error("Error creating week schedule: %s", str(e))
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def put(self, request):
+        user = request.user
+        logger.info("WeekScheduleView PUT: User %s, Data: %s", user.id, request.data)
+        
+        if not hasattr(user, 'doctor'):
+            return Response({"error": "User is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        week_availability_id = request.data.get('week_availability_id')
+        week = request.data.get('week')
+        weekdays = request.data.get('weekdays', [])
+
+        if not week_availability_id or not week or not weekdays:
+            return Response({"error": "Week availability ID, week, and weekdays are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                # Verify WeekAvailability exists and belongs to user
+                week_availability = WeekAvailability.objects.get(id=week_availability_id, doctor=user)
+                week_data = {'week': week}
+                week_serializer = WeekAvailabilitySerializer(week_availability, data=week_data, partial=True)
+                if not week_serializer.is_valid():
+                    logger.error("WeekAvailability serializer errors: %s", week_serializer.errors)
+                    return Response(week_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                week_serializer.save()
+
+                # Validate clinics
+                doctor_clinics = user.doctor.clinics.values_list('id', flat=True)
+                for weekday in weekdays:
+                    place_id = weekday.get('place')
+                    if place_id and place_id not in doctor_clinics:
+                        return Response(
+                            {"error": f"Clinic ID {place_id} is not associated with this doctor"},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+
+                # Delete existing WeekDay entries
+                WeekDay.objects.filter(week_availability=week_availability).delete()
+
+                # Create new WeekDay entries
+                created_weekdays = []
+                for weekday in weekdays:
+                    weekday_data = {
+                        'week_availability': week_availability.id,
+                        'day': weekday['day'],
+                        'hours': weekday['hours'],
+                        'place': weekday.get('place'),
+                    }
+                    weekday_serializer = WeekDaySerializer(data=weekday_data)
+                    if not weekday_serializer.is_valid():
+                        logger.error("WeekDay serializer errors: %s", weekday_serializer.errors)
+                        return Response(weekday_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    week_day = weekday_serializer.save()
+                    created_weekdays.append({
+                        'id': week_day.id,
+                        'day': week_day.day,
+                        'hours': week_day.hours,
+                        'place': week_day.place.id if week_day.place else None,
+                    })
+
+                return Response({
+                    "message": "Week schedule updated successfully",
+                    "week_availability": {
+                        'id': week_availability.id,
+                        'week': week_availability.week,
+                        'doctor': week_availability.doctor.id
+                    },
+                    "weekdays": created_weekdays
+                }, status=status.HTTP_200_OK)
+
+        except WeekAvailability.DoesNotExist:
+            return Response({"error": "Week availability not found or unauthorized"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error("Error updating week schedule: %s", str(e))
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class WeekSchedulesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        logger.info("WeekSchedulesView: Authenticated user: %s, Email: %s, Is doctor: %s", 
+                    user.id, user.email, hasattr(user, 'doctor'))
+        
+        if not hasattr(user, 'doctor'):
+            return Response({"error": "User is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Fetch all WeekAvailability objects for the user
+            week_availabilities = WeekAvailability.objects.filter(doctor=user).order_by('week')
+            logger.info("WeekSchedulesView: Found %d week availabilities for user %s", 
+                        week_availabilities.count(), user.id)
+
+            # Serialize WeekAvailability with nested WeekDay objects
+            response_data = []
+            for week_availability in week_availabilities:
+                weekdays = WeekDay.objects.filter(week_availability=week_availability)
+                week_serializer = WeekAvailabilitySerializer(week_availability)
+                weekday_serializer = WeekDaySerializer(weekdays, many=True)
+                
+                response_data.append({
+                    'week_availability': week_serializer.data,
+                    'weekdays': weekday_serializer.data
+                })
+
+            return Response({
+                "weekschedules": response_data
+            }, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            logger.error("WeekSchedulesView: Error fetching schedules: %s", str(e))
+            return Response({"error": "Failed to fetch week schedules"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ClinicDetailView(APIView):
     permission_classes = [IsAuthenticated]
@@ -1385,43 +1503,46 @@ class ClinicDetailView(APIView):
 
 class AvailableWeeksView(APIView):
     permission_classes = [IsAuthenticated]
-
     def get(self, request):
         user = request.user
-        logger.info("AvailableWeeksView: Authenticated user: %s, Email: %s, Is doctor: %s", 
-                    user.id, user.email, hasattr(user, 'doctor'))
-        
-        if not hasattr(user, 'doctor'):
-            return Response({"error": "User is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        doctor = user.doctor
-        logger.info("AvailableWeeksView: Doctor ID: %s", doctor.id)
 
-        # Define the range: current week to 12 months from now
-        today = timezone.now().date()
-        # Find the Monday of the current week
-        current_monday = today - timedelta(days=today.weekday())
-        end_date = current_monday + timedelta(weeks=52)  # 12 months ~ 52 weeks
+        today = date.today()
+        start_of_this_week = today - timedelta(days=today.weekday())  # Monday of current week
 
-        # Generate list of Monday dates for each week
-        all_weeks = []
-        current_week = current_monday
-        while current_week <= end_date:
-            all_weeks.append(current_week)
-            current_week += timedelta(weeks=1)
+        # Generate next 10 weeks from this Monday
+        candidate_weeks = [start_of_this_week + timedelta(weeks=i) for i in range(5)]
 
-        # Get weeks already used by the doctor
-        used_weeks = WeekAvailability.objects.filter(doctor=user).values_list('week', flat=True)
-        used_weeks = set(used_weeks)  # Convert to set for efficient lookup
+        # Get already scheduled weeks for the user
+        taken_weeks = set(
+            WeekAvailability.objects.filter(doctor=user).values_list('week', flat=True)
+        )
 
-        # Filter out used weeks
-        available_weeks = [
-            week.isoformat() for week in all_weeks if week not in used_weeks
-        ]
-
-        logger.info("AvailableWeeksView: Found %d available weeks for doctor %s", 
-                    len(available_weeks), doctor.id)
+        # Filter out taken weeks
+        free_weeks = [w for w in candidate_weeks if w not in taken_weeks]
 
         return Response({
-            "available_weeks": available_weeks
-        }, status=status.HTTP_200_OK)
+            "available_weeks": [w.isoformat() for w in free_weeks]
+        })
+    
+class DeleteWeekAvailabilityView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, week_availability_id):
+        user = request.user
+        logger.info("DeleteWeekAvailabilityView: User %s attempting to delete WeekAvailability %s", user.id, week_availability_id)
+        
+        if not hasattr(user, 'doctor'):
+            logger.warning("DeleteWeekAvailabilityView: User %s is not a doctor", user.id)
+            return Response({"error": "User is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            week_availability = WeekAvailability.objects.get(id=week_availability_id, doctor=user)
+            week_availability.delete()
+            logger.info("DeleteWeekAvailabilityView: WeekAvailability %s deleted successfully", week_availability_id)
+            return Response({"message": "Week availability deleted successfully"}, status=status.HTTP_200_OK)
+        except WeekAvailability.DoesNotExist:
+            logger.error("DeleteWeekAvailabilityView: WeekAvailability %s not found for user %s", week_availability_id, user.id)
+            return Response({"error": "Week availability not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error("DeleteWeekAvailabilityView: Error deleting WeekAvailability %s: %s", week_availability_id, str(e))
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

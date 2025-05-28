@@ -109,7 +109,7 @@ export default function Settings() {
             xs:px-2">
             <div className="w-full xs:w-[95%] flex-col justify-start items-start gap-6 flex">
               <div className="w-full flex items-center justify-between px-4">
-                <div className="self-stretch text-black font-normal font-['Inter'] sm:text-3xl xs:text-2xl">
+                <div className="self-stretch text-black font-bold font-['Inter'] sm:text-3xl xs:text-2xl">
                   Personal data
                 </div>
                 {edit && (

@@ -193,8 +193,8 @@ export default function ScheduleCreationModal({
       {!hideButton && (
         <button
           onClick={handleOpen}
-          className={`px-4 py-2 bg-blue-600 text-white rounded-md transition ${
-            isDoctor ? 'hover:bg-blue-700' : 'opacity-50 cursor-not-allowed'
+          className={`px-4 py-2 bg-[#ee6c4d] text-white rounded-md transition ${
+            isDoctor ? NaN : 'opacity-50 cursor-not-allowed'
           }`}
           disabled={!isDoctor}
         >
@@ -316,7 +316,7 @@ export default function ScheduleCreationModal({
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition disabled:opacity-50"
+                    className="px-4 py-2 bg-[#ee6c4d] text-white rounded-md transition disabled:opacity-50"
                     disabled={loading}
                   >
                     {loading ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update' : 'Create')}
