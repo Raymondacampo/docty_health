@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { format, parseISO, addDays, isSameDay } from 'date-fns';
 import { FaEllipsisV } from 'react-icons/fa';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import { apiClient } from '@/utils/api';
 import EditWeekScheduleModal from './EditWeekScheduleModal';
 
-export default function WeekSchedulesList() {
+export default function WeekSchedulesList({ newSchedule, onActionComplete }) {
   const [schedules, setSchedules] = useState([]);
   const [clinics, setClinics] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -12,7 +13,8 @@ export default function WeekSchedulesList() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(null);
-  const menuRef = useRef(null);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [scheduleToDelete, setScheduleToDelete] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,28 +41,47 @@ export default function WeekSchedulesList() {
   }, []);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setIsMenuOpen(null);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    if (newSchedule) {
+      setSchedules((prev) => {
+        if (!prev.some(s => s.week_availability.id === newSchedule.week_availability.id)) {
+          return [...prev, { ...newSchedule, clinics }];
+        }
+        return prev;
+      });
+    }
+  }, [newSchedule]);
 
-  const handleDelete = async (weekAvailabilityId) => {
-    if (!window.confirm('Are you sure you want to delete this week schedule?')) return;
+  const handleDelete = async (weekAvailabilityId, e) => {
+    e.stopPropagation();
+    setScheduleToDelete(weekAvailabilityId);
+    setIsConfirmModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
     try {
-      await apiClient.delete(`/auth/delete_weekavailability/${weekAvailabilityId}/`);
-      setSchedules(schedules.filter(schedule => schedule.week_availability.id !== weekAvailabilityId));
+      await apiClient.delete(`/auth/delete_weekavailability/${scheduleToDelete}/`);
+      setSchedules(schedules.filter(schedule => schedule.week_availability.id !== scheduleToDelete));
       setError(null);
+      setIsMenuOpen(null);
+      onActionComplete({ message: 'Week schedule deleted successfully!', status: 'success' });
     } catch (err) {
       console.error('Error deleting schedule:', err);
-      setError(err.response?.data?.error || 'Failed to delete week schedule.');
+      const errorMessage = err.response?.data?.error || 'Failed to delete week schedule.';
+      setError(errorMessage);
+      onActionComplete({ message: errorMessage, status: 'error' });
+    } finally {
+      setIsConfirmModalOpen(false);
+      setScheduleToDelete(null);
     }
   };
 
-  const handleEdit = (schedule) => {
+  const cancelDelete = () => {
+    setIsConfirmModalOpen(false);
+    setScheduleToDelete(null);
+  };
+
+  const handleEdit = (schedule, e) => {
+    e.stopPropagation();
     setSelectedSchedule({ ...schedule, clinics });
     setEditModalOpen(true);
     setIsMenuOpen(null);
@@ -72,6 +93,12 @@ export default function WeekSchedulesList() {
         ? updatedData
         : schedule
     ));
+    onActionComplete({ message: 'Week schedule updated successfully!', status: 'success' });
+  };
+
+  const toggleMenu = (scheduleId, e) => {
+    e.stopPropagation();
+    setIsMenuOpen(isMenuOpen === scheduleId ? null : scheduleId);
   };
 
   const formatWeekRange = (weekDateStr) => {
@@ -117,9 +144,9 @@ export default function WeekSchedulesList() {
                 <h3 className="text-lg font-medium text-gray-700">
                   {formatWeekRange(schedule.week_availability.week)}
                 </h3>
-                <div className="relative" ref={menuRef}>
+                <div className="relative">
                   <button
-                    onClick={() => setIsMenuOpen(isMenuOpen === schedule.week_availability.id ? null : schedule.week_availability.id)}
+                    onClick={(e) => toggleMenu(schedule.week_availability.id, e)}
                     className="p-2 hover:bg-gray-100 rounded-full"
                     aria-label="Schedule options"
                   >
@@ -128,13 +155,13 @@ export default function WeekSchedulesList() {
                   {isMenuOpen === schedule.week_availability.id && (
                     <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 shadow-lg rounded-md z-10">
                       <button
-                        onClick={() => handleEdit(schedule)}
+                        onClick={(e) => handleEdit(schedule, e)}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
                         Edit
                       </button>
                       <button
-                        onClick={() => handleDelete(schedule.week_availability.id)}
+                        onClick={(e) => handleDelete(schedule.week_availability.id, e)}
                         className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                       >
                         Delete
@@ -164,11 +191,43 @@ export default function WeekSchedulesList() {
           ))}
         </div>
       )}
+      {isConfirmModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="relative bg-white shadow-xl p-6 w-full max-w-md rounded-lg sm:mx-4">
+            <button
+              onClick={cancelDelete}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+              aria-label="Close modal"
+            >
+              <XMarkIcon className="h-6 w-6" />
+            </button>
+            <h2 className="text-xl font-semibold mb-4">Confirm Deletion</h2>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this week schedule? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={cancelDelete}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <EditWeekScheduleModal
         isOpen={editModalOpen}
         onClose={() => setEditModalOpen(false)}
         scheduleData={selectedSchedule}
         onUpdate={handleUpdate}
+        onActionComplete={onActionComplete}
       />
     </div>
   );

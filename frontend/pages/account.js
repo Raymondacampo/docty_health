@@ -1,6 +1,9 @@
 import { useUser } from "@/hooks/User";
 import LogoutButton from "@/components/LogoutButton";
 import LoadingComponent from "@/components/LoadingComponent";
+import { UserIcon, Cog6ToothIcon, CalendarDateRangeIcon } from '@heroicons/react/24/solid';
+import {CheckCircleIcon} from "@heroicons/react/24/outline";
+
 
 const ConfigBox = ({ title, description, icon, link }) => (
   <a
@@ -18,38 +21,36 @@ const ConfigBox = ({ title, description, icon, link }) => (
 );
 
 const ConfigValues = ({ is_doc }) => (
-  <div className="flex flex-wrap justify-center gap-x-12 sm:flex-row sm:w-auto sm:gap-y-4 xs:flex-col xs:w-full xs:gap-y-2">
+  <div className="flex flex-wrap max-w-[1500px] justify-start gap-x-12 sm:flex-row sm:w-auto sm:gap-y-4 xs:flex-col xs:w-full xs:gap-y-2">
     <ConfigBox
       title="Account settings"
       description="Configure your settings right here for your account bla djeh euehr"
-      icon={
-        <svg width="100%" height="100%" viewBox="0 0 50 51" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M25.0056 34.425C22.6461 34.425 20.3833 33.4847 18.7149 31.8109C17.0464 30.1372 16.1091 27.8671 16.1091 25.5C16.1091 23.1329 17.0464 20.8628 18.7149 19.1891C20.3833 17.5153 22.6461 16.575 25.0056 16.575C27.3651 16.575 29.628 17.5153 31.2964 19.1891C32.9648 20.8628 33.9022 23.1329 33.9022 25.5C33.9022 27.8671 32.9648 30.1372 31.2964 31.8109C29.628 33.4847 27.3651 34.425 25.0056 34.425ZM43.8917 27.9735C43.9933 27.1575 44.0696 26.3415 44.0696 25.5C44.0696 24.6585 43.9933 23.817 43.8917 22.95L49.255 18.7935C49.738 18.411 49.865 17.7225 49.56 17.1615L44.4763 8.3385C44.1713 7.7775 43.485 7.548 42.9258 7.7775L36.5965 10.3275C35.2748 9.333 33.9022 8.466 32.3008 7.8285L31.3603 1.071C31.3087 0.770658 31.1527 0.498343 30.9201 0.302311C30.6875 0.106278 30.3932 -0.000815425 30.0894 4.67535e-06H19.9219C19.2864 4.67535e-06 18.7527 0.459005 18.651 1.071L17.7105 7.8285C16.1091 8.466 14.7365 9.333 13.4147 10.3275L7.08551 7.7775C6.5263 7.548 5.84 7.7775 5.53498 8.3385L0.451256 17.1615C0.120814 17.7225 0.273326 18.411 0.756279 18.7935L6.11961 22.95C6.01793 23.817 5.94168 24.6585 5.94168 25.5C5.94168 26.3415 6.01793 27.1575 6.11961 27.9735L0.756279 32.2065C0.273326 32.589 0.120814 33.2775 0.451256 33.8385L5.53498 42.6615C5.84 43.2225 6.5263 43.4265 7.08551 43.2225L13.4147 40.647C14.7365 41.667 16.1091 42.534 17.7105 43.1715L18.651 49.929C18.7527 50.541 19.2864 51 19.9219 51H30.0894C30.7248 51 31.2586 50.541 31.3603 49.929L32.3008 43.1715C33.9022 42.5085 35.2748 41.667 36.5965 40.647L42.9258 43.2225C43.485 43.4265 44.1713 43.2225 44.4763 42.6615L49.56 33.8385C49.865 33.2775 49.738 32.589 49.255 32.2065L43.8917 27.9735Z"
-            fill="#3D5A80"
-          />
-        </svg>
-      }
+      icon={<Cog6ToothIcon className="w-14 h-14 text-[#3D5A80]" />}
       link="/settings"
     />
     {is_doc &&
-    <ConfigBox
-      title="Doctor settings"
-      description="Configure your settings right here for your account bla djeh euehr"
-      icon={
-        <svg width="100%" height="100%" viewBox="0 0 50 51" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M25.0056 34.425C22.6461 34.425 20.3833 33.4847 18.7149 31.8109C17.0464 30.1372 16.1091 27.8671 16.1091 25.5C16.1091 23.1329 17.0464 20.8628 18.7149 19.1891C20.3833 17.5153 22.6461 16.575 25.0056 16.575C27.3651 16.575 29.628 17.5153 31.2964 19.1891C32.9648 20.8628 33.9022 23.1329 33.9022 25.5C33.9022 27.8671 32.9648 30.1372 31.2964 31.8109C29.628 33.4847 27.3651 34.425 25.0056 34.425ZM43.8917 27.9735C43.9933 27.1575 44.0696 26.3415 44.0696 25.5C44.0696 24.6585 43.9933 23.817 43.8917 22.95L49.255 18.7935C49.738 18.411 49.865 17.7225 49.56 17.1615L44.4763 8.3385C44.1713 7.7775 43.485 7.548 42.9258 7.7775L36.5965 10.3275C35.2748 9.333 33.9022 8.466 32.3008 7.8285L31.3603 1.071C31.3087 0.770658 31.1527 0.498343 30.9201 0.302311C30.6875 0.106278 30.3932 -0.000815425 30.0894 4.67535e-06H19.9219C19.2864 4.67535e-06 18.7527 0.459005 18.651 1.071L17.7105 7.8285C16.1091 8.466 14.7365 9.333 13.4147 10.3275L7.08551 7.7775C6.5263 7.548 5.84 7.7775 5.53498 8.3385L0.451256 17.1615C0.120814 17.7225 0.273326 18.411 0.756279 18.7935L6.11961 22.95C6.01793 23.817 5.94168 24.6585 5.94168 25.5C5.94168 26.3415 6.01793 27.1575 6.11961 27.9735L0.756279 32.2065C0.273326 32.589 0.120814 33.2775 0.451256 33.8385L5.53498 42.6615C5.84 43.2225 6.5263 43.4265 7.08551 43.2225L13.4147 40.647C14.7365 41.667 16.1091 42.534 17.7105 43.1715L18.651 49.929C18.7527 50.541 19.2864 51 19.9219 51H30.0894C30.7248 51 31.2586 50.541 31.3603 49.929L32.3008 43.1715C33.9022 42.5085 35.2748 41.667 36.5965 40.647L42.9258 43.2225C43.485 43.4265 44.1713 43.2225 44.4763 42.6615L49.56 33.8385C49.865 33.2775 49.738 32.589 49.255 32.2065L43.8917 27.9735Z"
-            fill="#3D5A80"
-          />
-        </svg>
-      }
-      link="/doctor_settings"
-    />    
+    <>
+      <ConfigBox
+        title="Doctor settings"
+        description="Configure your settings right here for your account bla djeh euehr"
+        icon={        <div className="flex items-center">
+            <Cog6ToothIcon className="w-12 h-12 text-[#3D5A80]"/>            
+            <UserIcon className="w-11 h-12 text-[#3D5A80]" />
+          </div>}
+        link="/doctor_settings"
+      />    
+      <ConfigBox
+        title="Availability"
+        description="Configure your settings right here for your account bla djeh euehr"
+        icon={<CheckCircleIcon className="w-14 h-14 text-[#3D5A80]" />}
+        link="/availability"
+      />      
+    </>
+
     }
 
     <ConfigBox
-      title="My dates"
+      title="Appointments"
       description="Configure your settings right here for your account bla djeh euehr"
       icon={
         <svg width="100%" height="100%" viewBox="0 0 50 51" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -59,7 +60,7 @@ const ConfigValues = ({ is_doc }) => (
           />
         </svg>
       }
-      link="/mydates"
+      link="/appointments"
     />
     <ConfigBox
       title={is_doc ? "Recent patients" : "Fav doctors"}
@@ -87,7 +88,7 @@ export default function MyAccountConfig() {
       {user &&  
         <div className="flex-col justify-center items-center gap-11 flex sm:w-auto xs:w-full">
           <div className="w-full flex-col justify-center items-start gap-2 flex order-first">
-            <div className="text-[#293241] text-xl font-bold font-['Inter']">My account</div>     
+            <div className="text-[#293241] text-2xl font-bold font-['Inter']">My account</div>     
             <div className="text-[#293241] text-xl font-normal font-['Inter'] break-all ">{user.email}</div>
           </div>
           <ConfigValues is_doc={user.is_doctor} />        

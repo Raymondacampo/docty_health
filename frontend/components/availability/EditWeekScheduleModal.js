@@ -5,7 +5,7 @@ import { apiClient } from '@/utils/api';
 import ClinicSearchBar from '../search/ClinicSearchBar';
 import ScheduleSelect from './ScheduleSelect';
 
-const EditWeekScheduleModal = ({ isOpen, onClose, scheduleData, onUpdate }) => {
+const EditWeekScheduleModal = ({ isOpen, onClose, scheduleData, onUpdate, onActionComplete }) => {
   const [selectedDay, setSelectedDay] = useState(null);
   const [weekDays, setWeekDays] = useState([]);
   const [showActionButtons, setShowActionButtons] = useState(false);
@@ -170,6 +170,7 @@ const EditWeekScheduleModal = ({ isOpen, onClose, scheduleData, onUpdate }) => {
   const handleSaveSchedule = async () => {
     if (weekDays.length === 0) {
       setSaveError('Please select at least one day.');
+      onActionComplete({ message: 'Please select at least one day.', status: 'error' });
       return;
     }
     setIsSaving(true);
@@ -188,10 +189,13 @@ const EditWeekScheduleModal = ({ isOpen, onClose, scheduleData, onUpdate }) => {
       const response = await apiClient.put('/auth/weekschedule/', data);
       setSaveSuccess('Week schedule updated successfully!');
       onUpdate(response.data);
+      onActionComplete({ message: 'Week schedule updated successfully!', status: 'success' });
       resetForm();
     } catch (error) {
       console.error('Error updating week schedule:', error);
-      setSaveError(error.response?.data?.error || 'Failed to update week schedule.');
+      const errorMessage = error.response?.data?.error || 'Failed to update week schedule.';
+      setSaveError(errorMessage);
+      onActionComplete({ message: errorMessage, status: 'error' });
     } finally {
       setIsSaving(false);
     }
@@ -303,7 +307,7 @@ const EditWeekScheduleModal = ({ isOpen, onClose, scheduleData, onUpdate }) => {
                         className={`px-3 py-1 rounded-md ${
                           selectedHours.length === 0
                             ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
-                            : 'bg-[#ee6c4d] text-white hover:bg-blue-700'
+                            : 'bg-[#ee6c4d] text-white hover:hover:opacity-90'
                         }`}
                       >
                         Done
@@ -331,7 +335,7 @@ const EditWeekScheduleModal = ({ isOpen, onClose, scheduleData, onUpdate }) => {
                   className={`px-4 py-2 rounded-md ${
                     isSaving || weekDays.length === 0
                       ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
-                      : 'bg-[#ee6c4d] text-white hover:bg-blue-700'
+                      : 'bg-[#ee6c4d] text-white hover:opacity-90'
                   }`}
                 >
                   {isSaving ? 'Updating...' : 'Update Schedule'}

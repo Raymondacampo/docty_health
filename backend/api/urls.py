@@ -1,9 +1,11 @@
 from django.urls import path
-from .views import get_data, LoginView, UserProfileView, SignupView, LogoutView, GoogleLogin, DoctorSignupView, PasswordResetRequestView, PasswordChangeView, ValidateTokenView,AvailableSpecialtiesView, AddSpecialtyView, AddClinicView, AvailableClinicsView
-from .views import RemoveClinicView, RemoveSpecialtyView, UploadDoctorDocumentView, BookAppointmentView, CreateDoctorAvailabilityView, AvailableSlotsView, DayOfWeekListView,UpdateDoctorAvailabilityView, DeleteDoctorAvailabilityView, DeleteDoctorDocumentView
-from .views import AvailableEnsurancesView, AddEnsuranceView, RemoveEnsuranceView, DoctorSearchView, AllSpecialtiesView, AllClinicsView, AllEnsurancesView  
-from .views import DoctorDetailView, DoctorDetailView, ReviewsDetailView, CreateReviewView, UpdateReviewView, DeleteReviewView,UserReviewView, ToggleFavoriteDoctorView, IsDoctorView
-from .views import CreateScheduleView, UpdateScheduleView, DeleteScheduleView, MySchedulesView, CreateWeekAvailabilityView, CreateWeekDayView, ClinicDetailView, WeekScheduleView, AvailableWeeksView, WeekSchedulesView, DeleteWeekAvailabilityView
+from .views import (get_data, LoginView, UserProfileView, SignupView, LogoutView, GoogleLogin, DoctorSignupView, PasswordResetRequestView,
+PasswordChangeView, ValidateTokenView,AvailableSpecialtiesView, AddSpecialtyView, AddClinicView, AvailableClinicsView,
+RemoveClinicView, RemoveSpecialtyView, UploadDoctorDocumentView, DeleteDoctorDocumentView, AvailableEnsurancesView, 
+AddEnsuranceView, RemoveEnsuranceView, DoctorSearchView, AllSpecialtiesView, AllClinicsView, AllEnsurancesView, DoctorDetailView,
+DoctorDetailView, ReviewsDetailView, CreateReviewView, UpdateReviewView, DeleteReviewView,UserReviewView, ToggleFavoriteDoctorView, IsDoctorView,
+CreateScheduleView, UpdateScheduleView, DeleteScheduleView, MySchedulesView, CreateWeekDayView, ClinicDetailView, WeekScheduleView, AvailableWeeksView,
+DoctorAvailableDaysView, WeekSchedulesView,CreateAppointmentView, DeleteWeekAvailabilityView, UserAppointmentsView, DeleteAppointmentView)
 from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView, TokenObtainPairView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -33,13 +35,6 @@ urlpatterns = [
 
     path('auth/upload_document/', UploadDoctorDocumentView.as_view(), name='upload_doctor_document'),
     path('auth/delete_document/<int:document_id>/', DeleteDoctorDocumentView.as_view(), name='delete_doctor_document'),
-
-    path('auth/days_of_week/', DayOfWeekListView.as_view(), name='days_of_week'),
-    path('auth/create_availability/', CreateDoctorAvailabilityView.as_view(), name='create_doctor_availability'),
-    path('auth/update_availability/<int:availability_id>/', UpdateDoctorAvailabilityView.as_view(), name='update_doctor_availability'),
-    path('auth/delete_availability/<int:availability_id>/', DeleteDoctorAvailabilityView.as_view(), name='delete_doctor_availability'),
-    path('auth/available_slots/<int:doctor_id>/<str:date>/', AvailableSlotsView.as_view(), name='available_slots'),
-    path('auth/book_appointment/', BookAppointmentView.as_view(), name='book_appointment'),
     path('auth/toggle_favorite/<int:doctor_id>/', ToggleFavoriteDoctorView.as_view(), name='toggle_favorite_doctor'),
 
     path('doctors/search/', DoctorSearchView.as_view(), name='doctor_search'),
@@ -63,15 +58,18 @@ urlpatterns = [
     path('auth/update_schedule/<int:schedule_id>/', UpdateScheduleView.as_view(), name='update_schedule'),
     path('auth/delete_schedule/<int:schedule_id>/', DeleteScheduleView.as_view(), name='delete_schedule'),
     path('auth/my_schedules/', MySchedulesView.as_view(), name='my_schedules'),
+    path('auth/create_appointment/', CreateAppointmentView.as_view(), name='create_appointment'),
+
 
     path('auth/schedules/', MySchedulesView.as_view(), name='schedules'),  # Reuse MySchedulesView
-    path('auth/create_weekavailability/', CreateWeekAvailabilityView.as_view(), name='create_week_availability'),
     path('auth/create_weekday/', CreateWeekDayView.as_view(), name='create_week_day'),
     path('auth/weekschedule/', WeekScheduleView.as_view(), name='week_schedule'),  # New endpoint
     path('auth/available-weeks/', AvailableWeeksView.as_view(), name='available-weeks'),
+    path('doctors/<int:doctor_id>/available_days/', DoctorAvailableDaysView.as_view(), name='doctor_available_days'),
     path('auth/weekschedules/', WeekSchedulesView.as_view(), name='week_schedules'),
     path('auth/delete_weekavailability/<int:week_availability_id>/', DeleteWeekAvailabilityView.as_view(), name='delete_week_availability'),
-
+    path('appointments/', UserAppointmentsView.as_view(), name='user_appointments'),
+    path('appointments/<int:appointment_id>/', DeleteAppointmentView.as_view(), name='delete_appointment'),
     path('clinics/<int:clinic_id>/', ClinicDetailView.as_view(), name='clinic_detail'),
 
 

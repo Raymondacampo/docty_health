@@ -137,19 +137,6 @@ class Doctor(models.Model):
     
     def __str__(self):
         return f"Dr. {self.user.first_name} {self.user.last_name} - {self.exequatur}"
-    
-    def update_taking_dates(self):
-        """Set taking_dates based on existence of active DoctorAvailability and update virtual/in-person flags."""
-        has_active_availability = DoctorAvailability.objects.filter(doctor=self, active=True).exists()
-        self.taking_dates = has_active_availability
-        if has_active_availability:
-            virtual_exists = DoctorAvailability.objects.filter(doctor=self, virtual=True, active=True).exists()
-            in_person_exists = DoctorAvailability.objects.filter(doctor=self, virtual=False, active=True).exists()
-            if virtual_exists:
-                self.takes_virtual = True
-            if in_person_exists:
-                self.takes_in_person = True
-        self.save()
 
 # DoctorDocument Upload Path Function
 def doctor_document_upload_path(instance, filename):
@@ -358,40 +345,27 @@ class WeekDay(models.Model):
 
     def __str__(self):
         place_str = self.place.name if self.place else "Virtual"
-        return f"{self.day.strftime('%A, %B %d, %Y')} at {place_str}"
-
-
-class DayOfWeek(models.Model):
-    name = models.CharField(max_length=10, unique=True)
-
-    def __str__(self):
-        return self.name
-
-class DoctorAvailability(models.Model):
-    doctor = models.ForeignKey('Doctor', on_delete=models.CASCADE)
-    clinic = models.ForeignKey('Clinic', on_delete=models.CASCADE, null=True, blank=True)
-    specialization = models.ForeignKey('Specialty', on_delete=models.CASCADE, null=True, blank=True)
-    days = models.ManyToManyField(DayOfWeek)
-    start_time = models.TimeField()
-    end_time = models.TimeField()
-    slot_duration = models.PositiveIntegerField(default=30, help_text="Duration in minutes (30, 45, or 60)")
-    virtual = models.BooleanField(default=False, help_text="Indicates if this is a virtual appointment")  # New field
-    active = models.BooleanField(default=True, help_text="Indicates if this availability is active")  # New field
-
-    def __str__(self):
-        return f"{self.doctor} - {self.clinic} - {self.specialization} - {'Active' if self.active else 'Inactive'}"
+        return f"{self.day.strftime('%A, %B %d, %Y')} at {place_str} for {self.week_availability.doctor.first_name} {self.week_availability.doctor.last_name}"
 
 class Appointment(models.Model):
-    doctor = models.ForeignKey('Doctor', on_delete=models.CASCADE)
-    patient = models.ForeignKey('User', on_delete=models.CASCADE, related_name='appointments')
-    date = models.DateField()
-    start_time = models.TimeField()
-    end_time = models.TimeField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
+    patient = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="appointments",
+        help_text="User who booked the appointment."
+    )
+    appointment = models.ForeignKey(
+        WeekDay,
+        on_delete=models.PROTECT,
+        related_name="appointments",
+        help_text="Schedule for the appointment."
+    )
+    time = models.JSONField()
+    active = models.BooleanField(default=True, help_text="Is the appointment active?")
     def __str__(self):
-        return f"Appointment with {self.doctor} on {self.date} at {self.start_time}"
-    
+        return f"Appointment for {self.patient.first_name} {self.patient.last_name} on {self.appointment.day.strftime('%A, %B %d, %Y')} {f'at {self.appointment.place.name}' if self.appointment.place else 'Virtual'} with Dr. {self.appointment.week_availability.doctor.first_name} {self.appointment.week_availability.doctor.last_name}"
+
+# reviews system
 class Review(models.Model):
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='reviews_given')
     doctor = models.ForeignKey('Doctor', on_delete=models.CASCADE, related_name='reviews_received')

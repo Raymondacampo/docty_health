@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { getApiImgUrl } from "@/utils/api";
 import AverageRatingStars from "./components/AverageRatingStar";
 import FavoriteButton from "./components/FavouriteButton";
+import AppointmentModal from "./components/AppointmentModal";
 
 export default function About({ 
   doctor, 
@@ -93,10 +94,10 @@ export default function About({
           </div>
         </div>
         <div className="justify-center items-center gap-[74px] flex lg:w-auto xs:w-full">
-          <div className="w-full py-4 bg-[#3d5a80] rounded-[10px] flex-col justify-center items-start gap-4 inline-flex text-wrap break-all sm:px-8 xs:px-4">
-            <div className="justify-start items-center gap-2.5 inline-flex">
+          <div className="w-full py-5 bg-[#3d5a80] rounded-[10px] flex-col justify-center items-start gap-4 inline-flex text-wrap break-all sm:px-8 xs:px-4">
+            {/* <div className="justify-start items-center gap-2.5 inline-flex">
               <div className="text-white text-xl font-['Inter'] tracking-wide">Contact info</div>
-            </div>
+            </div> */}
             <div className="w-full justify-start items-center gap-2.5 inline-flex">
               <div data-svg-wrapper>
                 <svg width="20" height="17" viewBox="0 0 20 17" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -120,6 +121,7 @@ export default function About({
                 </div>
               </div>
             ))}
+            <AppointmentModal doctor={doctor} />
           </div>
         </div>
       </div>

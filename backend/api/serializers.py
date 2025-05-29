@@ -3,7 +3,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
 import uuid
 import re
-from .models import Doctor, DoctorAvailability, Clinic, DayOfWeek, Specialty, Ensurance, Review, Schedule, WeekAvailability, WeekDay
+from .models import Doctor, Clinic, Specialty, Ensurance, Review, Schedule, WeekAvailability, WeekDay
 from datetime import timedelta
 User = get_user_model()
 import logging
@@ -213,26 +213,6 @@ class MinimalUserSerializer(serializers.ModelSerializer):
         user.save()
         return user
     
-# DATE SYSTEM
-class DoctorAvailabilitySerializer(serializers.ModelSerializer):
-    days = serializers.PrimaryKeyRelatedField(queryset=DayOfWeek.objects.all(), many=True)
-
-    class Meta:
-        model = DoctorAvailability
-        fields = ['id', 'doctor', 'clinic', 'specialization', 'days', 'start_time', 'end_time', 'slot_duration', 'virtual', 'active']
-
-    def validate(self, data):
-        if not data.get('virtual'):
-            if not data.get('clinic'):
-                raise serializers.ValidationError({"clinic": "Clinic is required for in-person availability."})
-            if not data.get('specialization'):
-                raise serializers.ValidationError({"specialization": "Specialization is required for in-person availability."})
-        return data
-    
-class DayOfWeekSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = DayOfWeek
-        fields = ['id', 'name']
 
 class SpecialtySerializer(serializers.ModelSerializer):
     class Meta:

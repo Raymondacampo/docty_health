@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { startOfWeek, addDays, format } from 'date-fns';
+import { addDays, format } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 import { apiClient } from '@/utils/api';
 import ClinicSearchBar from '../search/ClinicSearchBar';
 import ScheduleSelect from './ScheduleSelect';
 
-const CreateWeekScheduleModal = () => {
+const CreateWeekScheduleModal = ({ onScheduleCreated }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedWeek, setSelectedWeek] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -79,23 +80,18 @@ const CreateWeekScheduleModal = () => {
       setIsLoadingWeeks(true);
       apiClient.get('/auth/available-weeks/')
         .then((response) => {
-          console.log('Available weeks response:', response.data);
-          const weeks = response.data.available_weeks
-            .slice(1)  // Skip the first item
-            .map((weekStr, index) => {
-              console.log(`SSSSS ${index + 2}:`, weekStr); // +2 because slice removed first, but you want original index
-              const rawDate = new Date(weekStr);
-              const start = startOfWeek(rawDate, { weekStartsOn: 1 }); // Set to Sunday-based startOfWeek if intended
-              console.log('WWWWWW', start);
-              return {
-                label: `Week of ${format(start, 'MMMM do, yyyy')}`,
-                start,
-                end: addDays(start, 6),
-              };
-            });
-
+          const weeks = response.data.available_weeks.map((weekStr) => {
+            // Parse YYYY-MM-DD manually to ensure UTC
+            const [year, month, day] = weekStr.split('-').map(Number);
+            const rawDate = new Date(Date.UTC(year, month - 1, day)); // month is 0-based
+            return {
+              label: `Week of ${formatInTimeZone(rawDate, 'UTC', 'MMMM do, yyyy')}`,
+              start: rawDate,
+              end: new Date(Date.UTC(year, month - 1, day + 6)),
+              original: weekStr, // Store original string for debugging
+            };
+          });
           setAvailableWeeks(weeks);
-          console.log('Available weeks:', weeks);
           setIsLoadingWeeks(false);
         })
         .catch((error) => {
@@ -125,7 +121,7 @@ const CreateWeekScheduleModal = () => {
     if (isLoadingWeeks) return 'Loading weeks...';
     if (weekError) return 'Error loading weeks';
     const week = availableWeeks[selectedWeek];
-    return week ? `${week.label} (${format(week.start, 'MMMM do')} to ${format(week.end, 'MMMM do')})` : 'Select a week';
+    return week ? `${week.label} (${formatInTimeZone(week.start, 'UTC', 'MMMM do')} to ${formatInTimeZone(week.end, 'UTC', 'MMMM do')})` : 'Select a week';
   };
 
   const getDaysForWeek = (weekStart) => {
@@ -133,9 +129,9 @@ const CreateWeekScheduleModal = () => {
     for (let i = 0; i < 7; i++) {
       const day = addDays(weekStart, i);
       days.push({
-        fullName: format(day, 'EEEE'),
-        initials: format(day, 'EEE').toUpperCase(),
-        label: format(day, 'EEEE, MMMM do'),
+        fullName: formatInTimeZone(day, 'UTC', 'EEEE'),
+        initials: formatInTimeZone(day, 'UTC', 'EEE').toUpperCase(),
+        label: formatInTimeZone(day, 'UTC', 'EEEE, MMMM do'),
         date: format(day, 'yyyy-MM-dd'),
       });
     }
@@ -143,7 +139,6 @@ const CreateWeekScheduleModal = () => {
   };
 
   const handleDayClick = (date) => {
-    console.log('Selected date:', date);
     setSelectedDay(date);
     const existingDay = weekDays.find((wd) => wd.day === date);
     setSelectedHours(existingDay ? existingDay.hours : []);
@@ -172,7 +167,6 @@ const CreateWeekScheduleModal = () => {
         const response = await apiClient.get(`/clinics/${schedule.place}/`);
         const clinic = response.data;
         setSelectedClinic({ id: clinic.id, name: clinic.name });
-        console.log('Selected clinic:', { id: clinic.id, name: clinic.name });
       } else {
         setSelectedClinic(null);
       }
@@ -246,8 +240,9 @@ const CreateWeekScheduleModal = () => {
     setSaveSuccess(null);
 
     try {
+      const weekDate = formatInTimeZone(availableWeeks[selectedWeek].start, 'UTC', 'yyyy-MM-dd');
       const data = {
-        week: format(availableWeeks[selectedWeek].start, 'yyyy-MM-dd'),
+        week: weekDate,
         weekdays: weekDays.map((day) => ({
           day: day.day,
           hours: day.hours,
@@ -255,10 +250,9 @@ const CreateWeekScheduleModal = () => {
         }))
       };
 
-      console.log('Sending week schedule data:', data);
-
       const response = await apiClient.post('/auth/weekschedule/', data);
       setSaveSuccess('Week schedule saved successfully!');
+      onScheduleCreated(response.data); 
       resetForm();
     } catch (error) {
       console.error('Error saving week schedule:', error);
@@ -322,7 +316,7 @@ const CreateWeekScheduleModal = () => {
                             selectedWeek === index ? 'bg-[#ee6c4d]' : ''
                           }`}
                         >
-                          {`${week.label} (${format(week.start, 'MMMM do')} to ${format(week.end, 'MMMM do')})`}
+                          {`${week.label} (${formatInTimeZone(week.start, 'UTC', 'MMMM do')} to ${formatInTimeZone(week.end, 'UTC', 'MMMM do')})`}
                         </div>
                       ))
                     )}

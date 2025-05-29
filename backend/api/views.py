@@ -7,8 +7,8 @@ from rest_framework import status
 from django.core.mail import send_mail
 from django.conf import settings
 from rest_framework.generics import RetrieveUpdateAPIView
-from .serializers import UserProfileSerializer, SignupSerializer, DoctorSignupSerializer, DoctorAvailabilitySerializer, DayOfWeekSerializer, EnsuranceSerializer
-from .serializers import ClinicSerializer, SpecialtySerializer, DoctorSerializer, ReviewSerializer, ScheduleSerializer, WeekAvailabilitySerializer, WeekDaySerializer
+from .serializers import UserProfileSerializer, SignupSerializer, DoctorSignupSerializer, EnsuranceSerializer
+from .serializers import ClinicSerializer, SpecialtySerializer, DoctorSerializer, ReviewSerializer, WeekAvailabilitySerializer, WeekDaySerializer, ScheduleSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view
 from django.contrib.auth import get_user_model
@@ -22,7 +22,7 @@ import logging
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from django.utils import timezone
 from datetime import timedelta, datetime, date
-from .models import PasswordResetToken, Specialty, Clinic, DoctorDocument, Doctor, DoctorAvailability, Appointment, DayOfWeek, Ensurance, Review, Schedule, WeekAvailability, WeekDay
+from .models import PasswordResetToken, Specialty, Clinic, DoctorDocument, Doctor, Ensurance, Review, Schedule, WeekAvailability, WeekDay, Appointment
 from rest_framework.pagination import PageNumberPagination
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.measure import D  # Distance measure
@@ -68,7 +68,6 @@ class DoctorSignupView(APIView):
     permission_classes = []
     
     def post(self, request):
-        logger.info("DoctorSignupView POST request received: %s", request.data)
         serializer = DoctorSignupSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
@@ -294,20 +293,6 @@ class UserProfileView(APIView):
                     {"id": doc.id, "url": doc.file.url, "description": doc.description}
                     for doc in doctor.documents.all()
                 ],
-                "availabilities": [
-                    {
-                        "id": avail.id,
-                        "clinic": {"id": avail.clinic.id, "name": avail.clinic.name} if avail.clinic else None,
-                        "specialization": {"id": avail.specialization.id, "name": avail.specialization.name} if avail.specialization else None,
-                        "days": [{"id": day.id, "name": day.name} for day in avail.days.all()],
-                        "start_time": avail.start_time.strftime('%H:%M'),
-                        "end_time": avail.end_time.strftime('%H:%M'),
-                        "slot_duration": avail.slot_duration,
-                        "virtual": avail.virtual,
-                        "active": avail.active
-                    }
-                    for avail in DoctorAvailability.objects.filter(doctor=doctor)
-                ],
                 "taking_dates": doctor.taking_dates,
                 "takes_virtual": doctor.takes_virtual,
                 "takes_in_person": doctor.takes_in_person
@@ -362,21 +347,21 @@ class UserProfileView(APIView):
             if 'takes_virtual' in data:
                 new_takes_virtual = data['takes_virtual']
                 if new_takes_virtual:  # If takes_virtual is being set to True
-                    DoctorAvailability.objects.filter(doctor=doctor, virtual=True).update(active=True)
+                    WeekAvailability.objects.filter(doctor=doctor, virtual=True).update(active=True)
                 else:  # If takes_virtual is being set to False
-                    DoctorAvailability.objects.filter(doctor=doctor, virtual=True).update(active=False)
+                    WeekAvailability.objects.filter(doctor=doctor, virtual=True).update(active=False)
                 doctor.takes_virtual = new_takes_virtual
             if 'takes_in_person' in data:
                 new_takes_in_person = data['takes_in_person']
                 if new_takes_in_person:  # If takes_in_person is being set to True
-                    DoctorAvailability.objects.filter(
+                    WeekAvailability.objects.filter(
                         doctor=doctor,
                         virtual=False,
                         clinic__isnull=False,
                         specialization__isnull=False
                     ).update(active=True)
                 else:  # If takes_in_person is being set to False
-                    DoctorAvailability.objects.filter(
+                    WeekAvailability.objects.filter(
                         doctor=doctor,
                         virtual=False,
                         clinic__isnull=False,
@@ -669,176 +654,6 @@ class DeleteDoctorDocumentView(APIView):
 
 # DATES SYSTEM
 
-# CREATION
-class CreateDoctorAvailabilityView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        user = request.user
-        if not hasattr(user, 'doctor'):
-            return Response({"error": "User is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
-
-        data = request.data.copy()
-        data['doctor'] = user.doctor.id
-
-        slot_duration = data.get('slot_duration', 30)
-        if slot_duration not in [30, 45, 60]:
-            return Response({"error": "Slot duration must be 30, 45, or 60 minutes"}, status=status.HTTP_400_BAD_REQUEST)
-
-        serializer = DoctorAvailabilitySerializer(data=data)
-        if serializer.is_valid():
-            availability = serializer.save()
-            doctor = user.doctor
-            if availability.virtual:
-                doctor.takes_virtual = True
-            else:
-                doctor.takes_in_person = True  # Set for in-person availability
-            doctor.update_taking_dates()  # Reflect active availabilities
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-# AVAILABILITY
-class AvailableSlotsView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, doctor_id, date):
-        try:
-            doctor = Doctor.objects.get(id=doctor_id)
-            date_obj = datetime.strptime(date, '%Y-%m-%d').date()
-            day_name = date_obj.strftime('%A')
-
-            availabilities = DoctorAvailability.objects.filter(
-                doctor=doctor,
-                days__name=day_name
-            )
-
-            available_slots = []
-            for availability in availabilities:
-                start = datetime.combine(date_obj, availability.start_time)
-                end = datetime.combine(date_obj, availability.end_time)
-                slot_duration = timedelta(minutes=availability.slot_duration)
-
-                current = start
-                while current + slot_duration <= end:
-                    slot_end = current + slot_duration
-                    # Fixed: Use Q objects as a single filter argument
-                    overlapping_appointments = Appointment.objects.filter(
-                        doctor=doctor,
-                        date=date_obj,
-                        start_time__lt=slot_end.time(),
-                        end_time__gt=current.time()
-                    )
-                    if not overlapping_appointments.exists():
-                        available_slots.append({
-                            'start_time': current.time().strftime('%H:%M'),
-                            'end_time': slot_end.time().strftime('%H:%M')
-                        })
-                    current += slot_duration
-
-            return Response(available_slots, status=status.HTTP_200_OK)
-
-        except Doctor.DoesNotExist:
-            return Response({"error": "Doctor not found"}, status=status.HTTP_404_NOT_FOUND)
-        
-# CREATE
-class BookAppointmentView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        user = request.user
-        data = request.data
-        try:
-            doctor = Doctor.objects.get(id=data['doctor_id'])
-            date = datetime.strptime(data['date'], '%Y-%m-%d').date()
-            start_time = datetime.strptime(data['start_time'], '%H:%M').time()
-            slot_duration = data.get('slot_duration', 30)  # From availability
-            end_time = (datetime.combine(date, start_time) + timedelta(minutes=slot_duration)).time()
-
-            # Check availability and slot
-            availability = DoctorAvailability.objects.filter(
-                doctor=doctor,
-                days__name=date.strftime('%A'),
-                start_time__lte=start_time,
-                end_time__gte=end_time
-            ).first()
-            if not availability:
-                return Response({"error": "Slot not available"}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Check no overlapping appointments
-            overlapping = Appointment.objects.filter(
-                doctor=doctor,
-                date=date,
-                start_time__lt=end_time,
-                end_time__gt=start_time
-            )
-            if overlapping.exists():
-                return Response({"error": "Slot already booked"}, status=status.HTTP_400_BAD_REQUEST)
-
-            appointment = Appointment.objects.create(
-                doctor=doctor,
-                patient=user,
-                date=date,
-                start_time=start_time,
-                end_time=end_time
-            )
-            return Response({
-                "message": "Appointment booked successfully",
-                "id": appointment.id
-            }, status=status.HTTP_201_CREATED)
-
-        except Doctor.DoesNotExist:
-            return Response({"error": "Doctor not found"}, status=status.HTTP_404_NOT_FOUND)
-        except ValueError:
-            return Response({"error": "Invalid date or time format"}, status=status.HTTP_400_BAD_REQUEST)
-        
-class UpdateDoctorAvailabilityView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def put(self, request, availability_id):
-        user = request.user
-        if not hasattr(user, 'doctor'):
-            return Response({"error": "User is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            availability = DoctorAvailability.objects.get(id=availability_id, doctor=user.doctor)
-            data = request.data.copy()
-            data['doctor'] = user.doctor.id
-
-            slot_duration = data.get('slot_duration', availability.slot_duration)
-            if slot_duration not in [30, 45, 60]:
-                return Response({"error": "Slot duration must be 30, 45, or 60 minutes"}, status=status.HTTP_400_BAD_REQUEST)
-
-            serializer = DoctorAvailabilitySerializer(availability, data=data, partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                # Update doctor's taking_dates, takes_virtual, and takes_in_person
-                availability.doctor.update_taking_dates()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except DoctorAvailability.DoesNotExist:
-            return Response({"error": "Availability not found"}, status=status.HTTP_404_NOT_FOUND)
-
-class DeleteDoctorAvailabilityView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def delete(self, request, availability_id):
-        user = request.user
-        if not hasattr(user, 'doctor'):
-            return Response({"error": "User is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            availability = DoctorAvailability.objects.get(id=availability_id, doctor=user.doctor)
-            availability.delete()
-            # Update doctor's taking_dates, takes_virtual, and takes_in_person
-            user.doctor.update_taking_dates()
-            return Response({"message": "Availability deleted successfully"}, status=status.HTTP_200_OK)
-        except DoctorAvailability.DoesNotExist:
-            return Response({"error": "Availability not found"}, status=status.HTTP_404_NOT_FOUND)
-
-class DayOfWeekListView(generics.ListAPIView):
-    queryset = DayOfWeek.objects.all()
-    serializer_class = DayOfWeekSerializer
-
 class DoctorPagination(PageNumberPagination):
     page_size = 6  # 10 doctors per page
     page_size_query_param = 'page_size'
@@ -922,23 +737,13 @@ class DoctorDetailView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, doctor_id):
-        logger.debug("Entering DoctorDetailView for doctor_id: %s", doctor_id)
-        logger.debug("Request user: %s, Authenticated: %s", request.user, request.user.is_authenticated)
         try:
             doctor = Doctor.objects.get(id=doctor_id)
-            if request.user.is_authenticated:
-                favorite_doctors = list(request.user.favorite_doctors.values_list('id', flat=True))
-                logger.debug("User %s favorite doctors: %s", request.user.id, favorite_doctors)
-            else:
-                logger.debug("No authenticated user, skipping favorite check")
             serializer = DoctorSerializer(doctor, context={'request': request})
-            logger.debug("Serializer data: %s", serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Doctor.DoesNotExist:
-            logger.error("Doctor with id %s not found", doctor_id)
             return Response({"error": "Doctor not found"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            logger.error("Error in DoctorDetailView: %s", str(e))
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 class ReviewPagination(PageNumberPagination):
@@ -1246,27 +1051,6 @@ class MySchedulesView(APIView):
         serializer = ScheduleSerializer(schedules, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-class CreateWeekAvailabilityView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        user = request.user
-        if not hasattr(user, 'doctor'):
-            return Response({"error": "User is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
-
-        data = request.data.copy()
-        data['doctor'] = user.id
-        serializer = WeekAvailabilitySerializer(data=data)
-        if serializer.is_valid():
-            week_availability = serializer.save()
-            return Response({
-                "message": "Week availability created successfully",
-                "id": week_availability.id,
-                "week": week_availability.week.isoformat(),
-                "doctor": week_availability.doctor.id
-            }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 class CreateWeekDayView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -1295,7 +1079,6 @@ class WeekScheduleView(APIView):
 
     def post(self, request):
         user = request.user
-        logger.info("Authenticated user: %s, Email: %s, Is doctor: %s", user.id, user.email, hasattr(user, 'doctor'))
         
         if not hasattr(user, 'doctor'):
             return Response({"error": "User is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
@@ -1308,7 +1091,7 @@ class WeekScheduleView(APIView):
         except ValueError:
             return Response({"error": "Invalid date format for 'week'. Expected YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
 
-        normalized_week = parsed_week - timedelta(days=parsed_week.weekday())
+        normalized_week = parsed_week
         weekdays = request.data.get('weekdays', [])
 
         if not week or not weekdays:
@@ -1323,7 +1106,6 @@ class WeekScheduleView(APIView):
                 }
                 week_serializer = WeekAvailabilitySerializer(data=week_data)
                 if not week_serializer.is_valid():
-                    logger.error("WeekAvailability serializer errors: %s", week_serializer.errors)
                     return Response(week_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                 # Explicitly pass doctor to save
                 week_availability = week_serializer.save(doctor=user)
@@ -1349,7 +1131,6 @@ class WeekScheduleView(APIView):
                     }
                     weekday_serializer = WeekDaySerializer(data=weekday_data)
                     if not weekday_serializer.is_valid():
-                        logger.error("WeekDay serializer errors: %s", weekday_serializer.errors)
                         return Response(weekday_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                     # Explicitly pass doctor to save
                     week_day = weekday_serializer.save()
@@ -1371,12 +1152,10 @@ class WeekScheduleView(APIView):
                 }, status=status.HTTP_201_CREATED)
 
         except Exception as e:
-            logger.error("Error creating week schedule: %s", str(e))
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     def put(self, request):
         user = request.user
-        logger.info("WeekScheduleView PUT: User %s, Data: %s", user.id, request.data)
         
         if not hasattr(user, 'doctor'):
             return Response({"error": "User is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
@@ -1395,7 +1174,6 @@ class WeekScheduleView(APIView):
                 week_data = {'week': week}
                 week_serializer = WeekAvailabilitySerializer(week_availability, data=week_data, partial=True)
                 if not week_serializer.is_valid():
-                    logger.error("WeekAvailability serializer errors: %s", week_serializer.errors)
                     return Response(week_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                 week_serializer.save()
 
@@ -1423,7 +1201,6 @@ class WeekScheduleView(APIView):
                     }
                     weekday_serializer = WeekDaySerializer(data=weekday_data)
                     if not weekday_serializer.is_valid():
-                        logger.error("WeekDay serializer errors: %s", weekday_serializer.errors)
                         return Response(weekday_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                     week_day = weekday_serializer.save()
                     created_weekdays.append({
@@ -1446,7 +1223,6 @@ class WeekScheduleView(APIView):
         except WeekAvailability.DoesNotExist:
             return Response({"error": "Week availability not found or unauthorized"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            logger.error("Error updating week schedule: %s", str(e))
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class WeekSchedulesView(APIView):
@@ -1454,8 +1230,6 @@ class WeekSchedulesView(APIView):
 
     def get(self, request):
         user = request.user
-        logger.info("WeekSchedulesView: Authenticated user: %s, Email: %s, Is doctor: %s", 
-                    user.id, user.email, hasattr(user, 'doctor'))
         
         if not hasattr(user, 'doctor'):
             return Response({"error": "User is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
@@ -1463,8 +1237,6 @@ class WeekSchedulesView(APIView):
         try:
             # Fetch all WeekAvailability objects for the user
             week_availabilities = WeekAvailability.objects.filter(doctor=user).order_by('week')
-            logger.info("WeekSchedulesView: Found %d week availabilities for user %s", 
-                        week_availabilities.count(), user.id)
 
             # Serialize WeekAvailability with nested WeekDay objects
             response_data = []
@@ -1483,7 +1255,6 @@ class WeekSchedulesView(APIView):
             }, status=status.HTTP_200_OK)
         
         except Exception as e:
-            logger.error("WeekSchedulesView: Error fetching schedules: %s", str(e))
             return Response({"error": "Failed to fetch week schedules"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ClinicDetailView(APIView):
@@ -1507,10 +1278,10 @@ class AvailableWeeksView(APIView):
         user = request.user
 
         today = date.today()
-        start_of_this_week = today - timedelta(days=today.weekday())  # Monday of current week
-
+        start_of_this_week = today - timedelta(days=(today.weekday() + 1) % 7)
+        
         # Generate next 10 weeks from this Monday
-        candidate_weeks = [start_of_this_week + timedelta(weeks=i) for i in range(5)]
+        candidate_weeks = [start_of_this_week + timedelta(weeks=i) for i in range(6)]
 
         # Get already scheduled weeks for the user
         taken_weeks = set(
@@ -1519,30 +1290,205 @@ class AvailableWeeksView(APIView):
 
         # Filter out taken weeks
         free_weeks = [w for w in candidate_weeks if w not in taken_weeks]
-
+        logger.info(f"Free weeks for user {user.id}: {free_weeks} and {taken_weeks}")
         return Response({
             "available_weeks": [w.isoformat() for w in free_weeks]
         })
+    
+# views.py
+class DoctorAvailableDaysView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, doctor_id):
+        try:
+            doctor = Doctor.objects.get(id=doctor_id)
+            if not doctor.taking_dates:
+                return Response({
+                    "error": "Doctor is not taking appointments",
+                    "available_days": []
+                }, status=status.HTTP_200_OK)
+
+            weekdays = WeekDay.objects.filter(
+                week_availability__doctor=doctor.user
+            ).select_related('place').order_by('day')
+
+            today = date.today()
+            available_days = []
+            for weekday in weekdays:
+                if weekday.day < today:
+                    continue
+
+                # Get booked hours for this weekday
+                booked_hours = Appointment.objects.filter(
+                    appointment=weekday
+                ).values_list('time', flat=True)
+
+                # Remove booked hours from available hours
+                available_hours = [
+                    hour for hour in weekday.hours
+                    if hour not in booked_hours
+                ]
+
+                # Only include days with available hours
+                if available_hours:
+                    available_days.append({
+                        'id': weekday.id,
+                        'day': weekday.day.isoformat(),
+                        'hours': available_hours,
+                        'place': {
+                            'id': weekday.place.id,
+                            'name': weekday.place.name,
+                            'city': weekday.place.city,
+                            'state': weekday.place.state,
+                            'address': weekday.place.address
+                        } if weekday.place else None,
+                        'is_virtual': weekday.place is None
+                    })
+
+            return Response({
+                "available_days": available_days
+            }, status=status.HTTP_200_OK)
+
+        except Doctor.DoesNotExist:
+            return Response({"error": "Doctor not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class CreateAppointmentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        weekday_id = request.data.get('weekday_id')
+        hour = request.data.get('hour')
+
+        if not weekday_id or not hour:
+            return Response({
+                'error': 'weekday_id and hour are required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            weekday = WeekDay.objects.get(id=weekday_id)
+            # Verify hour is available
+            if hour not in weekday.hours:
+                return Response({
+                    'error': 'Selected hour is not available'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Check if the hour is already booked
+            if Appointment.objects.filter(appointment=weekday, time=hour).exists():
+                return Response({
+                    'error': 'This time slot is already booked'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Create appointment
+            appointment = Appointment(
+                patient=user,
+                appointment=weekday,
+                time=hour,
+            )
+            appointment.save()
+
+            return Response({
+                'message': 'Appointment created successfully',
+                'appointment': {
+                    'id': appointment.id,
+                    'weekday_id': weekday.id,
+                    'day': weekday.day.isoformat(),
+                    'hour': hour,
+                    'doctor': f"{appointment.appointment.week_availability.doctor.first_name} {appointment.appointment.week_availability.doctor.last_name}",
+                }
+            }, status=status.HTTP_201_CREATED)
+
+        except WeekDay.DoesNotExist:
+            return Response({
+                'error': 'WeekDay not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({
+                'error': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 class DeleteWeekAvailabilityView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, week_availability_id):
         user = request.user
-        logger.info("DeleteWeekAvailabilityView: User %s attempting to delete WeekAvailability %s", user.id, week_availability_id)
         
         if not hasattr(user, 'doctor'):
-            logger.warning("DeleteWeekAvailabilityView: User %s is not a doctor", user.id)
             return Response({"error": "User is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             week_availability = WeekAvailability.objects.get(id=week_availability_id, doctor=user)
             week_availability.delete()
-            logger.info("DeleteWeekAvailabilityView: WeekAvailability %s deleted successfully", week_availability_id)
             return Response({"message": "Week availability deleted successfully"}, status=status.HTTP_200_OK)
         except WeekAvailability.DoesNotExist:
-            logger.error("DeleteWeekAvailabilityView: WeekAvailability %s not found for user %s", week_availability_id, user.id)
             return Response({"error": "Week availability not found"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            logger.error("DeleteWeekAvailabilityView: Error deleting WeekAvailability %s: %s", week_availability_id, str(e))
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class UserAppointmentsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        is_doctor = hasattr(user, 'doctor')
+
+        if is_doctor:
+            # Doctor: Get appointments for their WeekDays
+            appointments = Appointment.objects.filter(
+                appointment__week_availability__doctor=user
+            ).select_related(
+                'patient', 'appointment', 'appointment__week_availability', 'appointment__place'
+            ).order_by('appointment__day', 'time')
+        else:
+            # Regular user: Get their booked appointments
+            appointments = Appointment.objects.filter(
+                patient=user
+            ).select_related(
+                'appointment', 'appointment__week_availability', 'appointment__place'
+            ).order_by('appointment__day', 'time')
+
+        active_appointments = []
+        inactive_appointments = []
+        
+        for appt in appointments:
+            weekday = appt.appointment
+            week_availability = weekday.week_availability
+            appt_data = {
+                'appointment_id': appt.id,
+                'week_availability': WeekAvailabilitySerializer(week_availability).data,
+                'weekday': WeekDaySerializer(weekday).data,
+                'time': appt.time,
+                'active': appt.active
+            }
+            if is_doctor:
+                appt_data['patient'] = {
+                    'id': appt.patient.id,
+                    'first_name': appt.patient.first_name,
+                    'last_name': appt.patient.last_name,
+                    'email': appt.patient.email
+                }
+            # Separate appointments based on active status
+            if appt.active:
+                active_appointments.append(appt_data)
+            else:
+                inactive_appointments.append(appt_data)
+
+        return Response({
+            'active_appointments': active_appointments,
+            'inactive_appointments': inactive_appointments
+        }, status=status.HTTP_200_OK)
+    
+class DeleteAppointmentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, appointment_id):
+        try:
+            appointment = Appointment.objects.get(id=appointment_id, patient=request.user)
+            appointment.delete()  # Delete the appointment
+            return Response({"message": "Appointment deleted successfully"}, status=status.HTTP_200_OK)
+        except Appointment.DoesNotExist:
+            return Response({"error": "Appointment not found or not authorized"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
