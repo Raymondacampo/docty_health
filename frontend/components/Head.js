@@ -143,26 +143,30 @@ export default function Head() {
                                         <div className="text-[#293241] text-base font-medium font-['Inter']">Account settings</div>
                                     </a>
                                     {isDoc && 
-                                    <a href="/doctor_settings" className="flex items-center gap-2 px-4 py-3 text-[#293241] text-base font-medium font-['Inter'] hover:bg-gray-100">
-                                        <div className="flex items-center">
-                                            <UserIcon className="w-3.5 h-3.5 text-[#3D5A80]" />
-                                            <Cog6ToothIcon className="w-4 h-4 text-[#3D5A80]" />
-                                        </div>
-                                        <div className="text-[#293241] text-base font-medium font-['Inter']">Doctor Account settings</div>
-                                    </a>
+                                    <>
+                                        <a href="/doctor_settings" className="flex items-center gap-2 px-4 py-3 text-[#293241] text-base font-medium font-['Inter'] hover:bg-gray-100">
+                                            <div className="flex items-center">
+                                                <UserIcon className="w-3.5 h-3.5 text-[#3D5A80]" />
+                                                <Cog6ToothIcon className="w-4 h-4 text-[#3D5A80]" />
+                                            </div>
+                                            <div className="text-[#293241] text-base font-medium font-['Inter']">Doctor Account settings</div>
+                                        </a>
+                                                                            <a href="/availability" className="flex items-center gap-2 px-4 py-3 text-[#293241] text-base font-medium font-['Inter'] hover:bg-gray-100">
+                                            <div className="flex items-center">
+                                                <CheckCircleIcon className="w-5 h-5 text-[#3D5A80]" />
+                                            </div>
+                                            <div className="text-[#293241] text-base font-medium font-['Inter']">Availability</div>
+                                        </a>
+                                        <a href="/schedule" className="flex items-center gap-2 px-4 py-3 text-[#293241] text-base font-medium font-['Inter'] hover:bg-gray-100">
+                                            <div data-svg-wrapper>
+                                                <CalendarDateRangeIcon className="w-5 h-5 text-[#3D5A80]" />
+                                            </div>
+                                            <div className="text-[#293241] text-base font-medium font-['Inter']">Schedule</div>
+                                        </a>                                    
+                                    </>
+
                                     }
-                                     <a href="/availability" className="flex items-center gap-2 px-4 py-3 text-[#293241] text-base font-medium font-['Inter'] hover:bg-gray-100">
-                                        <div className="flex items-center">
-                                            <CheckCircleIcon className="w-5 h-5 text-[#3D5A80]" />
-                                        </div>
-                                        <div className="text-[#293241] text-base font-medium font-['Inter']">Availability</div>
-                                    </a>
-                                    <a href="/schedule" className="flex items-center gap-2 px-4 py-3 text-[#293241] text-base font-medium font-['Inter'] hover:bg-gray-100">
-                                        <div data-svg-wrapper>
-                                            <CalendarDateRangeIcon className="w-5 h-5 text-[#3D5A80]" />
-                                        </div>
-                                        <div className="text-[#293241] text-base font-medium font-['Inter']">Schedule</div>
-                                    </a>
+
                                     {!isDoc ? (
                                         <a href="/favorite" className="flex items-center gap-2 px-4 py-3 text-[#293241] text-base font-medium font-['Inter'] hover:bg-gray-100">
                                             <div data-svg-wrapper>
