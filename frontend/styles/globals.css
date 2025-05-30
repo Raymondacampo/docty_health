@@ -21,3 +21,9 @@ body {
   overflow-x: hidden;
   max-width: 100vw;
 }
+
+input[type="text"],
+textarea,
+select {
+  @apply text-base; /* 16px in Tailwind */
+}
