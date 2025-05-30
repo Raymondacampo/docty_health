@@ -61,7 +61,11 @@ export default function MyDates() {
   return (
     <div className="w-full px-2 py-4 flex flex-col justify-start items-center gap-20 sm:p-4">
       <CustomAlert message={alert.message} status={alert.status} />
+
       <div className="w-full max-w-4xl flex flex-col justify-start items-start gap-10">
+        <div className="self-stretch w-full text-[#293241] text-2xl font-['Inter'] tracking-wide font-bold border-b mb-4">
+          Appointments
+        </div>
         {hasAppointments ? (
           <>
             <ActiveAppointments

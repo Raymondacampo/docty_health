@@ -21,7 +21,7 @@ export default function Why_Docify(){
             <div className="h-auto px-8 py-12 flex-col justify-start items-center gap-20 inline-flex rounded-lg
             xl:max-w-5xl xl:
             lg:max-w-4xl">
-                <div className="text-center text-[#293241] text-2xl font-bold font-['Inter']">Why Choose Doctify?</div>
+                <div className="text-center text-[#293241] text-2xl font-bold font-['Inter']">Why Choose DoctyHealth?</div>
                 <div className='flex flex-col justify-center items-center  w-337 h-full'>
                     <div className="justify-start items-start gap-[50px] flex flex-col
                     xl:flex-row lg:flex-row md:flex-row sm:flex-row">

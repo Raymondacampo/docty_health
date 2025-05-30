@@ -29,7 +29,7 @@ export default function AbsoluteSearchOverlay({ setShow }) {
       xs:w-full xs:h-screen xs:bg-white">
       <div className="relative bg-white max-w-4xl mx-auto flex flex-col  items-center gap-8 p-4
         sm:border sm:rounded-md sm:h-auto sm:w-[90%] sm:justify-center
-        xs:flex-col xs:p-4 xs:rounded-lg xs:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.5)] xs:border-0 xs:h-full xs:w-full">
+        xs:flex-col xs:p-4 xs:shadow-[0px_2px_4px_0px_rgba(0,0,0,0.5)] xs:border-0 xs:h-full xs:w-full">
         {/* Close Button */}
         <div className="flex w-full justify-between ">
             <div className="text-center text-[#293241] text-3xl font-bold tracking-[1px] ">
@@ -51,14 +51,14 @@ export default function AbsoluteSearchOverlay({ setShow }) {
         <div className="w-full flex flex-col gap-4 sm:border-2 rounded-lg
             xs:border-none
           sm:flex-row sm:gap-0">
-          <div className="w-full h-[60px] rounded-lg">
+          <div className="w-full h-[50px] rounded-lg">
             <SpecialtySearchBar
               value={specialty}
               onChange={setSpecialty}
               round="rounded-l-lg border-gray-200 sm:rounded-r-none xs:rounded-l-lg xs:rounded-r-lg sm:border-r-0 xs:border"
             />
           </div>
-          <div className="w-full h-[60px] border-l sm:border-r-0 sm:rounded-none xs:rounded-lg xs:border">
+          <div className="w-full h-[50px] border-l sm:border-r-0 sm:rounded-none xs:rounded-lg xs:border">
             <CityStateSearchBar
               value={location}
               onChange={setLocation}
@@ -68,7 +68,7 @@ export default function AbsoluteSearchOverlay({ setShow }) {
           <button
             onClick={handleSearch}
             disabled={!specialty}
-            className={`w-full h-[60px] bg-[#293241] shadow-[-2px_2px_4px_0px_rgba(0,0,0,0.5)] border border-black justify-center items-center gap-2.5 inline-flex text-white font-['Inter']  
+            className={`w-full h-[50px] bg-[#293241] shadow-[-2px_2px_4px_0px_rgba(0,0,0,0.5)] border border-black justify-center items-center gap-2.5 inline-flex text-white font-['Inter']  
               sm:py-4 sm:relative sm:left-[-4px] sm:translate-x-0  sm:bottom-0
               xs:py-2 xs:rounded-lg xs:absolute xs:bottom-4 xs:w-[95%] xs:left-1/2 xs:-translate-x-1/2
               ${!specialty ? "opacity-50 cursor-not-allowed" : "hover:bg-[#3d5a80]"}`}

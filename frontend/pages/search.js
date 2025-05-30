@@ -87,7 +87,7 @@ export default function Search() {
         sex={sex}
         count={count}
       />
-      <div className="w-full max-w-[1400px] mx-auto justify-between items-start xsLgap-14 inline-flex xl:pl-0 lg:pl-8">
+      <div className="w-full relative justify-center items-start  inline-flex xl:pl-0 lg:pl-8">
         {showFilters && (
           <SearchFilters
             specialty={isXsScreen ? tempFilters.specialty : specialty}
@@ -131,17 +131,20 @@ export default function Search() {
             isXsScreen={isXsScreen}
           />
         )}
-        <DoctorsResults
-          specialty={specialty}
-          location={location}
-          ensurance={ensurance}
-          sex={sex}
-          takes_dates={takesDates}
-          experienceValue={experienceValue}
-          onFiltersToggle={() => setShowFilters(true)}
-          onCountChange={setCount}
-        />
-        <SearchAdds />
+        <div className="flex max-w-[1400px] ml-auto w-full">
+          <DoctorsResults
+            specialty={specialty}
+            location={location}
+            ensurance={ensurance}
+            sex={sex}
+            takes_dates={takesDates}
+            experienceValue={experienceValue}
+            onFiltersToggle={() => setShowFilters(true)}
+            onCountChange={setCount}
+          />
+          <SearchAdds />          
+        </div>
+
       </div>
     </div>
   );

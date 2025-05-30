@@ -6,7 +6,7 @@ export default function Footer() {
       md:justify-center
       xs:justify-start xs:px-8">
         <div className="flex flex-col items-start gap-2">
-          <div className="text-lg text-[#EDEDED] font-semibold border-b border-white/20">Doctify © 2023 All rights reserved</div>
+          <div className="text-lg text-[#EDEDED] font-semibold border-b border-white/20">DoctyHealth © 2023 All rights reserved</div>
           <div className="flex flex-col items-start gap-2">
             <a href='service' className="text-sm text-[#EDEDED]">Terms of Service</a>
             <a href='support' className="text-sm text-[#EDEDED]">Support</a>

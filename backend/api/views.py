@@ -368,7 +368,6 @@ class UserProfileView(APIView):
                         specialization__isnull=False
                     ).update(active=False)
                 doctor.takes_in_person = new_takes_in_person
-            doctor.update_taking_dates()  # Recalculate taking_dates based on active availabilities
             doctor.save()
 
         user.save()
@@ -382,9 +381,6 @@ class UserProfileView(APIView):
             "born_date": getattr(user, 'born_date', ''),
             "is_doctor": hasattr(user, 'doctor'),
             "description": user.doctor.description if hasattr(user, 'doctor') else None,  # Add description
-            "taking_dates": user.doctor.taking_dates if hasattr(user, 'doctor') else None,
-            "takes_virtual": user.doctor.takes_virtual if hasattr(user, 'doctor') else None,
-            "takes_in_person": user.doctor.takes_in_person if hasattr(user, 'doctor') else None
         })
         
 # DOCTOR MANAGEMENTS
@@ -1123,6 +1119,7 @@ class WeekScheduleView(APIView):
                 # Create WeekDay entries
                 created_weekdays = []
                 for weekday in weekdays:
+
                     weekday_data = {
                         'week_availability': week_availability.id,
                         'day': weekday['day'],
@@ -1140,6 +1137,7 @@ class WeekScheduleView(APIView):
                         'hours': week_day.hours,
                         'place': week_day.place.id if week_day.place else None,
                     })
+
 
                 return Response({
                     "message": "Week schedule created successfully",
@@ -1467,8 +1465,16 @@ class UserAppointmentsView(APIView):
                     'id': appt.patient.id,
                     'first_name': appt.patient.first_name,
                     'last_name': appt.patient.last_name,
-                    'email': appt.patient.email
+                    'profile_picture': appt.patient.profile_picture.url if appt.patient.profile_picture else None
                 }
+            else:
+                appt_data['doctor'] = {
+                    'id': week_availability.doctor.id,
+                    'first_name':week_availability.doctor.first_name,
+                    'last_name':week_availability.doctor.last_name,
+                    'profile_picture':week_availability.doctor.profile_picture.url if week_availability.doctor.profile_picture else None
+                }
+
             # Separate appointments based on active status
             if appt.active:
                 active_appointments.append(appt_data)
@@ -1485,10 +1491,66 @@ class DeleteAppointmentView(APIView):
 
     def delete(self, request, appointment_id):
         try:
-            appointment = Appointment.objects.get(id=appointment_id, patient=request.user)
-            appointment.delete()  # Delete the appointment
+            appointment = Appointment.objects.get(id=appointment_id)
+            if appointment.appointment.week_availability.doctor == request.user or appointment.patient == request.user: 
+                appointment.delete()  # Delete the appointment
             return Response({"message": "Appointment deleted successfully"}, status=status.HTTP_200_OK)
         except Appointment.DoesNotExist:
             return Response({"error": "Appointment not found or not authorized"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class DoctorPatientsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        if not hasattr(user, 'doctor'):
+            return Response({"error": "User is not a doctor"}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            # Fetch appointments where the doctor matches the user
+            appointments = Appointment.objects.filter(
+                appointment__week_availability__doctor=user,
+                active=True
+            ).select_related(
+                'patient', 'appointment', 'appointment__week_availability', 'appointment__place'
+            ).order_by('patient__id', 'appointment__day', 'time')
+
+            # Create a map to store unique patients and their appointments
+            patient_map = {}
+            for appt in appointments:
+                patient = appt.patient
+                if patient.id not in patient_map:
+                    patient_map[patient.id] = {
+                        'patient': patient,
+                        'appointments': []
+                    }
+                patient_map[patient.id]['appointments'].append({
+                    'appointment_id': appt.id,
+                    'weekday': WeekDaySerializer(appt.appointment).data,
+                    'time': appt.time,
+                    'active': appt.active
+                })
+
+            # Convert to list of patient data
+            response_data = [
+                {
+                    'patient': {
+                        'id': data['patient'].id,
+                        'first_name': data['patient'].first_name,
+                        'last_name': data['patient'].last_name,
+                        'profile_picture': data['patient'].profile_picture.url if data['patient'].profile_picture else None
+                    },
+                    'last_appointment': data['appointments'][0]['weekday']['day'] if data['appointments'] else None
+                }
+                for data in patient_map.values()
+            ]
+
+            return Response({
+                'patients': response_data
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            logger.error(f"DoctorPatientsView error: {str(e)}")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

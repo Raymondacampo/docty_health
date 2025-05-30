@@ -102,7 +102,7 @@ export default function SignupForm() {
       const { data } = await apiClient.post('/auth/signup/', formData);
       localStorage.setItem('access_token', data.access);
       localStorage.setItem('refresh_token', data.refresh);
-      router.push('/profile');
+      router.push('/account');
     } catch (err) {
       if (err.response?.data) {
         setErrors(err.response.data);

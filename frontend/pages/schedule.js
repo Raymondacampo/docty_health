@@ -4,14 +4,29 @@ import ScheduleCreationModal from '@/components/availability/ScheduleCreationMod
 import DoctorSchedule from '@/components/availability/DoctorSchedule';
 import SidebarToggle from '@/components/account/SideBarToggle';
 import NavBar from '@/components/account/NavBar';
+import { useRouter } from 'next/router';
+import { useUser } from '@/hooks/User';
 
 export default function Schedule() {
+  const { user } = useUser();
+    const router = useRouter();
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [isNavOpen, setIsNavOpen] = useState(true); // State for NavBar toggle
+  const [isDoc, setDoc] = useState('')
 
+  useEffect(() => {
+    const verifyDoc = async () => {
+      const response = await apiClient.get('auth/is_doctor/')
+      setDoc(response.data)
+      if (!response.data){
+        router.push('/index')
+      }
+    }
+    verifyDoc();
+  },[])
 
   // Fetch schedules
   useEffect(() => {
@@ -36,8 +51,12 @@ export default function Schedule() {
         setLoading(false);
       }
     };
-    fetchSchedules();
-  }, [refreshKey]);
+    if(isDoc == true){
+      fetchSchedules()
+    }else{
+      router.push('/')
+    }
+  }, [refreshKey, isDoc]);
 
   // Handle create or update
   const handleCreateOrUpdate = () => {

@@ -4,8 +4,10 @@ import SidebarToggle from "@/components/account/SideBarToggle";
 import NavBar from "@/components/account/NavBar";
 import CustomAlert from "@/components/CustomAlert";
 import { useState } from "react";
+import { useUser } from "@/hooks/User";
 
 export default function Availability() {
+  const { user, loading } = useUser();
   const [isNavOpen, setIsNavOpen] = useState(true);
   const [alert, setAlert] = useState({ message: null, status: null });
   const [newSchedule, setNewSchedule] = useState(null);

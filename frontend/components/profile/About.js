@@ -3,6 +3,7 @@ import { getApiImgUrl } from "@/utils/api";
 import AverageRatingStars from "./components/AverageRatingStar";
 import FavoriteButton from "./components/FavouriteButton";
 import AppointmentModal from "./components/AppointmentModal";
+import { UserCircleIcon } from "@heroicons/react/24/solid";
 
 export default function About({ 
   doctor, 
@@ -62,11 +63,16 @@ export default function About({
         <div className="gap-4 flex
           sm:flex-row sm:w-auto sm:min-w-[450px]
           xs:flex-col xs:w-full xs:items-center">
-          <img 
-            src={`${backendBaseUrl}${doctor.user.profile_picture}`} 
-            className="min-w-[150px] min-h-[150px] max-w-[150px] max-h-[150px] bg-[#d9d9d9] rounded-full"
-            alt="Doctor profile"
-          />
+          {doctor.user.profile_picture ? (
+            <img 
+              src={`${backendBaseUrl}${doctor.user.profile_picture}`} 
+              className="min-w-[150px] min-h-[150px] max-w-[150px] max-h-[150px] bg-[#d9d9d9] rounded-full"
+              alt="Doctor profile"
+            />            
+          ) : (
+            <UserCircleIcon className="w-[150px] h-[150px] text-gray-400 rounded-full object-cover object-center"/>
+          )}
+
           <div className="flex-col justify-start items-start gap-4 inline-flex">
             <div className="w-full flex-col justify-start items-start flex xs:justify-center">
               <div className="w-full pt-1.5 gap-2.5 inline-flex sm:justify-start xs:justify-center">

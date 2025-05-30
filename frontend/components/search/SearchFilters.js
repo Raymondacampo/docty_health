@@ -24,9 +24,9 @@ export default function SearchFilters({
 }) {
   return (
     <div
-      className="xl:w-auto xl:h-auto xl:static
-        sm:w-[350px] sm:top-0 sm:fixed
-        xs:fixed xs:w-[100%] xs:h-[100%] xs:top-0 xs:left-0 
+      className="xl:w-auto xl:h-auto xl:relative
+        sm:w-[350px] sm:top-0 sm:left-0 sm:fixed
+        xs:fixed xs:w-[100%] xs:h-[100%] xs:inset-0
         z-10 flex justify-center xl:items-center gap-5"
     >
       <div

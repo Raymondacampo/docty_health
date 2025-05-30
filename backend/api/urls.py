@@ -5,7 +5,7 @@ RemoveClinicView, RemoveSpecialtyView, UploadDoctorDocumentView, DeleteDoctorDoc
 AddEnsuranceView, RemoveEnsuranceView, DoctorSearchView, AllSpecialtiesView, AllClinicsView, AllEnsurancesView, DoctorDetailView,
 DoctorDetailView, ReviewsDetailView, CreateReviewView, UpdateReviewView, DeleteReviewView,UserReviewView, ToggleFavoriteDoctorView, IsDoctorView,
 CreateScheduleView, UpdateScheduleView, DeleteScheduleView, MySchedulesView, CreateWeekDayView, ClinicDetailView, WeekScheduleView, AvailableWeeksView,
-DoctorAvailableDaysView, WeekSchedulesView,CreateAppointmentView, DeleteWeekAvailabilityView, UserAppointmentsView, DeleteAppointmentView)
+DoctorAvailableDaysView, WeekSchedulesView,CreateAppointmentView, DeleteWeekAvailabilityView, UserAppointmentsView, DeleteAppointmentView, DoctorPatientsView)
 from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView, TokenObtainPairView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -70,6 +70,8 @@ urlpatterns = [
     path('auth/delete_weekavailability/<int:week_availability_id>/', DeleteWeekAvailabilityView.as_view(), name='delete_week_availability'),
     path('appointments/', UserAppointmentsView.as_view(), name='user_appointments'),
     path('appointments/<int:appointment_id>/', DeleteAppointmentView.as_view(), name='delete_appointment'),
+
+    path('doctor/patients/', DoctorPatientsView.as_view(), name='doctor_patients'),
     path('clinics/<int:clinic_id>/', ClinicDetailView.as_view(), name='clinic_detail'),
 
 

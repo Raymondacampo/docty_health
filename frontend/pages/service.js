@@ -8,18 +8,18 @@ export default function Service() {
           </div>
         
             <div className="text-sm text-black">
-              Welcome to Doctify, a platform based in the Dominican Republic that connects patients with doctors. By using our services, you agree to the following terms. 
+              Welcome to DoctyHealth, a platform based in the Dominican Republic that connects patients with doctors. By using our services, you agree to the following terms. 
               Please read them carefully before registering or using the platform.
             </div>
 
             <div className="text-xl text-[#060648] font-bold">1. Acceptance of Terms</div>
             <div className="text-sm text-black">
-              By accessing or using Doctify, you agree to be bound by these Terms of Service. If you do not agree with any part of the terms, you may not use the platform.
+              By accessing or using DoctyHealth, you agree to be bound by these Terms of Service. If you do not agree with any part of the terms, you may not use the platform.
             </div>
 
             <div className="text-xl text-[#060648] font-bold">2. User Types and Eligibility</div>
             <div className="text-sm text-black">
-              Doctify is intended for:
+              DoctyHealth is intended for:
 
               Patients looking to find and schedule appointments with medical professionals.
 
@@ -40,7 +40,7 @@ export default function Service() {
 
               Save favorite doctors.
 
-              Doctify is only for scheduling appointments. No medical services or payments are conducted directly through the platform.
+              DoctyHealth is only for scheduling appointments. No medical services or payments are conducted directly through the platform.
             </div>
 
             <div className="text-xl text-[#060648] font-bold">4. Data Collection</div>
@@ -64,7 +64,7 @@ export default function Service() {
 
             <div className="text-xl text-[#060648] font-bold">5. Responsibility and Liability</div>
             <div className="text-sm text-black">
-              Doctify is not responsible for the conduct, diagnosis, treatment, or availability of any doctor listed. All medical responsibility lies solely with the doctor.
+              DoctyHealth is not responsible for the conduct, diagnosis, treatment, or availability of any doctor listed. All medical responsibility lies solely with the doctor.
               We do not guarantee the outcome of appointments or the availability of any professional.
             </div>
             <div className="text-xl text-[#060648] font-bold">6. User Content and Reviews</div>
@@ -76,7 +76,7 @@ export default function Service() {
             <div className="text-sm text-black">
               Users can delete their accounts at any time.
 
-              Doctify reserves the right to suspend or permanently remove any account, especially in cases of impersonation or fraud (e.g., fake doctor profiles).
+              DoctyHealth reserves the right to suspend or permanently remove any account, especially in cases of impersonation or fraud (e.g., fake doctor profiles).
             </div>
 
             <div className="text-xl text-[#060648] font-bold">8. Governing Law</div>

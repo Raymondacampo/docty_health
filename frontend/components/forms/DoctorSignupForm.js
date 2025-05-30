@@ -225,67 +225,79 @@ export default function DoctorSignupForm() {
   ];
 
   return (
-    <div className="border-black/25 border py-8 bg-white rounded-[15px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] flex-col justify-center items-center gap-8 inline-flex sm:px-8 xs:w-full xs:max-w-md xs:px-4">
-      <div className="self-stretch text-center text-[#293241] text-xl font-['Inter'] tracking-wide">Create your Doctor account!</div>
+    <div className="w-auto border-black/25 border py-8 bg-white rounded-[15px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] flex-col justify-center items-center gap-8 inline-flex 
+    sm:px-8 sm:max-w-2xl
+    xs:w-full xs:max-w-md xs:px-4">
+      <div className="self-stretch text-center text-[#293241] text-2xl font-bold tracking-wide">Create your Doctor account!</div>
       <form className="self-stretch" onSubmit={handleSubmit}>
         <div className="self-stretch flex-col justify-center items-center gap-4 flex">
-          <div className="self-stretch flex-col justify-start items-start gap-4 flex">
-            <FormField title="Email" type="text" name="email" placeholder="yourmail@example.com" onChange={handleChange} err={errors.email} />
-            <FormField title="First name" type="text" name="first_name" placeholder="Your first name" onChange={handleChange} err={errors.first_name} />
-            <FormField title="Last name" type="text" name="last_name" placeholder="Your last name" onChange={handleChange} err={errors.last_name} />
-            <FormField title="Exequatur" type="text" name="exequatur" placeholder="0000-000" onChange={handleChange} err={errors.exequatur} />
-            <FormField title="Years of experience" type="text" name="experience" placeholder="How long have you been a doctor?" onChange={handleChange} err={errors.experience} />
-            <FormField
-              title="Sex"
-              type="select"
-              name="sex"
-              placeholder="Select your sex"
-              onChange={handleChange}
-              err={errors.sex}
-              options={sexOptions}
-            />
-            <div className="self-stretch flex-col justify-start items-start gap-[5px] flex">
-              <div className="self-stretch text-[#3d5a80] text-base font-normal font-['Inter'] tracking-wide">Specialty</div>
-              <SearchBar
-                value={formData.specialty}
-                onChange={handleSpecialtyChange}
-                endpoint="/all_specialties/"
-                placeholder="Search for a specialty"
-              />
-              {errors.specialty && <span className="text-red-500 text-sm">{errors.specialty}</span>}
+          <div className="self-stretch justify-start items-start flex-col flex">
+            <div className='flex w-full
+            md:flex-row md:gap-16
+            xs:flex-col '>
+              <div className='flex flex-col gap-2
+              md:w-[300px] xs:w-full'>
+                <FormField title="Email" type="text" name="email" placeholder="yourmail@example.com" onChange={handleChange} err={errors.email} />
+                <FormField title="First name" type="text" name="first_name" placeholder="Your first name" onChange={handleChange} err={errors.first_name} />
+                <FormField title="Last name" type="text" name="last_name" placeholder="Your last name" onChange={handleChange} err={errors.last_name} />
+                <FormField
+                  title="Sex"
+                  type="select"
+                  name="sex"
+                  placeholder="Select your sex"
+                  onChange={handleChange}
+                  err={errors.sex}
+                  options={sexOptions}
+                />
+                <FormField title="Password" type="password" name="password" placeholder="Password" onChange={handleChange} err={errors.password} />
+                <FormField title="Repeat password" type="password" name="confirm_password" placeholder="Repeat password" onChange={handleChange} err={errors.confirm_password} />                 
+              </div>
+
+              <div className='flex flex-col gap-2
+              md:w-[300px] xs:w-full'>
+                <div className="self-stretch flex-col justify-start items-start gap-[5px] flex">
+                  <div className="self-stretch text-[#3d5a80] text-base font-normal font-['Inter'] tracking-wide">Specialty</div>
+                  <SearchBar
+                    value={formData.specialty}
+                    onChange={handleSpecialtyChange}
+                    endpoint="/all_specialties/"
+                    placeholder="Search for a specialty"
+                  />
+                  {errors.specialty && <span className="text-red-500 text-sm">{errors.specialty}</span>}
+                </div>
+                <div className="self-stretch flex-col justify-start items-start gap-[5px] flex">
+                  <div className="self-stretch text-[#3d5a80] text-base font-normal font-['Inter'] tracking-wide">Clinic</div>
+                  <SearchBar
+                    value={formData.clinic}
+                    onChange={handleClinicChange}
+                    endpoint="/all_clinics/"
+                    placeholder="Search for a clinic"
+                  />
+                  {errors.clinic && <span className="text-red-500 text-sm">{errors.clinic}</span>}
+                </div>
+                <div className="self-stretch flex-col justify-start items-start gap-[5px] flex">
+                  <div className="self-stretch text-[#3d5a80] text-base font-normal font-['Inter'] tracking-wide">Ensurance (optional)</div>
+                    <SearchBar
+                      value={formData.ensurance}
+                      onChange={handleEnsuranceChange}
+                      endpoint="/all_ensurances/"
+                      placeholder="Search for an ensurance (optional)"
+                    />
+                    {errors.ensurance && <span className="text-red-500 text-sm">{errors.ensurance}</span>}
+                  </div>
+                  <FormField title="Exequatur" type="text" name="exequatur" placeholder="0000-000" onChange={handleChange} err={errors.exequatur} />
+                  <FormField title="Years of experience" type="text" name="experience" placeholder="How long have you been a doctor?" onChange={handleChange} err={errors.experience} />         
+         
+                </div>
+              </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="p-2.5 px-4 mt-6 self-stretch bg-[#ee6c4d] rounded-[10px] border border-[#ee6c4d] justify-center items-center gap-2.5 inline-flex"
+                >
+                  <div className="text-white text-base font-['Inter'] tracking-wide">{loading ? 'Creating account...' : 'Sign Up'}</div>
+                </button>  
             </div>
-            <div className="self-stretch flex-col justify-start items-start gap-[5px] flex">
-              <div className="self-stretch text-[#3d5a80] text-base font-normal font-['Inter'] tracking-wide">Clinic</div>
-              <SearchBar
-                value={formData.clinic}
-                onChange={handleClinicChange}
-                endpoint="/all_clinics/"
-                placeholder="Search for a clinic"
-              />
-              {errors.clinic && <span className="text-red-500 text-sm">{errors.clinic}</span>}
-            </div>
-            <div className="self-stretch flex-col justify-start items-start gap-[5px] flex">
-              <div className="self-stretch text-[#3d5a80] text-base font-normal font-['Inter'] tracking-wide">Ensurance (optional)</div>
-              <SearchBar
-                value={formData.ensurance}
-                onChange={handleEnsuranceChange}
-                endpoint="/all_ensurances/"
-                placeholder="Search for an ensurance (optional)"
-              />
-              {errors.ensurance && <span className="text-red-500 text-sm">{errors.ensurance}</span>}
-            </div>
-            <FormField title="Password" type="password" name="password" placeholder="Password" onChange={handleChange} err={errors.password} />
-            <FormField title="Repeat password" type="password" name="confirm_password" placeholder="Repeat password" onChange={handleChange} err={errors.confirm_password} />
-          </div>
-          <div className="w-full flex-col justify-end items-center gap-2.5 flex">
-            <button
-              type="submit"
-              disabled={loading}
-              className="p-2.5 px-4 self-stretch bg-[#ee6c4d] rounded-[10px] border border-[#ee6c4d] justify-center items-center gap-2.5 inline-flex"
-            >
-              <div className="text-white text-base font-['Inter'] tracking-wide">{loading ? 'Creating account...' : 'Sign Up'}</div>
-            </button>
-          </div>
         </div>
       </form>
     </div>

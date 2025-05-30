@@ -1,55 +1,101 @@
 import React, { useState } from "react";
 import { apiClient } from "@/utils/api";
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { getApiImgUrl } from "@/utils/api";
+import { UserCircleIcon } from "@heroicons/react/24/solid";
 
 const Date = ({ appointment, onCancel, is_doctor }) => {
-    const doctorName = appointment.week_availability?.doctor
-        ? `Dr. ${appointment.week_availability.doctor.first_name} ${appointment.week_availability.doctor.last_name}`
-        : "Unknown Doctor";
-    const patientName = appointment.patient
-        ? `${appointment.patient.first_name} ${appointment.patient.last_name}`
-        : "Unknown Patient";
-    console.log(appointment)
-    const location = appointment.weekday?.place?.name || "Virtual";
+  console.log(appointment)
+  const backendBaseUrl = getApiImgUrl();
+  const doctorName = appointment.doctor
+    ? `Dr. ${appointment.doctor.first_name} ${appointment.doctor.last_name}`
+    : "Unknown Doctor";
+  const patientName = appointment.patient
+    ? `${appointment.patient.first_name} ${appointment.patient.last_name}`
+    : "Unknown Patient";
+  const location = appointment.weekday?.place?.name || "Virtual";
+  // Check if the user is both patient and doctor (same user ID)
+  const is_both_patient_and_doctor = appointment.patient?.id && appointment.doctor?.id && appointment.patient.id === appointment.doctor.id;
 
-    return (
-        <div className="self-stretch p-2 bg-white rounded-[10px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] border border-black/50 flex justify-between items-center gap-4 flex-wrap sm:p-4 xs:items-center">
-        <div className="flex justify-start items-center gap-4">
-            {!is_doctor && (
-                <div className="min-w-[80px] h-[80px] bg-[#d9d9d9] rounded-full"></div>    
-                )}
-            
-            <div className="flex flex-col justify-start items-start gap-1">
-                {is_doctor ? (
-                    <div className="self-stretch text-[#3d5a80] font-['Inter'] tracking-wide">{patientName}</div>   
-                ) : (
-                    <div className="self-stretch text-[#3d5a80] text-sm font-light font-['Inter'] tracking-wide">{doctorName}</div>
-                )}
-            
-            <div className="self-stretch flex flex-wrap items-center gap-x-2.5">
-                <div>
-                <span className="text-[#293241] text-xs font-normal font-['Inter'] tracking-wide">Date:</span>
-                <span className="text-[#293241] text-sm font-['Inter'] tracking-wide"> {appointment.weekday?.day}</span>
-                </div>
-                <div>
-                <span className="text-[#293241] text-xs font-normal font-['Inter'] tracking-wide">Time:</span>
-                <span className="text-[#293241] text-sm font-['Inter'] tracking-wide"> {appointment.time}</span>
-                </div>
-                <div>
-                <span className="text-[#293241] text-xs font-normal font-['Inter'] tracking-wide">Location:</span>
-                <span className="text-[#293241] text-sm font-['Inter'] tracking-wide"> {location}</span>
-                </div>
+  return (
+    <div className="self-stretch bg-white rounded-[10px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] border border-black/50 flex justify-between items-center gap-4 flex-wrap sm:px-4 xs:items-center">
+      <div className="flex justify-start items-center gap-4">
+        {is_both_patient_and_doctor ? (
+          appointment.patient?.profile_picture ? (
+            <img
+              src={`${backendBaseUrl}${appointment.patient.profile_picture}`}
+              className="w-[105px] h-[125px] bg-[#d9d9d9] rounded-full"
+              alt="Patient profile picture"
+            />
+          ) : appointment.doctor?.profile_picture ? (
+            <img
+              src={`${backendBaseUrl}${appointment.doctor.profile_picture}`}
+              className="w-[105px] h-[125px] bg-[#d9d9d9] rounded-full"
+              alt="Doctor profile picture"
+            />
+          ) : (
+            <UserCircleIcon
+              className="w-[85px] h-[105px] text-gray-400 rounded-full object-cover object-center"
+              aria-hidden="true"
+            />
+          )
+        ) : is_doctor ? (
+          appointment.patient?.profile_picture ? (
+            <img
+              src={`${backendBaseUrl}${appointment.patient.profile_picture}`}
+              className="w-[105px] h-[125px] bg-[#d9d9d9] rounded-full"
+              alt="Patient profile picture"
+            />
+          ) : (
+            <UserCircleIcon
+              className="w-[85px] h-[105px] text-gray-400 rounded-full object-cover object-center"
+              aria-hidden="true"
+            />
+          )
+        ) : (
+          appointment.doctor?.profile_picture ? (
+            <img
+              src={`${backendBaseUrl}${appointment.doctor.profile_picture}`}
+              className="min-w-[80px] h-[80px] bg-[#d9d9d9] rounded-full"
+              alt="Doctor profile picture"
+            />
+          ) : (
+            <UserCircleIcon
+              className="min-w-[80px] h-[80px] text-gray-400 rounded-full"
+              aria-hidden="true"
+            />
+          )
+        )}
+        <div className="flex flex-col justify-start items-start gap-1">
+          {is_doctor ? (
+            <div className="self-stretch text-[#3d5a80] font-['Inter'] tracking-wide">{patientName}</div>   
+          ) : (
+            <div className="self-stretch text-[#3d5a80] text-sm font-light font-['Inter'] tracking-wide">{doctorName}</div>
+          )}
+          <div className="self-stretch flex flex-wrap items-center gap-x-2.5">
+            <div>
+              <span className="text-[#293241] text-xs font-normal font-['Inter'] tracking-wide">Date:</span>
+              <span className="text-[#293241] text-sm font-['Inter'] tracking-wide"> {appointment.weekday?.day}</span>
             </div>
+            <div>
+              <span className="text-[#293241] text-xs font-normal font-['Inter'] tracking-wide">Time:</span>
+              <span className="text-[#293241] text-sm font-['Inter'] tracking-wide"> {appointment.time}</span>
             </div>
+            <div>
+              <span className="text-[#293241] text-xs font-normal font-['Inter'] tracking-wide">Location:</span>
+              <span className="text-[#293241] text-sm font-['Inter'] tracking-wide"> {location}</span>
+            </div>
+          </div>
         </div>
-        <button
-            className="px-2 py-1.5 bg-[#ee6c4d] rounded-[10px] border-2 border-[#ee6c4d] flex justify-center items-center gap-2.5"
-            onClick={() => onCancel(appointment.appointment_id)}
-        >
-            <div className="text-white font-['Inter'] tracking-wide whitespace-nowrap sm:text-base xs:text-sm">Cancel date</div>
-        </button>
-        </div>
-    );
+      </div>
+      <button
+        className="px-2 py-1.5 bg-[#ee6c4d] rounded-[10px] border-2 border-[#ee6c4d] flex justify-center items-center gap-2.5"
+        onClick={() => onCancel(appointment.appointment_id)}
+      >
+        <div className="text-white font-['Inter'] tracking-wide whitespace-nowrap sm:text-base xs:text-sm">Cancel date</div>
+      </button>
+    </div>
+  );
 };
 
 export default function ActiveAppointments({ appointments, is_doctor, onCancel, setAlert }) {

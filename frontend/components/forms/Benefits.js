@@ -1,8 +1,8 @@
 export default function Benefits(){
     return (
         <div class=" flex-col justify-start items-start gap-12 inline-flex
-        xs:max-w-md xs:px-4">
-        <div class="text-center text-[#293241] text-xl font-['Inter']">Benefits of joining Doctify</div>
+        xs:max-w-sm xs:px-4">
+        <div class="text-center text-[#293241] text-2xl font-bold mb-12">Benefits of joining DoctyHealth</div>
         <div class="flex-col justify-start items-end gap-12 flex">
             <div class="self-stretch justify-start items-center gap-[17px] inline-flex">
                 <div data-svg-wrapper>
@@ -11,8 +11,8 @@ export default function Benefits(){
                 </svg>
                 </div>
                 <div class="grow shrink basis-0 flex-col justify-start items-start inline-flex">
-                    <div class="self-stretch text-[#293241] text-lg font-['Inter']">First benefit</div>
-                    <div class="self-stretch text-[#293241] text-xs font-thin font-['Inter']">Topic information for topic information for topic information</div>
+                    <div class="self-stretch text-[#293241] text-lg font-['Inter']">Make appointments</div>
+                    <div class="self-stretch text-[#293241] text-xs font-thin font-['Inter']">Be able to make your appointments by our appointment system.</div>
                 </div>
             </div>
             <div class="self-stretch justify-start items-center gap-[17px] inline-flex">
@@ -22,8 +22,8 @@ export default function Benefits(){
                 </svg>
                 </div>
                 <div class="grow shrink basis-0 flex-col justify-start items-start inline-flex">
-                    <div class="self-stretch text-[#293241] text-lg font-['Inter']">Second benefit</div>
-                    <div class="self-stretch text-[#293241] text-xs font-thin font-['Inter']">Topic information for topic information for topic information</div>
+                    <div class="self-stretch text-[#293241] text-lg font-['Inter']">Favorites</div>
+                    <div class="self-stretch text-[#293241] text-xs font-thin font-['Inter']">You can add doctors to favorites to have acces to their profile whenever you want.</div>
                 </div>
             </div>
             <div class="self-stretch justify-start items-center gap-[17px] inline-flex">
@@ -33,8 +33,8 @@ export default function Benefits(){
                 </svg>
                 </div>
                 <div class="grow shrink basis-0 flex-col justify-start items-start inline-flex">
-                    <div class="self-stretch text-[#293241] text-lg font-['Inter']">Third benefit</div>
-                    <div class="self-stretch text-[#293241] text-xs font-thin font-['Inter']">Topic information for topic information for topic information</div>
+                    <div class="self-stretch text-[#293241] text-lg font-['Inter']">Search for doctor</div>
+                    <div class="self-stretch text-[#293241] text-xs font-thin font-['Inter']">DoctyHealth allows users to find doctors based on their needs.</div>
                 </div>
             </div>
         </div>

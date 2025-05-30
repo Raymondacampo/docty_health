@@ -3,7 +3,8 @@ import SpecialtySearchBar from "@/components/search/SpecialtySearchBar";
 import CityStateSearchBar from "@/components/search/CityStateSearchBar";
 import { useRouter } from "next/router";
 import { FaSearch } from "react-icons/fa";
-import { PlusIcon } from '@heroicons/react/24/solid';
+import { HeartIcon, PuzzlePieceIcon, CloudIcon, UserGroupIcon } from '@heroicons/react/24/outline'
+import AbsoluteSearchOverlay from "@/components/AbsoluteSearchOverlay"; // Assumed component path
 
 export default function SearchBar() {
     const router = useRouter();
@@ -34,14 +35,34 @@ export default function SearchBar() {
         }
     };
 
+    const AccessButton = ({ specialty, icon }) => {
+        return(
+            <button
+            onClick={() =>             
+                router.push({
+                pathname: "/search",
+                query: { specialty },
+            })}
+            className='bg-white  shadow-[0px_4px_6px_2px_rgba(0,0,0,0.15)] text-[#293241] text-sm font-bold px-2.5 py-2 rounded-lg animate-slide-up tracking-wide
+            sm:w-[200px] xs:w-[150px]'>
+                <div className='flex items-center justify-center gap-2'>
+                {icon}
+                {specialty} 
+                </div>
+            </button>
+        )
+    }
+
     return (
-        <div className="w-full h-auto pt-24 pb-12 ml-auto mr-auto flex-col justify-center items-center gap-16 flex relative px-4 sm:pt-36">
+        <div className="w-full h-auto pt-24 pb-12 ml-auto mr-auto flex-col justify-center items-center flex relative px-4 
+        sm:pt-36 sm:gap-16 
+        xs:gap-10">
             <div className="w-auto h-auto bg-white/0 rounded-[15px] flex-col justify-start items-center gap-8 inline-flex animate-slide-up relative z-10">
                 <div className="h-auto font-bold text-center tracking-wide text-[#293241] [text-shadow:_0px_4px_4px_rgb(0_0_0_/_0.25)] xl:text-7xl sm:text-6xl xs:text-5xl">
                     DoctyHealth
                 </div>
                 <div className="text-center w-[90%] max-w-2xl text-black font-thin tracking-[0.5px] text-sm">
-                    Doctify is your doctor search and appointment booking web app designed to simplify access to healthcare in the Dominican Republic.
+                    DoctyHealth is your doctor search and appointment booking web app designed to simplify access to healthcare in the Dominican Republic.
                 </div>
                 <img
                     src="images/stethoscope_icon_tilted.png"
@@ -94,20 +115,32 @@ export default function SearchBar() {
             <button onClick={() => setPhoneMenu(true)} className="gap-4 w-[90%] border border-gray-400 justify-between items-center flex-nowrap rounded-full sm:hidden xs:flex">
                 <div className="flex px-4 text-black">Search for a doctor</div>
                 <div className="flex bg-[#293241] p-3 rounded-full relative right-[-1px]">
-                    <FaSearch className="w-6 h-6" />
+                    <FaSearch className="w-6 h-6 text-white" />
                 </div>
             </button>
-            <img
+            {/* <img
                 src="images/cross_r_no_bg.png"
-                className="absolute top-0 z-0 sm:h-[200px] sm:left-[-75px] xs:h-[100px] xs:left-[-40px]"
+                className="absolute top-0 z-0 sm:h-[200px] sm:left-[-75px] xs:h-[80px] xs:left-[-40px]"
             />
             <img
                 src="images/cross_l_no_bg.png"
-                className="h-[150px] absolute right-0 bottom-1 z-0 sm:h-[150px] sm:bottom-[-50px] xs:h-[100px] xs:bottom-[-70px]"
-            />
+                className="h-[150px] absolute right-0 bottom-1 z-0 sm:h-[150px] sm:bottom-[-50px] xs:h-[80px] xs:bottom-[-70px]"
+            /> */}
             {phoneMenu && (
-                <div className="fixed top-0 text-black bg-[#3d5a80] w-screen h-screen">aaaaaaa</div>
+                <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center">
+                <AbsoluteSearchOverlay
+                    onClose={() => router.push("/search")}
+                    setShow={setPhoneMenu}
+                />
+                </div>
             )}
+            <div className='w-full flex flex-wrap justify-center gap-y-4 
+            md:gap-x-4 xs:gap-x-2'>
+                <AccessButton specialty={'Cardiologist'} icon={<HeartIcon className='w-5 h-5'/>}/>
+                <AccessButton specialty={'Neurologist'} icon={<PuzzlePieceIcon className='w-5 h-5'/>}/>
+                <AccessButton specialty={'Pneumologist'} icon={<CloudIcon className='w-5 h-5'/>}/>
+                <AccessButton specialty={'Pediatrician'} icon={<UserGroupIcon className='w-5 h-5'/>}/>
+            </div>
         </div>
     );
 }

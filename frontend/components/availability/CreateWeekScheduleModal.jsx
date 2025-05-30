@@ -253,6 +253,7 @@ const CreateWeekScheduleModal = ({ onScheduleCreated }) => {
       const response = await apiClient.post('/auth/weekschedule/', data);
       setSaveSuccess('Week schedule saved successfully!');
       onScheduleCreated(response.data); 
+      console.log(response.data)
       resetForm();
     } catch (error) {
       console.error('Error saving week schedule:', error);

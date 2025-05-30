@@ -11,7 +11,7 @@ const About_us = () => {
             xs:shadow-[-20px_25px_10px_2px_rgba(0,0,0,0.15)]"></div> */}
             <div className="h-auto max-w-md flex-col justify-center items-start gap-4 inline-flex">
                 <div className="text-black text-2xl font-bold font-['Inter'] tracking-wide">Who we are</div>
-                <div className="text-black text-base font-['Inter'] tracking-wide">Doctify has a story th is a story about the story of doctify and is really interesting</div>
+                <div className="text-black text-base font-['Inter'] tracking-wide">DoctyHealth has a story th is a story about the story of DoctyHealth and is really interesting</div>
                 <button className="h-11 p-2.5 rounded-[5px] border border-black justify-center items-center gap-2.5 inline-flex">
                     <a href="/about" className="text-center text-black text-xl font-bold font-['Inter'] tracking-wide">About us</a>
                 </button>

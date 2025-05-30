@@ -5,15 +5,15 @@ const Opinions = () => {
     const [currentReview, setCurrentReview] = useState(0);
     const reviews = [
         {
-            text: "As a doctor, Doctify has helped me connect with more patients and manage appointments efficiently.",
+            text: "As a doctor, DoctyHealth has helped me connect with more patients and manage appointments efficiently.",
             author: "- Dr. Juan Ramirez"
         },
         {
-            text: "Doctify's platform is intuitive and has significantly improved my clinic's scheduling process.",
+            text: "DoctyHealth's platform is intuitive and has significantly improved my clinic's scheduling process.",
             author: "- Dr. Sarah Lee"
         },
         {
-            text: "The patient feedback feature on Doctify has been invaluable for improving our services.",
+            text: "The patient feedback feature on DoctyHealth has been invaluable for improving our services.",
             author: "- Dr. Michael Chen"
         }
     ];

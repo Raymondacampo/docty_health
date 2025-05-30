@@ -38,7 +38,7 @@ class User(AbstractUser):
         upload_to='profile_pics/',
         blank=True,
         null=True,
-        default='profile_pics/default.jpg'
+        default=None
     )
     favorite_doctors = models.ManyToManyField(
         'Doctor',

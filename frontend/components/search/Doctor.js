@@ -1,5 +1,6 @@
 import { useRouter } from "next/router";
 import { getApiImgUrl } from "@/utils/api";
+import { UserCircleIcon } from '@heroicons/react/24/solid'; //
 
 const Doctor = ({ doctor }) => {
   const backendBaseUrl = getApiImgUrl();
@@ -18,9 +19,9 @@ const Doctor = ({ doctor }) => {
   console.log(doctor)
 
   return (
-    <div className="w-full  px-4 py-2 mx-auto rounded-lg bg-white shadow-[0px_4px_4px_0px_rgba(0,0,0,0.1)] justify-between items-center flex  
-    sm:max-w-[900px] sm:flex-row
-    xs:max-w-[95%] xs:flex-col xs:gap-4">
+    <div className="w-full  px-4 py-2  rounded-lg bg-white shadow-[0px_4px_4px_0px_rgba(0,0,0,0.1)] justify-between items-center flex  
+    sm:max-w-[900px] sm:flex-row lg:mx-0 lg:ml-4
+    xs:max-w-[95%] xs:flex-col xs:gap-4 xs:mx-auto">
       <div className="self-stretch justify-between items-start gap-6 inline-flex relative sm:pt-4  sm:p-2 sm:pl-4 xs:pt-6">
         <div className="flex-col items-center flex gap-2.5">
           {doctor.user.profile_picture ? (
@@ -28,9 +29,7 @@ const Doctor = ({ doctor }) => {
             className="w-[105px] h-[125px] bg-[#d9d9d9] rounded-sm object-cover object-center"
             alt={`Profile picture of Dr. ${doctor.user.first_name} ${doctor.user.last_name}`}></img>            
           ) : (
-            <img src={`${backendBaseUrl}profile_pics/default_profile_pic.png`} 
-            className="w-[105px] h-[125px] bg-[#d9d9d9] rounded-sm object-cover object-center"
-            alt={`Profile picture of Dr. ${doctor.user.first_name} ${doctor.user.last_name}`}></img>  
+            <UserCircleIcon className="w-[105px] h-[125px] text-gray-400 rounded-full object-cover object-center"/>
           )}
 
           {/* RATING */}
@@ -72,7 +71,7 @@ const Doctor = ({ doctor }) => {
                     <path fillRule="evenodd" clipRule="evenodd" d="M7.5 15.5C8.48491 15.5 9.46018 15.306 10.3701 14.9291C11.2801 14.5522 12.1069 13.9997 12.8033 13.3033C13.4997 12.6069 14.0522 11.7801 14.4291 10.8701C14.806 9.96018 15 8.98491 15 8C15 7.01509 14.806 6.03982 14.4291 5.12987C14.0522 4.21993 13.4997 3.39314 12.8033 2.6967C12.1069 2.00026 11.2801 1.44781 10.3701 1.0709C9.46018 0.693993 8.48491 0.5 7.5 0.5C5.51088 0.5 3.60322 1.29018 2.1967 2.6967C0.790176 4.10322 0 6.01088 0 8C0 9.98912 0.790176 11.8968 2.1967 13.3033C3.60322 14.7098 5.51088 15.5 7.5 15.5ZM7.30667 11.0333L11.4733 6.03333L10.1933 4.96667L6.61 9.26583L4.75583 7.41083L3.5775 8.58917L6.0775 11.0892L6.7225 11.7342L7.30667 11.0333Z" fill="#3D5A80"/>
                   </svg>
                 </div>
-                <div className="w-[97px] h-[18px] text-[#3d5a80] text-xs font-normal tracking-wide">Doctify dates</div>
+                <div className="w-[97px] h-[18px] text-[#3d5a80] text-xs font-normal tracking-wide whitespace-nowrap">DoctyHealth system</div>
               </div>
             )}
             {inPerson && (
@@ -104,16 +103,10 @@ const Doctor = ({ doctor }) => {
       xs:flex-row xs:flex-wrap xs:w-full xs:border-t xs:pt-2 xs:gap-x-4 xs:gap-y-2">
         <button
           onClick={handleViewProfile}
-          className=" py-1.5 px-4 hover:bg-[#ee6c4d]/85 bg-[#ee6c4d] rounded-md border border-[#ee6c4d] justify-center items-center gap-2.5 bottom-0 inline-flex max-w-[160px] sm:w-auto xs:w-full"
+          className=" py-1.5 px-4 hover:bg-[#ee6c4d]/85 bg-[#ee6c4d] rounded-md border border-[#ee6c4d] justify-center items-center gap-2.5 bottom-0 inline-flex sm:max-w-[160px] sm:w-auto xs:w-full"
         >
           <span className="text-white text-sm text-nowrap tracking-wide">View profile</span>
-        </button>  
-        <button
-          onClick={handleViewProfile}
-          className="py-1.5 px-4 hover:bg-[#ff7653]/10 bg-[#ffffff] rounded-md border border-[#ee6c4d] justify-center items-center gap-2.5 bottom-0 inline-flex max-w-[160px] sm:w-auto xs:w-full"
-        >
-          <span className="text-[#ff7653] font-bold text-sm text-nowrap tracking-wide">Make appointment</span>
-        </button>      
+        </button>       
       </div>
 
     </div>
