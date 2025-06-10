@@ -35,20 +35,23 @@ export default function About() {
                     In the Dominican Republic, searching for medical specialists often means endless phone calls, outdated directories, and wasted time. We saw the frustration 
                     of patients and the inefficiencies faced by doctors who want to serve better but lack digital visibility. That’s why we built DoctyHealth — a smarter, more modern 
                     way to connect patients and doctors.
-                    <br /><br />
-                    Our platform allows users to search, compare, and book appointments with verified medical professionals across specialties. Whether you’re in Santo Domingo, Santiago, 
-                    or a smaller province, DoctyHealth helps you find healthcare options near you — quickly and reliably. Doctors also benefit from a digital presence that allows them to manage 
-                    their schedules, grow their practice, and serve more people with less hassle.
-                    <br /><br />
-                    DoctyHealth is more than just a directory. It’s a movement toward accessible, transparent, and patient-centered healthcare in the Caribbean. We’re here to make sure no one is left 
-                    behind when it comes to their health.
                 </div>
             </div>
-            <img src="images/doctor_appointments_img.png" class="w-[400px] h-[400px] rounded-md shadow-[0px_5px_15px_2px_rgba(0,0,0,0.5)]"></img>
+            <img src="images/doctor_appointments_img.png" class="rounded-md shadow-[0px_5px_15px_2px_rgba(0,0,0,0.5)]
+            sm:w-[400px] sm:h-[400px] 
+            w-[90%]"></img>
+            <div className=" px-4 self-stretch justify-start text-black text-sm font-normal font-['Inter'] tracking-wide">
+                Our platform allows users to search, compare, and book appointments with verified medical professionals across specialties. Whether you’re in Santo Domingo, Santiago, 
+                or a smaller province, DoctyHealth helps you find healthcare options near you — quickly and reliably. Doctors also benefit from a digital presence that allows them to manage 
+                their schedules, grow their practice, and serve more people with less hassle.
+                <br /><br />
+                DoctyHealth is more than just a directory. It’s a movement toward accessible, transparent, and patient-centered healthcare in the Caribbean. We’re here to make sure no one is left 
+                behind when it comes to their health.
+            </div>
         </div>
 
 
-        <div class="w-full flex justify-center items-center gap-16 p-4 py-12 my-16 bg-gradient-to-r from-[#293241] to-[#3d5a80]">
+        <div class="w-full flex justify-center items-center gap-16 p-4 py-12 sm:my-16 bg-gradient-to-r from-[#293241] to-[#3d5a80]">
             <div className="flex gap-16 justify-between    rounded-md 
             sm:max-w-6xl sm:p-12 md:flex-nowrap
             xs:p-4 xs:max-w-none xs:flex-wrap">

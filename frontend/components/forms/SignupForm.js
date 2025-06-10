@@ -143,7 +143,7 @@ export default function SignupForm() {
             <div>
               <span className="text-[#293241] text-xs font-light font-['Inter'] tracking-wide">Are you a doctor?</span>
               <span className="text-[#4285f4] text-sm font-light font-['Inter'] tracking-wide"> </span>
-              <a href="" className="text-[#ee6c4d] text-xs font-light font-['Inter'] tracking-wide">Sign up as a doctor</a>
+              <a href="doctor_signup/" className="text-[#ee6c4d] text-xs font-light font-['Inter'] tracking-wide">Sign up as a doctor</a>
             </div>
           </div>
         </div>
