@@ -1,9 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { use, useState } from 'react';
 import { useRouter } from 'next/router';
 import { apiClient, publicApiClient } from '@/utils/api';
 import SearchBar from '../SearchBar';
+import { useUser } from '@/hooks/User';
+import LoadingComponent from '../LoadingComponent';
+import { useEffect } from 'react';
 
 const FormField = ({ title, type, name, placeholder, onChange, err, options }) => {
   return (
@@ -35,6 +38,7 @@ const FormField = ({ title, type, name, placeholder, onChange, err, options }) =
 };
 
 export default function DoctorSignupForm() {
+  const { user, loadingu } = useUser();
   const router = useRouter();
   const [formData, setFormData] = useState({
     first_name: '',
@@ -50,7 +54,13 @@ export default function DoctorSignupForm() {
     ensurance: '',
   });
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      router.push('/account');
+    }
+  }, [user, router]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -223,6 +233,11 @@ export default function DoctorSignupForm() {
     { value: 'M', label: 'Male' },
     { value: 'F', label: 'Female' },
   ];
+
+  if (loadingu || loading) {
+    return <LoadingComponent isLoading={true}/>;
+  }
+  
 
   return (
     <div className="w-auto border-black/25 border py-8 bg-white rounded-[15px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] flex-col justify-center items-center gap-8 inline-flex 

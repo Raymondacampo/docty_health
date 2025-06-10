@@ -84,7 +84,7 @@ export default function MyAccountConfig() {
   if (loading) return <LoadingComponent isLoading={loading}/>; // Show loading component while fetching user data
 
   return (
-    <div className="w-full bg-[#98c1d1]/20 flex-col justify-center items-center gap-16 inline-flex md:px-9 sm:py-24 xs:py-16 xs:px-4">
+    <div className="w-full bg-[#98c1d1]/20 shadow-lg flex-col justify-center items-center gap-16 inline-flex md:px-9 sm:py-24 xs:py-16 xs:px-4">
       {user &&  
         <div className="flex-col justify-center items-center gap-11 flex sm:w-auto xs:w-full">
           <div className="w-full flex-col justify-center items-start gap-2 flex order-first">

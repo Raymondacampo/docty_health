@@ -1,10 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/auth';
 import { useRouter } from 'next/router';
 import { apiClient } from '@/utils/api'; // Import apiClient
 import GoogleButton from '../GoogleLogin';
+import { useUser } from '@/hooks/User';
+import LoadingComponent from '../LoadingComponent';
+import { useEffect } from 'react';
 
 const FormField = ({ title, type, name, placeholder, onChange, err }) => {
   return (
@@ -23,8 +26,8 @@ const FormField = ({ title, type, name, placeholder, onChange, err }) => {
 };
 
 export default function SignupForm() {
+  const { user, loadingu } = useUser();
   const router = useRouter();
-  const { login } = useAuth();
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -33,7 +36,13 @@ export default function SignupForm() {
     confirm_password: '',
   });
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      router.push('/account');
+    }
+  }, [user, router]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -112,6 +121,10 @@ export default function SignupForm() {
       setLoading(false);
     }
   };
+
+  if (loadingu || loading) {
+    return <LoadingComponent isLoading={true}/>;
+  }
 
   return (
     <div className="border-black/25 border py-8 bg-white rounded-[15px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] flex-col justify-center items-center gap-6 inline-flex sm:px-8 xs:w-full xs:max-w-md xs:px-4">
