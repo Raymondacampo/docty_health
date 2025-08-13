@@ -7,7 +7,6 @@ import { apiClient } from '@/utils/api'; // Import apiClient
 import GoogleButton from '../GoogleLogin';
 import { useUser } from '@/hooks/User';
 import LoadingComponent from '../LoadingComponent';
-import { useEffect } from 'react';
 
 const FormField = ({ title, type, name, placeholder, onChange, err }) => {
   return (
