@@ -35,7 +35,8 @@ SESSION_COOKIE_SECURE = get_bool_env('PROD_SSL', True)
 CSRF_COOKIE_SECURE = get_bool_env('PROD_SSL', True)
 SECURE_SSL_REDIRECT = get_bool_env('PROD_SSL', True)
 
-ALLOWED_HOSTS = ['localhost', 'juanpabloduarte.com', '127.0.0.1', '192.168.1.x']
+# ALLOWED_HOSTS = ['localhost', 'juanpabloduarte.com', '127.0.0.1', '192.168.1.x']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 APPEND_SLASH = True
 
 # Application definition
@@ -118,8 +119,8 @@ MIDDLEWARE = [
 X_FRAME_OPTIONS = 'DENY'  # Default, but we'll override for media
 
 CORS_ALLOWED_ORIGINS = [
-    "https://174.138.66.50",
-    "https://juanpabloduarte.com",
+    # "https://174.138.66.50",
+    # "https://juanpabloduarte.com",
     "http://localhost:3000",  # Allow Next.js frontend
 ]
 
@@ -195,7 +196,7 @@ DATABASES = {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': os.getenv('DB_NAME', 'test_project_db'),
         'USER': os.getenv('DB_USER', 'jefe'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'rabomonito'),
+        'PASSWORD': os.getenv('DB_PASSWORD', '123'),
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', '5432'),
     }
