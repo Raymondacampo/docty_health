@@ -1,4 +1,4 @@
-#!/Users/raymondacamposandoval/Documents/projects/docty_health/backend/myenv/bin/python3.12
+#!/home/raymond/projects/docty_health/backend/myenv/bin/python3
 
 import sys
 

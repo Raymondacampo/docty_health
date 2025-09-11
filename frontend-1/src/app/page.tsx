@@ -1,8 +1,12 @@
 import Hero from "./components/Hero";
+import Benefits from "./components/Benefits";
+import Mobile from "./components/Mobile";
 export default function Home() {
   return (
-    <div className="font-sans relative flex items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
+    <div className="font-sans relative flex flex-col">
       <Hero />
+      <Benefits />
+      <Mobile />
     </div>
   );
 }
