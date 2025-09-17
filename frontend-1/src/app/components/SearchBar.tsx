@@ -42,36 +42,41 @@ export default function SearchBar() {
     };
 
   return (
-    <div className="max-w-7xl h-auto pt-[16dvh] mx-auto flex flex-col gap-6 relative z-10">
-        <h1 className="text-5xl text-black max-w-xl font-semibold pl-2">Agenda tu cita con los doctores que necesites</h1>
-        <div className="w-full h-18 flex bg-white border-2 border-black rounded-md">
-            <div className="w-[30.6%]">
+    <div className="max-w-4xl h-auto mt-[14dvh] mx-auto flex flex-col  relative z-20 bg-white border-2 border-black rounded-lg py-4 px-2 gap-2
+    lg:bg-transparent lg:border-none  lg:rounded-none lg:gap-6 lg:mt-[16dvh] lg:max-w-7xl">
+        <h1 className="text-2xl text-black max-w-xl font-semibold pl-2
+        lg:text-5xl">Agenda tu cita con los doctores que necesites</h1>
+        <div className="w-full flex flex-col 
+        lg:bg-white lg:border-2 lg:border-black lg:rounded-lg lg:flex-row lg:h-18 lg:py-0 ">
+            <div className="lg:w-[30.6%] h-17 lg:border-none border-b-1 border-gray-200/50">
                 <SpecialtySearchBar
                     value={specialty}
                     onChange={handleSpecialtyChange}
                     round={`font-semibold`}
                 />                
             </div>
-            <div className="w-[30.6%] border-l-2 border-gray-200/50">
+            <div className="lg:w-[30.6%] h-17 border-b-1 border-gray-200/50 lg:border-l-2 ">
                 <CityStateSearchBar
                     value={location}
                     onChange={setLocation}
                     round="font-semibold"
                 />          
             </div>
-            <div className="w-[30.6%] border-l-2 border-gray-200/50">
+            <div className="lg:w-[30.6%] h-17 border-b-1 border-gray-200/50 lg:border-l-2 ">
                 <InsuranceSearchBar
                     value={insurances}
                     onChange={setInsurance}
                     round="font-semibold"
                 />          
             </div>
-            <div className="w-[8.2%] h-full ">
+            <div className="lg:w-[8.2%] mt-2 h-12 
+            lg:h-full lg:mt-0 ">
                 <button
                 onClick={handleSearch}
-                className="w-full h-full flex justify-center items-center bg-[#293241] hover:bg-[#3d5a80]"
+                className="w-full h-full rounded-lg flex justify-center items-center bg-[#293241] hover:bg-[#3d5a80] lg:rounded-none"
                 >
-                <FaSearch className="w-7 h-7" />
+                    <span className="text-white font-bold text-lg mr-4 lg:hidden">Find doctor</span>
+                <FaSearch className="lg:w-7 lg:h-7 w-5 h-5 text-white" />
                 </button>
             </div>
         </div>

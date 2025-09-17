@@ -1,0 +1,102 @@
+"use client";
+
+import { useState, useEffect, FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { apiClient } from "../utils/api";
+import { useAuth } from "../utils/auth";
+// import LoadingComponent from "../LoadingComponent";
+
+interface Credentials {
+  email: string;
+  password: string;
+}
+
+export default function LoginPage() {
+  const { login } = useAuth();
+  const router = useRouter();
+  const [credentials, setCredentials] = useState<Credentials>({ email: "", password: "" });
+  const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+
+//   useEffect(() => {
+//     if (user) {
+//       router.push("/account");
+//     }
+//   }, [user, router]);
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setLoading(true);
+    setError("");
+    try {
+      const { data } = await apiClient.post("/auth/login/", credentials);
+      localStorage.setItem("refresh_token", data.refresh);
+      await login(data.access);
+    } catch (err: any) {
+      console.error("Login failed:", err.response?.data || err.message);
+      setError("Invalid email or password");
+      setLoading(false);
+    }
+  };
+
+//   if (authLoading || loading) {
+//     return <LoadingComponent isLoading={true} />;
+//   }
+
+  return (
+    <div className="flex flex-col w-full sm:mt-[14dvh] mt-[19dvh] h-[47dvh] mb-[14dvh] px-2 justify-center items-center">
+        <div className="self-stretch text-center text-[#293241] font-bold text-3xl sm:text-4xl mb-8 tracking-wide">Login to your account!</div>
+        <form onSubmit={handleSubmit} className="w-full max-w-sm flex-col justify-start items-start gap-11 flex">
+          <div className="self-stretch flex-col justify-start items-start gap-4 flex">
+            <div className="self-stretch flex-col justify-start items-start gap-[5px] flex">
+              <input
+                type="text"
+                name="email"
+                placeholder="Email"
+                value={credentials.email}
+                onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
+                className="text-black self-stretch px-4 py-3 focus:outline-none rounded-3xl border border-black justify-start items-center gap-2.5 inline-flex"
+              />
+            </div>
+            <div className="self-stretch flex-col justify-start items-start flex">
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                value={credentials.password}
+                onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
+                className="text-black self-stretch focus:outline-none px-4 py-3 rounded-3xl border border-black justify-start items-center gap-2.5 inline-flex"
+              />
+              <p className="font-bold w-full mt-2 text-end text-black/70 text-sm relative right-0">Forgot your password?</p>
+            </div>
+            {error && <p className="text-red-500 mb-4">{error}</p>}
+          </div>
+          <div className="self-stretch flex-col justify-center items-center gap-4 flex">
+            <div className="self-stretch flex-col justify-center items-center gap-2.5 flex">
+              <button
+                type="submit"
+                disabled={loading}
+                className="self-stretch py-3 bg-[#060648] rounded-3xl justify-center items-center gap-2.5 inline-flex"
+              >
+                <div className="text-white font-bold tracking-wide">{loading ? "Logging in..." : "Login"}</div>
+              </button>
+            </div>
+            <div className="flex flex-col justify-center items-center inline-flex">
+              <div>
+                <span className="text-[#293241] text-xs font-semibold tracking-wide">Not a member?</span>
+                <span className="text-[#4285f4] text-sm font-semibold tracking-wide"> </span>
+                <a href="/doctor_signup" className="text-blue-500 text-sm font-semibold tracking-wide">Create account</a>
+              </div>
+              <div>
+                <span className="text-[#293241] text-xs font-semibold tracking-wide">Are you a doctor?</span>
+                <span className="text-[#4285f4] text-sm font-semibold tracking-wide"> </span>
+                <a href="/doctor_signup" className="text-blue-500 text-sm font-semibold tracking-wide">Sign up as a doctor</a>
+              </div>              
+            </div>
+
+          </div>
+        </form>
+      </div>      
+  );
+}

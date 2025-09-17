@@ -50,7 +50,7 @@ class Command(BaseCommand):
         url = "https://places.googleapis.com/v1/places:searchText"
         headers = {
             "Content-Type": "application/json",
-            "X-Goog-Api-Key": os.environ.get('YOUR_GOOGLE_API_KEY'),
+            "X-Goog-Api-Key": os.environ.get('YOUR_API_KEY'),
             "X-Goog-FieldMask": "places.displayName,places.formattedAddress,places.location,places.addressComponents"
         }
         data = {"textQuery": search_query}

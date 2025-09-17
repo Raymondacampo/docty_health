@@ -1,0 +1,19 @@
+const ClinicMap = ({ clinicName, width = '600', height = '450' }:{clinicName: string, width?: string, height?: string}) => {
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY; // Replace with your Google API key
+  console.log(`Google Maps API Key: ${apiKey}`); // For debugging purposes
+  const query = encodeURIComponent(`${clinicName}, Santo Domingo`);
+  const src = `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${query}`;
+
+  return (
+    <iframe
+      width={width}
+      height={height}
+      style={{ border: 0 }}
+      loading="lazy"
+      allowFullScreen
+      src={src}
+    />
+  );
+};
+
+export default ClinicMap;

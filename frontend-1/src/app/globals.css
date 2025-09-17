@@ -24,3 +24,11 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.radial-button-bg {
+  background: radial-gradient(circle at center, #3b82f6 0%, #bfdbfe 70%);
+}
+
+.radial-button-bg:hover {
+  background: radial-gradient(circle at center, #293241 0%, rgba(41, 50, 65, 0.75) 70%);
+}
