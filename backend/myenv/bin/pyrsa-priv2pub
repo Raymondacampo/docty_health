@@ -1,4 +1,4 @@
-#!/Users/raymondacamposandoval/Documents/projects/docty_health/backend/myenv/bin/python3.13
+#!/home/raymond/projects/docty_health/backend/myenv/bin/python3
 import sys
 from rsa.util import private_to_public
 if __name__ == '__main__':

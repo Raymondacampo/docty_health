@@ -1,7 +1,7 @@
 export default function Description({name, experience, age}:{name: string, experience: number, age: number}) {
     return (
         <div className="mt-12 rounded-lg flex-col justify-start items-start gap-8 flex">
-            <div className="flex gap-4 items-center">
+            <div className="flex gap-4 items-center text-black">
                 <p className="py-2 px-4 shadow-lg rounded-lg font-semibold">{experience} years of experience</p>
                 <p className="text-lg font-semibold">{age} años</p>
             </div>

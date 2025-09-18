@@ -12,7 +12,7 @@ interface AccessButtonProps {
   icon: React.ReactNode;
 }
 
-export default function SearchBar() {
+export default function SearchBar({small}: {small?: boolean}) {
     const router = useRouter();
     const [specialty, setSpecialty] = useState<string>("");
     const [location, setLocation] = useState<string>("");
@@ -43,9 +43,10 @@ export default function SearchBar() {
 
   return (
     <div className="max-w-4xl h-auto mt-[14dvh] mx-auto flex flex-col  relative z-20 bg-white border-2 border-black rounded-lg py-4 px-2 gap-2
-    lg:bg-transparent lg:border-none  lg:rounded-none lg:gap-6 lg:mt-[16dvh] lg:max-w-7xl">
-        <h1 className="text-2xl text-black max-w-xl font-semibold pl-2
-        lg:text-5xl">Agenda tu cita con los doctores que necesites</h1>
+    lg:bg-transparent lg:border-none  lg:rounded-none lg:gap-6 lg:mt-[12dvh] lg:max-w-7xl">
+        <h1 className={`text-black font-semibold pl-2 
+        ${small ? 'lg:text-3xl text-xl text-center' : 'text-2xl lg:text-5xl max-w-xl'}`}>
+            Agenda tu cita con los doctores que necesites</h1>
         <div className="w-full flex flex-col 
         lg:bg-white lg:border-2 lg:border-black lg:rounded-lg lg:flex-row lg:h-18 lg:py-0 ">
             <div className="lg:w-[30.6%] h-17 lg:border-none border-b-1 border-gray-200/50">

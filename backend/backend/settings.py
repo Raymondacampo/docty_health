@@ -195,7 +195,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': os.getenv('DB_NAME', 'test_project_db'),
-        'USER': os.getenv('DB_USER', 'jefe'),
+        'USER': os.getenv('DB_USER', 'raymond'),
         'PASSWORD': os.getenv('DB_PASSWORD', '123'),
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', '5432'),

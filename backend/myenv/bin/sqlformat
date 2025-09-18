@@ -1,4 +1,4 @@
-#!/Users/raymondacamposandoval/Documents/projects/docty_health/backend/myenv/bin/python3.13
+#!/home/raymond/projects/docty_health/backend/myenv/bin/python3
 import sys
 from sqlparse.__main__ import main
 if __name__ == '__main__':
