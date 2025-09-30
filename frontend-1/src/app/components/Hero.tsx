@@ -1,3 +1,4 @@
+'use client';
 import Image from "next/image";
 import doctors_bg from "@/assets/images/doctors_bg.png";
 import SearchBar from "./SearchBar";

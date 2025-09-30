@@ -5,7 +5,7 @@ RemoveClinicView, RemoveSpecialtyView, UploadDoctorDocumentView, DeleteDoctorDoc
 AddEnsuranceView, RemoveEnsuranceView, DoctorSearchView, AllSpecialtiesView, AllClinicsView, AllEnsurancesView, DoctorDetailView,
 DoctorDetailView, ReviewsDetailView, CreateReviewView, UpdateReviewView, DeleteReviewView,UserReviewView, ToggleFavoriteDoctorView, IsDoctorView,
 CreateScheduleView, UpdateScheduleView, DeleteScheduleView, MySchedulesView, CreateWeekDayView, ClinicDetailView, WeekScheduleView, AvailableWeeksView,
-DoctorAvailableDaysView, WeekSchedulesView,CreateAppointmentView, DeleteWeekAvailabilityView, UserAppointmentsView, DeleteAppointmentView, DoctorPatientsView)
+DoctorAvailableDaysView, WeekSchedulesView,CreateAppointmentView, DeleteWeekAvailabilityView, UserAppointmentsView, DeleteAppointmentView, DoctorPatientsView, Me)
 from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView, TokenObtainPairView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -17,7 +17,8 @@ urlpatterns = [
     path("auth/signup/", SignupView.as_view(), name="signup"),
     path('auth/doctor_signup/', DoctorSignupView.as_view(), name='doctor_signup'),
     path("auth/logout/", LogoutView.as_view(), name="logout"),
-    path("auth/me/", UserProfileView.as_view(), name="user_profile"),
+    path("auth/personal-data/", UserProfileView.as_view(), name="user_profile"),
+    path("auth/me/", Me.as_view(), name="user_profile"),
     path('auth/google/', GoogleLogin.as_view(), name='google-login'),
     path('auth/password_reset/', PasswordResetRequestView.as_view(), name='password_reset_request'),
     path('auth/password_change/', PasswordChangeView.as_view(), name='password_change'),
@@ -43,10 +44,9 @@ urlpatterns = [
     path('all_clinics/', AllClinicsView.as_view(), name='all_clinics'),
     path('all_ensurances/', AllEnsurancesView.as_view(), name='all_ensurances'),
 
-    path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),  # Login (returns access & refresh tokens)
-    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),  # ✅ Refresh access token
-    path("token/verify/", TokenVerifyView.as_view(), name="token_verify"),  # ✅ Verify if token is valid
-    path('doctors/<int:doctor_id>/', DoctorDetailView.as_view(), name='doctor_detail'),
+    path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("token/verify/", TokenVerifyView.as_view(), name="token_verify"),
 
     path('reviews/<int:doctor_id>/', ReviewsDetailView.as_view(), name='reviews_detail'),
     path('reviews/create/<int:doctor_id>/', CreateReviewView.as_view(), name='create_review'),

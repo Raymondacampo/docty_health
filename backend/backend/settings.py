@@ -74,6 +74,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 SOCIALACCOUNT_LOGIN_REDIRECT_URL = "http://localhost:3000/auth/callback/"  # ✅ Redirect to Next.js >ACCOUNT_SIGNUP_REDIRECT_URL = "http://localhost:3000/auth/callback/"  # ✅ Redirect new users to pas>ACCOUNT_LOGOUT_REDIRECT_URL = "http://localhost:3000/login/"  # ✅ Redirect after logout
+LOGIN_REDIRECT_URL = 'http://localhost:3000/auth/callback'  # Frontend callback URL
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 
@@ -135,7 +136,7 @@ REST_FRAMEWORK = {
 
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=120),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "BLACKLIST_AFTER_ROTATION": True,  # ✅ Blacklist old refresh tokens
     "ROTATE_REFRESH_TOKENS": True,  # ✅ Issue a new refresh token when refreshing
@@ -195,7 +196,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': os.getenv('DB_NAME', 'test_project_db'),
-        'USER': os.getenv('DB_USER', 'raymond'),
+        'USER': os.getenv('DB_USER', 'jefe'),
         'PASSWORD': os.getenv('DB_PASSWORD', '123'),
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', '5432'),

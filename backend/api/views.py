@@ -8,7 +8,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from rest_framework.generics import RetrieveUpdateAPIView
 from .serializers import UserProfileSerializer, SignupSerializer, DoctorSignupSerializer, EnsuranceSerializer
-from .serializers import ClinicSerializer, SpecialtySerializer, DoctorSerializer, ReviewSerializer, WeekAvailabilitySerializer, WeekDaySerializer, ScheduleSerializer
+from .serializers import ClinicSerializer, SpecialtySerializer, DoctorSerializer, ReviewSerializer, WeekAvailabilitySerializer, WeekDaySerializer, ScheduleSerializer, AppointmentSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view
 from django.contrib.auth import get_user_model
@@ -29,6 +29,8 @@ from django.contrib.gis.measure import D  # Distance measure
 from django.contrib.gis.geos import Point
 from django.db.models import Q, Count
 from django.db import transaction
+import json
+
 
 
 logger = logging.getLogger(__name__)
@@ -116,9 +118,15 @@ class GoogleLogin(APIView):
     permission_classes = [AllowAny]  # Explicitly allow all requests
 
     def post(self, request):
-        print("GoogleLogin: Request received")  # Debug start
-        token = request.data.get('token')
+        # print("GoogleLogin: Request received")  # Debug start
+        # print(f"GoogleLogin: Content-Type: {request.content_type}")  # Log Content-Type
+        # print(f"GoogleLogin: Raw body: {request.body.decode('utf-8') if request.body else 'No body'}")  # Log raw body
+        # print(f"GoogleLogin: Parsed data: {request.data['body']}")  # Log parsed data
+        token = json.loads(request.data['body'])['token']
+        # print(request.data)
+        # token = request.data.get('token')
         if not token:
+            # token = request.data['body']
             print("GoogleLogin: No token provided")
             return Response({'error': 'Token is required'}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -152,7 +160,7 @@ class GoogleLogin(APIView):
             return Response({'error': 'Invalid token', 'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             print("GoogleLogin: Unexpected error:", str(e))
-            return Response({'error': 'Server error', 'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': 'Server error', 'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)        
         
         
 # Logout Api
@@ -261,6 +269,20 @@ class ValidateTokenView(APIView):
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_400_BAD_REQUEST)
         
+class Me(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response({
+            'id': user.id,
+            # 'email': user.email,
+            # 'username': user.username,
+            'is_doctor': hasattr(user, 'doctor'),
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+        })
+
 # Profile API
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
@@ -1426,66 +1448,64 @@ class DeleteWeekAvailabilityView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 class UserAppointmentsView(APIView):
+    serializer_class = AppointmentSerializer
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
         is_doctor = hasattr(user, 'doctor')
+        status_filter = request.query_params.get('status', None)
 
+        # Base queryset based on user type
         if is_doctor:
-            # Doctor: Get appointments for their WeekDays
             appointments = Appointment.objects.filter(
                 appointment__week_availability__doctor=user
             ).select_related(
                 'patient', 'appointment', 'appointment__week_availability', 'appointment__place'
             ).order_by('appointment__day', 'time')
         else:
-            # Regular user: Get their booked appointments
             appointments = Appointment.objects.filter(
                 patient=user
             ).select_related(
                 'appointment', 'appointment__week_availability', 'appointment__place'
             ).order_by('appointment__day', 'time')
 
+        # Filter by status if provided
+        if status_filter == 'active':
+            appointments = appointments.filter(active=True)
+        elif status_filter == 'inactive':
+            appointments = appointments.filter(active=False)
+
+        # Serialize appointments
+        serializer = self.serializer_class(
+            appointments, 
+            many=True, 
+            context={'request': request}  # Pass request context for is_favorited, etc.
+        )
+        serialized_data = serializer.data
+
+        # Separate appointments based on active status if no specific filter
         active_appointments = []
         inactive_appointments = []
         
-        for appt in appointments:
-            weekday = appt.appointment
-            week_availability = weekday.week_availability
-            appt_data = {
-                'appointment_id': appt.id,
-                'week_availability': WeekAvailabilitySerializer(week_availability).data,
-                'weekday': WeekDaySerializer(weekday).data,
-                'time': appt.time,
-                'active': appt.active
-            }
-            if is_doctor:
-                appt_data['patient'] = {
-                    'id': appt.patient.id,
-                    'first_name': appt.patient.first_name,
-                    'last_name': appt.patient.last_name,
-                    'profile_picture': appt.patient.profile_picture.url if appt.patient.profile_picture else None
-                }
-            else:
-                appt_data['doctor'] = {
-                    'id': week_availability.doctor.id,
-                    'first_name':week_availability.doctor.first_name,
-                    'last_name':week_availability.doctor.last_name,
-                    'profile_picture':week_availability.doctor.profile_picture.url if week_availability.doctor.profile_picture else None
-                }
+        if status_filter is None or status_filter not in ['active', 'inactive']:
+            active_appointments = [appt for appt in serialized_data if appt['active']]
+            inactive_appointments = [appt for appt in serialized_data if not appt['active']]
+        elif status_filter == 'active':
+            active_appointments = serialized_data
+        elif status_filter == 'inactive':
+            inactive_appointments = serialized_data
 
-            # Separate appointments based on active status
-            if appt.active:
-                active_appointments.append(appt_data)
-            else:
-                inactive_appointments.append(appt_data)
-
-        return Response({
-            'active_appointments': active_appointments,
-            'inactive_appointments': inactive_appointments
-        }, status=status.HTTP_200_OK)
-    
+        # Return response based on status filter
+        if status_filter == 'active':
+            return Response({'active_appointments': active_appointments}, status=status.HTTP_200_OK)
+        elif status_filter == 'inactive':
+            return Response({'inactive_appointments': inactive_appointments}, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                'active_appointments': active_appointments,
+                'inactive_appointments': inactive_appointments
+            }, status=status.HTTP_200_OK)            
 class DeleteAppointmentView(APIView):
     permission_classes = [IsAuthenticated]
 

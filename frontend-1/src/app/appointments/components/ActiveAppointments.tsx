@@ -3,19 +3,26 @@ import React, { useState } from "react";
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { UserCircleIcon } from "@heroicons/react/24/solid";
 
-type Appointment = {
-  appointment_id: string | number;
+export type Appointment = {
+  id: number;
   week_availability: {
     id: number;
     doctor: number;
     week: string;
   };
-  weekday: {
+  appointment: {
     id: number;
     week_availability: number;
     day: string;
-    hours: string;
-    place: number;
+    hours: string[];
+    place: {
+      id: number;
+      name: string;
+      city: string | null;
+      state: string | null;
+      location: { latitude: number; longitude: number } | null;
+      address: string;
+    } | null;
   };
   time: string;
   active: boolean;
@@ -23,13 +30,13 @@ type Appointment = {
     id: number;
     first_name: string;
     last_name: string;
-    profile_picture: string | null | undefined;
+    profile_picture: string | null;
   };
   doctor?: {
-    id?: number;
-    first_name?: string;
-    last_name?: string;
-    profile_picture?: string | null | undefined;
+    id: number;
+    first_name: string;
+    last_name: string;
+    profile_picture: string | null;
   };
 };
 
@@ -37,10 +44,12 @@ const Date = ({
   appointment,
   onCancel,
   is_doctor,
+  darker
 }: {
   appointment: Appointment;
   onCancel: (appointmentId: string | number) => void;
   is_doctor: boolean;
+  darker?: boolean;
 }) => {
   console.log(appointment)
   // const backendBaseUrl = getApiImgUrl();
@@ -55,7 +64,7 @@ const Date = ({
   const is_both_patient_and_doctor = appointment.patient?.id && appointment.doctor?.id && appointment.patient.id === appointment.doctor.id;
 
   return (
-    <div className="self-stretch bg-white shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] flex flex-col sm:flex-row justify-between sm:items-center flex-wrap p-4 xs:items-center">
+    <div className={`self-stretch shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] flex flex-col sm:flex-row justify-between sm:items-center flex-wrap px-4 py-2 xs:items-center ${darker ? "bg-gray-50" : "bg-white"}`}>
       <div className="flex justify-start items-center gap-4">
         <div className="flex flex-col justify-start py-5 items-start gap-1">
           {is_doctor ? (
@@ -66,7 +75,7 @@ const Date = ({
           <div className="self-stretch flex flex-wrap items-center gap-x-2.5">
             <div>
               <span className="text-[#293241] text-xs font-normal tracking-wide">Date:</span>
-              <span className="text-[#293241] text-sm tracking-wide font-bold"> {appointment.weekday?.day}</span>
+              <span className="text-[#293241] text-sm tracking-wide font-bold"> {appointment.appointment?.day}</span>
             </div>
             <div>
               <span className="text-[#293241] text-xs font-normal tracking-wide">Time:</span>
@@ -74,14 +83,14 @@ const Date = ({
             </div>
             <div>
               <span className="text-[#293241] text-xs font-normal tracking-wide">Location:</span>
-              {/* <span className="text-[#293241] text-sm tracking-wide"> {location}</span> */}
+              <span className="text-[#293241] text-sm tracking-wide font-bold"> {appointment.appointment.place?.name || "Virtual"}</span>
             </div>
           </div>
         </div>
       </div>
       <button
         className="px-4 py-1.5 bg-[#060648] rounded-md flex justify-center items-center gap-2.5"
-        onClick={() => onCancel(appointment.appointment_id)}
+        onClick={() => onCancel(appointment.id)}
       >
         <div className="text-white font-bold tracking-wide whitespace-nowrap sm:text-base xs:text-sm">Cancel date</div>
       </button>
@@ -94,9 +103,10 @@ type ActiveAppointmentsProps = {
   is_doctor: boolean;
   onCancel: () => void;
   setAlert?: (alert: { message: string | null; status: string | null }) => void;
+  darker?: boolean;
 };
 
-export default function ActiveAppointments({ appointments, is_doctor, onCancel, setAlert }: ActiveAppointmentsProps) {
+export default function ActiveAppointments({ appointments, is_doctor, onCancel, setAlert, darker }: ActiveAppointmentsProps) {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [appointmentToCancel, setAppointmentToCancel] = useState(null);
 
@@ -128,16 +138,17 @@ export default function ActiveAppointments({ appointments, is_doctor, onCancel, 
   };
 
   return (
-    <div className="self-stretch flex flex-col justify-start items-start">
+    <div className="self-stretch w-full flex flex-col justify-start items-start">
       <div className="self-stretch text-black text-2xl tracking-wide font-bold">Upcoming appointments</div>
-      <div className="self-stretch p-0 py-4 flex flex-col justify-start items-start gap-4 sm:p-4">
+      <div className="self-stretch p-0 py-4 flex flex-col justify-start items-start gap-4 sm:py-4">
         {appointments.length > 0 ? (
           appointments.map((appointment) => (
             <Date
-              key={appointment.appointment_id}
+              key={appointment.id}
               appointment={appointment}
-              onCancel={() => {console.log("Cancel appointment ID:", appointment.appointment_id);}}
+              onCancel={() => {console.log("Cancel appointment ID:", appointment.id);}}
               is_doctor={is_doctor}
+              darker={darker}
             />
           ))
         ) : (

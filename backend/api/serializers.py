@@ -3,12 +3,16 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
 import uuid
 import re
-from .models import Doctor, Clinic, Specialty, Ensurance, Review, Schedule, WeekAvailability, WeekDay
+from .models import Doctor, Clinic, Specialty, Ensurance, Review, Schedule, WeekAvailability, WeekDay, Appointment
 from datetime import timedelta
 User = get_user_model()
 import logging
 logger = logging.getLogger(__name__)
 
+class PatientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name', 'profile_picture']
 
 class UserProfileSerializer(serializers.ModelSerializer):
     user_id = serializers.UUIDField(source='id', read_only=True)
@@ -388,11 +392,18 @@ class WeekAvailabilitySerializer(serializers.ModelSerializer):
 
 class WeekDaySerializer(serializers.ModelSerializer):
     week_availability = serializers.PrimaryKeyRelatedField(queryset=WeekAvailability.objects.all())
-    place = serializers.PrimaryKeyRelatedField(queryset=Clinic.objects.all(), required=False, allow_null=True)
+    place = ClinicSerializer(read_only=True)  # Use ClinicSerializer for nested place data
+    place_id = serializers.PrimaryKeyRelatedField(
+        queryset=Clinic.objects.all(), 
+        source='place', 
+        required=False, 
+        allow_null=True, 
+        write_only=True
+    )
 
     class Meta:
         model = WeekDay
-        fields = ['id', 'week_availability', 'day', 'hours', 'place']
+        fields = ['id', 'week_availability', 'day', 'hours', 'place', 'place_id']
 
     def create(self, validated_data):
         return WeekDay.objects.create(**validated_data)
@@ -401,3 +412,58 @@ class ClinicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Clinic
         fields = ['id', 'name']
+
+class AppointmentSerializer(serializers.ModelSerializer):
+    patient = PatientSerializer(read_only=True)
+    patient_id = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), source='patient', write_only=True
+    )
+    appointment = WeekDaySerializer(read_only=True)
+    appointment_id = serializers.PrimaryKeyRelatedField(
+        queryset=WeekDay.objects.all(), source='appointment', write_only=True
+    )
+    week_availability = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Appointment
+        fields = [
+            'id', 
+            'patient', 
+            'patient_id', 
+            'appointment', 
+            'appointment_id', 
+            'week_availability', 
+            'time', 
+            'active'
+        ]
+        read_only_fields = ['id', 'patient', 'appointment', 'week_availability']
+
+    def get_week_availability(self, obj):
+        return WeekAvailabilitySerializer(obj.appointment.week_availability).data
+
+    def validate(self, attrs):
+        appointment_id = attrs.get('appointment_id')
+        time = attrs.get('time')
+
+        if appointment_id and time:
+            # Validate that the selected time is available in the WeekDay's hours
+            weekday = appointment_id
+            if time not in weekday.hours:
+                raise serializers.ValidationError({
+                    'time': f"Selected time {time} is not available in the schedule."
+                })
+
+            # Prevent double-booking: Check if time slot is already booked
+            if Appointment.objects.filter(
+                appointment=appointment_id,
+                time=time,
+                active=True
+            ).exists():
+                raise serializers.ValidationError({
+                    'time': f"Time slot {time} is already booked."
+                })
+
+        return attrs
+
+    def create(self, validated_data):
+        return Appointment.objects.create(**validated_data)
