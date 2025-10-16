@@ -1,7 +1,8 @@
+from urllib import request
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from django.contrib.auth import authenticate
 from rest_framework import status
 from django.core.mail import send_mail
@@ -13,6 +14,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from rest_framework import serializers
 from google.oauth2 import id_token
 from google.auth.transport import requests
 import os
@@ -30,6 +32,7 @@ from django.contrib.gis.geos import Point
 from django.db.models import Q, Count
 from django.db import transaction
 import json
+import requests as http_requests
 
 
 
@@ -40,10 +43,16 @@ serializer = URLSafeTimedSerializer(settings.SECRET_KEY)
 def get_data(request):
     return Response({"message": "Hello from Django!"})
 
-# Generate JWT Tokens
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
-    return {"refresh": str(refresh), "access": str(refresh.access_token)}
+    is_doctor = Doctor.objects.filter(user=user).exists()  # Explicit query
+    refresh['is_doctor'] = is_doctor
+    access = AccessToken.for_user(user)
+    access['is_doctor'] = is_doctor
+    logger.info(f"Generated tokens for user {user.id}: is_doctor={is_doctor}")
+    return {"refresh": str(refresh), "access": str(access)} 
+
+
 
 User = get_user_model()
 
@@ -85,9 +94,9 @@ class DoctorSignupView(APIView):
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# Login API
 class LoginView(APIView):
     permission_classes = [AllowAny]
+    
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
@@ -96,18 +105,20 @@ class LoginView(APIView):
                 {'error': 'Email and password are required'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        user = authenticate(username=email, password=password)  # Use username=email
+        
+        user = authenticate(username=email, password=password)
         if user:
-            refresh = RefreshToken.for_user(user)
+            tokens = get_tokens_for_user(user)  # Use get_tokens_for_user
             return Response({
-                'access': str(refresh.access_token),
-                'refresh': str(refresh),
+                'access': tokens['access'],
+                'refresh': tokens['refresh'],
                 'user': {
                     'id': user.id,
                     'email': user.email,
                     'username': user.username
                 }
             }, status=status.HTTP_200_OK)
+        
         return Response(
             {'error': 'Invalid credentials'},
             status=status.HTTP_401_UNAUTHORIZED
@@ -115,25 +126,15 @@ class LoginView(APIView):
 
 # Google Auth
 class GoogleLogin(APIView):
-    permission_classes = [AllowAny]  # Explicitly allow all requests
+    permission_classes = [AllowAny]
 
     def post(self, request):
-        # print("GoogleLogin: Request received")  # Debug start
-        # print(f"GoogleLogin: Content-Type: {request.content_type}")  # Log Content-Type
-        # print(f"GoogleLogin: Raw body: {request.body.decode('utf-8') if request.body else 'No body'}")  # Log raw body
-        # print(f"GoogleLogin: Parsed data: {request.data['body']}")  # Log parsed data
-        token = json.loads(request.data['body'])['token']
-        # print(request.data)
-        # token = request.data.get('token')
+        token = request.data.get('token')
         if not token:
-            # token = request.data['body']
-            print("GoogleLogin: No token provided")
             return Response({'error': 'Token is required'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            print("GoogleLogin: Validating token:", token[:10] + "...")  # Truncate for readability
             id_info = id_token.verify_oauth2_token(token, requests.Request(), os.getenv('GOOGLE_CLIENT_ID'))
-            print("GoogleLogin: Token validated, ID Info:", id_info)
             
             user, created = User.objects.get_or_create(
                 email=id_info['email'],
@@ -143,25 +144,77 @@ class GoogleLogin(APIView):
                     'last_name': id_info.get('family_name', '')
                 }
             )
-            print("GoogleLogin: User:", user.email, "Created:", created)
             
             refresh = RefreshToken.for_user(user)
+            refresh['is_doctor'] = hasattr(user, 'doctor')
+            access = AccessToken.for_user(user)
+            access['is_doctor'] = hasattr(user, 'doctor')
             response = {
                 'refresh': str(refresh),
-                'access': str(refresh.access_token),
+                'access': str(access),
                 'user_id': user.id,
                 'email': user.email,
                 'username': user.username            
             }
-            print("GoogleLogin: Success, Response:", response)
             return Response(response, status=status.HTTP_200_OK)
         except ValueError as e:
-            print("GoogleLogin: Token validation failed:", str(e))
             return Response({'error': 'Invalid token', 'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            print("GoogleLogin: Unexpected error:", str(e))
+            return Response({'error': 'Server error', 'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class GoogleCallbackView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        code = request.data.get('code')
+        if not code:
+            return Response({'error': 'Authorization code is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Exchange authorization code for tokens
+            token_response = http_requests.post('https://oauth2.googleapis.com/token', data={
+                'code': code,
+                'client_id': os.getenv('GOOGLE_CLIENT_ID'),
+                'client_secret': os.getenv('GOOGLE_CLIENT_SECRET'),
+                'redirect_uri': f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/auth/callback",
+                'grant_type': 'authorization_code'
+            })
+            token_data = token_response.json()
+            if 'error' in token_data:
+                return Response({'error': 'Failed to exchange code', 'detail': token_data['error']}, status=status.HTTP_400_BAD_REQUEST)
+
+            id_token_str = token_data.get('id_token')
+            if not id_token_str:
+                return Response({'error': 'No ID token received'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Verify the ID token
+            id_info = id_token.verify_oauth2_token(id_token_str, requests.Request(), os.getenv('GOOGLE_CLIENT_ID'))
+            
+            user, created = User.objects.get_or_create(
+                email=id_info['email'],
+                defaults={
+                    'username': f"{id_info.get('given_name', '')}_{uuid.uuid4().hex[:10]}",
+                    'first_name': id_info.get('given_name', ''),
+                    'last_name': id_info.get('family_name', '')
+                }
+            )
+            
+            refresh = RefreshToken.for_user(user)
+            refresh['is_doctor'] = hasattr(user, 'doctor')
+            access = AccessToken.for_user(user)
+            access['is_doctor'] = hasattr(user, 'doctor')
+            response = {
+                'refresh': str(refresh),
+                'access': str(access),
+                'user_id': user.id,
+                'email': user.email,
+                'username': user.username            
+            }
+            return Response(response, status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response({'error': 'Invalid token', 'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
             return Response({'error': 'Server error', 'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)        
-        
         
 # Logout Api
 class LogoutView(APIView):
@@ -221,35 +274,36 @@ class PasswordResetRequestView(APIView):
         return Response({'message': 'Password reset email sent'}, status=status.HTTP_200_OK)
     
 class PasswordChangeView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
-        token = request.data.get('token')
         new_password = request.data.get('new_password')
-        
-        if not all([token, new_password]):
-            return Response({'error': 'Token and new password are required'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
+        if not new_password:
+            return Response(
+                {'error': 'New password is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         if len(new_password) < 8:
-            return Response({'error': 'Password must be at least 8 characters long'}, status=status.HTTP_400_BAD_REQUEST)
-        
+            return Response(
+                {'error': 'Password must be at least 8 characters long'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         try:
-            reset_token = PasswordResetToken.objects.get(token=token)
-            if not reset_token.is_valid():
-                return Response({'error': 'Invalid or expired token'}, status=status.HTTP_400_BAD_REQUEST)
-            
-            email = serializer.loads(token, salt='password-reset-salt', max_age=3600)
-            user = User.objects.get(email=email)
+            user = request.user
             user.set_password(new_password)
             user.save()
-            
-            # Mark the token as used
-            reset_token.used = True
-            reset_token.save()
-            
-            return Response({'message': 'Password changed successfully'}, status=status.HTTP_200_OK)
-        except (PasswordResetToken.DoesNotExist, SignatureExpired, BadSignature):
-            return Response({'error': 'Invalid or expired token'}, status=status.HTTP_400_BAD_REQUEST)
-        except User.DoesNotExist:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {'message': 'Password changed successfully'},
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response(
+                {'error': 'Failed to change password'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
         
 class ValidateTokenView(APIView):
     def post(self, request):
@@ -284,6 +338,7 @@ class Me(APIView):
         })
 
 # Profile API
+# auth/personal-data/
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -301,9 +356,11 @@ class UserProfileView(APIView):
             "is_doctor": hasattr(user, 'doctor'),
             "favorite_doctors": DoctorSerializer(user.favorite_doctors.all(), many=True, context={'request': request}).data
         }
+        logger.info(f"Fetching profile for user {user.id}")
 
-        if hasattr(user, 'doctor'):
+        if Doctor.objects.filter(user=user).exists():
             doctor = user.doctor
+            logger.info(f"Fetching profile for doctor {doctor.id}")
             response_data.update({
                 "exequatur": doctor.exequatur,
                 "experience": doctor.experience,
@@ -323,9 +380,11 @@ class UserProfileView(APIView):
         return Response(response_data)
 
     def put(self, request):
+        # logger.info(f"Updating profile for user {request.user.id} with data: {request.data}")
+        logger.debug(f"Request data: {request.data['description']}")
         user = request.user
         data = request.data
-
+        logger.debug(f"Request data: {data.get('description')}")
         user.first_name = data.get('first_name', user.first_name)
         user.last_name = data.get('last_name', user.last_name)
         user.username = data.get('username', user.username)
@@ -369,25 +428,27 @@ class UserProfileView(APIView):
             if 'takes_virtual' in data:
                 new_takes_virtual = data['takes_virtual']
                 if new_takes_virtual:  # If takes_virtual is being set to True
-                    WeekAvailability.objects.filter(doctor=doctor, virtual=True).update(active=True)
+                    Appointment.objects.filter(
+                        appointment__week_availability__doctor=user,
+                        appointment__place__isnull=True
+                    ).update(active=True)
                 else:  # If takes_virtual is being set to False
-                    WeekAvailability.objects.filter(doctor=doctor, virtual=True).update(active=False)
+                    Appointment.objects.filter(
+                        appointment__week_availability__doctor=user,
+                        appointment__place__isnull=True
+                    ).update(active=False)
                 doctor.takes_virtual = new_takes_virtual
             if 'takes_in_person' in data:
                 new_takes_in_person = data['takes_in_person']
                 if new_takes_in_person:  # If takes_in_person is being set to True
-                    WeekAvailability.objects.filter(
-                        doctor=doctor,
-                        virtual=False,
-                        clinic__isnull=False,
-                        specialization__isnull=False
+                    Appointment.objects.filter(
+                        appointment__week_availability__doctor=user,
+                        appointment__place__isnull=False
                     ).update(active=True)
                 else:  # If takes_in_person is being set to False
-                    WeekAvailability.objects.filter(
-                        doctor=doctor,
-                        virtual=False,
-                        clinic__isnull=False,
-                        specialization__isnull=False
+                    Appointment.objects.filter(
+                        appointment__week_availability__doctor=user,
+                        appointment__place__isnull=False
                     ).update(active=False)
                 doctor.takes_in_person = new_takes_in_person
             doctor.save()
@@ -404,6 +465,21 @@ class UserProfileView(APIView):
             "is_doctor": hasattr(user, 'doctor'),
             "description": user.doctor.description if hasattr(user, 'doctor') else None,  # Add description
         })
+    
+# auth/personal-data/
+class UserProfileView(RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserProfileSerializer
+
+    def get_object(self):
+        return self.request.user
+
+    def perform_update(self, serializer):
+        logger.info(f"Updating user profile with data: {self.request.data}")
+        if 'email' in self.request.data and self.request.data['email'] != self.request.user.email:
+            raise serializers.ValidationError({'email': 'Email cannot be modified'})
+        serializer.save()
+        logger.info(f"Updated user profile: {serializer.data}")
         
 # DOCTOR MANAGEMENTS
 class AvailableSpecialtiesView(APIView):
@@ -589,21 +665,21 @@ class AddEnsuranceView(APIView):
         user = request.user
         if not hasattr(user, 'doctor'):
             return Response({"error": "User is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        ensurance_id = request.data.get('ensurance_id')
-        if not ensurance_id:
-            return Response({"error": "Ensurance ID is required"}, status=status.HTTP_400_BAD_REQUEST)
-        
+
+        insurance_id = request.data.get('insurance_id')
+        if not insurance_id:
+            return Response({"error": "Insurance ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
-            ensurance = Ensurance.objects.get(id=ensurance_id)
+            insurance = Ensurance.objects.get(id=insurance_id)
             doctor = user.doctor
-            if ensurance in doctor.ensurances.all():
-                return Response({"error": "Ensurance already assigned"}, status=status.HTTP_400_BAD_REQUEST)
-            
-            doctor.ensurances.add(ensurance)
-            return Response({"message": "Ensurance added successfully"}, status=status.HTTP_200_OK)
+            if insurance in doctor.ensurances.all():
+                return Response({"error": "Insurance already assigned"}, status=status.HTTP_400_BAD_REQUEST)
+
+            doctor.ensurances.add(insurance)
+            return Response({"message": "Insurance added successfully"}, status=status.HTTP_200_OK)
         except Ensurance.DoesNotExist:
-            return Response({"error": "Ensurance not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Insurance not found"}, status=status.HTTP_404_NOT_FOUND)
 
 class RemoveEnsuranceView(APIView):
     permission_classes = [IsAuthenticated]
@@ -623,6 +699,23 @@ class RemoveEnsuranceView(APIView):
             return Response({"message": "Ensurance removed successfully"}, status=status.HTTP_200_OK)
         except Ensurance.DoesNotExist:
             return Response({"error": "Ensurance not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class UpdateDoctorDescriptionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        user = request.user
+        if not hasattr(user, 'doctor'):
+            logger.error(f"User {user.id} is not a doctor")
+            return Response({"error": "User is not a doctor"}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = DoctorSerializer(user.doctor, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            logger.info(f"Description updated for doctor {user.id}")
+            return Response({"message": "Description updated successfully"}, status=status.HTTP_200_OK)
+        logger.error(f"Description update failed for doctor {user.id}: {serializer.errors}")
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # DOCTOR DOCUMENT MANAGEMENT
 class UploadDoctorDocumentView(APIView):

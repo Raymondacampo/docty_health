@@ -14,26 +14,147 @@ class PatientSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'first_name', 'last_name', 'profile_picture']
 
+class SpecialtySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Specialty
+        fields = ['id', 'name']
+
+class ClinicSerializer(serializers.ModelSerializer):
+    location = serializers.SerializerMethodField()  # Custom field for lat/lon
+
+    class Meta:
+        model = Clinic
+        fields = ['id', 'name', 'city', 'state','location', 'address']  # Add 'location'
+
+    def get_location(self, obj):
+        if obj.location:
+            return {'latitude': obj.location.y, 'longitude': obj.location.x}
+        return None
+
+class EnsuranceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ensurance
+        fields = ['id', 'name', 'logo']  # You can add 'logo' if needed
+
+class DoctorSerializer(serializers.ModelSerializer):
+    specialties = SpecialtySerializer(many=True)
+    clinics = ClinicSerializer(many=True)
+    ensurances = EnsuranceSerializer(many=True)
+    user = serializers.SerializerMethodField()
+    average_rating = serializers.SerializerMethodField()
+    review_count = serializers.SerializerMethodField()
+    has_availability = serializers.SerializerMethodField()
+    is_favorited = serializers.SerializerMethodField()
+    cities = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Doctor
+        fields = ['id', 'user', 'exequatur', 'experience', 'sex', 'taking_dates',
+                  'takes_virtual', 'takes_in_person', 'description', 'specialties',
+                  'clinics', 'ensurances', 'average_rating', 'review_count',
+                  'has_availability', 'is_favorited', 'cities']
+
+    def get_is_favorited(self, obj):
+        request = self.context.get('request')
+        if not request:
+            print("⚡ NO request in context")
+            return False
+
+        user = getattr(request, 'user', None)
+        if not user:
+            print("⚡ NO user in request")
+            return False
+
+        if not user.is_authenticated:
+            print(f"⚡ User not authenticated: {user}")
+            return False
+
+        # Print user and doctor info
+        # print(f"⚡ Authenticated user ID: {user.id}")
+        # print(f"⚡ Favorite doctors IDs: {list(user.favorite_doctors.values_list('id', flat=True))}")
+        # print(f"⚡ Checking doctor ID: {obj.id}")
+
+        is_favorited = user.favorite_doctors.filter(pk=obj.pk).exists()
+        # print(f"⚡ is_favorited result: {is_favorited}")
+        
+        return is_favorited
+
+    def get_user(self, obj):
+        return {
+            'id': obj.user.id,
+            'first_name': obj.user.first_name,
+            'last_name': obj.user.last_name,
+            'email': obj.user.email,
+            'profile_picture': obj.user.profile_picture.url if obj.user.profile_picture else None,
+        }
+
+    def get_average_rating(self, obj):
+        reviews = obj.reviews_received.all()
+        return sum(review.rating for review in reviews) / len(reviews) if reviews else None
+
+    def get_review_count(self, obj):
+        return obj.reviews_received.count()
+
+    def get_has_availability(self, obj):
+        return obj.taking_dates
+
+    def get_cities(self, obj):
+        return list(set(clinic.city for clinic in obj.clinics.all() if clinic.city))
+
 class UserProfileSerializer(serializers.ModelSerializer):
     user_id = serializers.UUIDField(source='id', read_only=True)
     favorite_doctors = serializers.SerializerMethodField()
+    # description = serializers.CharField(required=False, allow_blank=True)
+    doctor = DoctorSerializer(read_only=True)
+
     class Meta:
         model = User
         fields = [
-            'user_id', 
+            'user_id',
             'username',
             'email',
             'first_name',
             'last_name',
             'date_joined',
             'favorite_doctors',
-            'profile_picture'
+            'profile_picture',
+            'phone_number',
+            'born_date',
+            'gender',
+            'doctor'
         ]
-        read_only_fields = ['email', 'date_joined']  # Prevent accidental updates
+        read_only_fields = ['email', 'date_joined']
 
     def get_favorite_doctors(self, obj):
         doctors = obj.favorite_doctors.all()
         return DoctorSerializer(doctors, many=True).data
+
+    def update(self, instance, validated_data):
+        doctor_data = validated_data.pop('doctor', None)
+        if doctor_data:
+            if not Doctor.objects.filter(user=instance).exists():
+                raise serializers.ValidationError({"doctor": "User is not a doctor."})
+            doctor = instance.doctor
+            for attr, value in doctor_data.items():
+                if attr == 'description':
+                    doctor.description = value
+                elif attr == 'exequatur':
+                    doctor.exequatur = value
+                elif attr == 'experience':
+                    doctor.experience = value
+                elif attr == 'taking_dates':
+                    doctor.taking_dates = value
+                elif attr == 'takes_virtual':
+                    doctor.takes_virtual = value
+                elif attr == 'takes_in_person':
+                    doctor.takes_in_person = value
+            doctor.save()
+        return super().update(instance, validated_data)
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['is_doctor'] = Doctor.objects.filter(user=instance).exists()
+        return ret
     
 class SignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
@@ -218,28 +339,6 @@ class MinimalUserSerializer(serializers.ModelSerializer):
         return user
     
 
-class SpecialtySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Specialty
-        fields = ['id', 'name']
-
-class ClinicSerializer(serializers.ModelSerializer):
-    location = serializers.SerializerMethodField()  # Custom field for lat/lon
-
-    class Meta:
-        model = Clinic
-        fields = ['id', 'name', 'city', 'state','location', 'address']  # Add 'location'
-
-    def get_location(self, obj):
-        if obj.location:
-            return {'latitude': obj.location.y, 'longitude': obj.location.x}
-        return None
-
-class EnsuranceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Ensurance
-        fields = ['id', 'name', 'logo']  # You can add 'logo' if needed
-
 # serializers.py
 # api/serializers.py
 class ReviewSerializer(serializers.ModelSerializer):
@@ -270,72 +369,7 @@ class ReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"rating": "Rating must be between 1 and 5."})
         return attrs
 
-class DoctorSerializer(serializers.ModelSerializer):
-    specialties = SpecialtySerializer(many=True)
-    clinics = ClinicSerializer(many=True)
-    ensurances = EnsuranceSerializer(many=True)
-    user = serializers.SerializerMethodField()
-    average_rating = serializers.SerializerMethodField()
-    review_count = serializers.SerializerMethodField()
-    has_availability = serializers.SerializerMethodField()
-    is_favorited = serializers.SerializerMethodField()
-    cities = serializers.SerializerMethodField()
 
-    class Meta:
-        model = Doctor
-        fields = ['id', 'user', 'exequatur', 'experience', 'sex', 'taking_dates',
-                  'takes_virtual', 'takes_in_person', 'description', 'specialties',
-                  'clinics', 'ensurances', 'average_rating', 'review_count',
-                  'has_availability', 'is_favorited', 'cities']
-
-    def get_is_favorited(self, obj):
-        request = self.context.get('request')
-        if not request:
-            print("⚡ NO request in context")
-            return False
-
-        user = getattr(request, 'user', None)
-        if not user:
-            print("⚡ NO user in request")
-            return False
-
-        if not user.is_authenticated:
-            print(f"⚡ User not authenticated: {user}")
-            return False
-
-        # Print user and doctor info
-        print(f"⚡ Authenticated user ID: {user.id}")
-        print(f"⚡ Favorite doctors IDs: {list(user.favorite_doctors.values_list('id', flat=True))}")
-        print(f"⚡ Checking doctor ID: {obj.id}")
-
-        is_favorited = user.favorite_doctors.filter(pk=obj.pk).exists()
-        print(f"⚡ is_favorited result: {is_favorited}")
-        
-        return is_favorited
-
-
-
-    def get_user(self, obj):
-        return {
-            'id': obj.user.id,
-            'first_name': obj.user.first_name,
-            'last_name': obj.user.last_name,
-            'email': obj.user.email,
-            'profile_picture': obj.user.profile_picture.url if obj.user.profile_picture else None,
-        }
-
-    def get_average_rating(self, obj):
-        reviews = obj.reviews_received.all()
-        return sum(review.rating for review in reviews) / len(reviews) if reviews else None
-
-    def get_review_count(self, obj):
-        return obj.reviews_received.count()
-
-    def get_has_availability(self, obj):
-        return obj.taking_dates
-
-    def get_cities(self, obj):
-        return list(set(clinic.city for clinic in obj.clinics.all() if clinic.city))
     
 class ScheduleSerializer(serializers.ModelSerializer):
     doctor = serializers.PrimaryKeyRelatedField(queryset=Doctor.objects.all())

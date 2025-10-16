@@ -1,14 +1,16 @@
 // components/SimpleSideNavbar.tsx (Robust version)
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { apiClient } from '@/app/utils/api';
 
 interface NavItem {
   id: string;
   label: string;
   href: string;
+  doc?: boolean;
 }
 
 const SimpleSideNavbar: React.FC = () => {
@@ -16,20 +18,28 @@ const SimpleSideNavbar: React.FC = () => {
   const [activePage, setActivePage] = useState<string>('my-account');
   const [isClient, setIsClient] = useState<boolean>(false);
 
+  useEffect(() => {
+    const checkDoctor = async () => {
+      const response = await apiClient.get('/auth/me/');
+      setIsClient(!response.data.is_doctor);
+    };
+    checkDoctor();
+  }, []);
+
   // Function to determine active page from path
   const getActivePageFromPath = (path: string): string => {
     if (path.includes('personal-data')) {
       return 'personal-data';
     } else if (path.includes('security')) {
       return 'security';
+    } else if (path.includes('doctor-settings')) {
+      return 'doctor-settings';
     }
     return 'my-account';
   };
 
   // Set client-side flag and initial state
-  useEffect(() => {
-    setIsClient(true);
-    
+  useEffect(() => {    
     // Check current URL immediately on client-side mount
     if (typeof window !== 'undefined') {
       const currentPath = window.location.pathname;
@@ -47,30 +57,36 @@ const SimpleSideNavbar: React.FC = () => {
 
   const navItems: NavItem[] = [
     {
+      
       id: 'my-account',
       label: 'My Account',
-      href: '/account'
+      href: '/account',
+      doc: false
     },
     {
       id: 'personal-data',
       label: 'Personal Data',
-      href: '/settings/personal-data'
+      href: '/settings/personal-data',
+      doc: false
     },
     {
       id: 'security',
       label: 'Security',
-      href: '/settings/security'
-    }
+      href: '/settings/security',
+      doc: false
+    },
+    // {
+    //   id: 'doctor-settings',
+    //   label: 'Doctor Settings',
+    //   href: '/settings/doctor-settings',
+    //   doc: true
+    // }
   ];
 
-  // Don't render until client-side hydration to prevent flash
-  if (!isClient) {
-    return null;
-  }
 
   return (
     <nav 
-      className="hidden lg:block flex left-8 mt-[10vh] h-[90vh] w-76 bg-white z-40"
+      className="lg:block flex left-8 mt-[10vh] h-[90vh] w-76 bg-white z-40"
       style={{ top: '10vh' }}
     >
       <div className="p-6 h-full flex flex-col">
@@ -91,19 +107,21 @@ const SimpleSideNavbar: React.FC = () => {
               <span>{item.label}</span>
             </Link>
           ))}
-          <Link
-              href={"/settings/doctor-settings"}
-              className={`
-                flex items-center px-4 py-3 rounded-sm text-sm  transition-colors duration-200 w-full border-b border-gray-200
-                ${activePage === "doctor-settings" 
-                  ? 'bg-[#293241] font-bold text-white' 
-                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-medium'
-                }
-              `}
-              onClick={() => setActivePage("doctor-settings")}
-            >
-              <span>doctor settings</span>
+          {!isClient && (
+            <Link
+                href={"/settings/doctor-settings"}
+                className={`
+                  flex items-center px-4 py-3 rounded-sm text-sm  transition-colors duration-200 w-full border-b border-gray-200
+                  ${activePage === "doctor-settings" 
+                    ? 'bg-[#293241] font-bold text-white' 
+                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-medium'
+                  }
+                `}
+                onClick={() => setActivePage("doctor-settings")}
+              >
+                <span>doctor settings</span>
             </Link>
+          )}
         </div>
       </div>
     </nav>

@@ -1,45 +1,50 @@
 'use client';
-import { useEffect } from "react";
-import { useRouter } from "next/router";
+
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { login } from '../../utils/auth';
+import { useLoading } from '../../utils/LoadingContext';
+import Loading from '../../components/LoadingComponent';
 
 export default function GoogleCallback() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { setIsLoading } = useLoading();
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
-    async function fetchGoogleAuth() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get("code");  // ✅ Extract Google Auth Code
-
+    const handleCallback = async () => {
+      setIsLoading(true);
+      const code = searchParams.get('code');
       if (!code) {
-        console.error("No Google authorization code found.");
-        alert("Google authentication failed.");
-        router.push("/login");
+        setError('No authorization code received.');
+        setIsLoading(false);
         return;
       }
 
-      const res = await fetch("http://127.0.0.1:8000/api/google/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ code }),  // ✅ Send the code to Django
-      });
-
-      const data = await res.json();
-      console.log("Django Response:", data);  // ✅ Debug Django response
-
-      if (res.ok) {
-        localStorage.setItem("token", data.access);
-        localStorage.setItem("refresh_token", data.refresh);
-        router.push("/profile");
-      } else {
-        console.error("Google login failed:", data);
-        alert("Google Sign-In failed.");
-        router.push("/login");
+      try {
+        await login(code, true, true); // isGoogle=true, isGoogleCallback=true
+        // No need to setIsLoading(false) here; redirect in login() will occur
+      } catch (err: any) {
+        console.error('Google callback error:', err.response?.data || err.message);
+        setError('Failed to authenticate with Google. Please try again.');
+        setIsLoading(false);
       }
-    }
+    };
 
-    fetchGoogleAuth();
-  }, []);
+    handleCallback();
+  }, [searchParams, setIsLoading]);
 
-  return <p>Authenticating...</p>;
+  if (error) {
+    return (
+      <div className='flex flex-col w-full h-screen justify-center items-center'>
+        <div className='text-red-500 font-bold text-2xl'>{error}</div>
+        <a href='/login' className='text-blue-500 mt-4'>Back to Login</a>
+      </div>
+    );
+  }
+
+  return (
+    <Loading />
+  ); // Handled by global Loading component
 }

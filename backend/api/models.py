@@ -34,6 +34,8 @@ def validate_square_image(image):
 class User(AbstractUser):
     born_date = models.DateField(blank=True, null=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
+    gender = models.CharField(max_length=1, choices=(('M', 'Male'), ('F', 'Female')),default= 'M', blank=True, null=True)
+
     profile_picture = models.ImageField(
         upload_to='profile_pics/',
         blank=True,
