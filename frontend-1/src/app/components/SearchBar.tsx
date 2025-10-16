@@ -74,9 +74,9 @@ export default function SearchBar({small}: {small?: boolean}) {
             lg:h-full lg:mt-0 ">
                 <button
                 onClick={handleSearch}
-                className="w-full h-full rounded-lg flex justify-center items-center bg-[#293241] hover:bg-[#3d5a80] lg:rounded-none"
+                className="w-full h-full relative lg:-right-1 rounded-lg flex justify-center items-center bg-[#293241] hover:bg-[#3d5a80] lg:rounded-l-none lg:rounded-r-lg"
                 >
-                    <span className="text-white font-bold text-lg mr-4 lg:hidden">Find doctor</span>
+                <span className="text-white font-bold text-lg mr-4 lg:hidden">Find doctor</span>
                 <FaSearch className="lg:w-7 lg:h-7 w-5 h-5 text-white" />
                 </button>
             </div>

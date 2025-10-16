@@ -5,7 +5,8 @@ RemoveClinicView, RemoveSpecialtyView, UploadDoctorDocumentView, DeleteDoctorDoc
 AddEnsuranceView, RemoveEnsuranceView, DoctorSearchView, AllSpecialtiesView, AllClinicsView, AllEnsurancesView, DoctorDetailView,
 DoctorDetailView, ReviewsDetailView, CreateReviewView, UpdateReviewView, DeleteReviewView,UserReviewView, ToggleFavoriteDoctorView, IsDoctorView,
 CreateScheduleView, UpdateScheduleView, DeleteScheduleView, MySchedulesView, CreateWeekDayView, ClinicDetailView, WeekScheduleView, AvailableWeeksView,
-DoctorAvailableDaysView, WeekSchedulesView,CreateAppointmentView, DeleteWeekAvailabilityView, UserAppointmentsView, DeleteAppointmentView, DoctorPatientsView, Me)
+DoctorAvailableDaysView, WeekSchedulesView,CreateAppointmentView, DeleteWeekAvailabilityView, UserAppointmentsView, DeleteAppointmentView, DoctorPatientsView, Me,
+GoogleCallbackView, UpdateDoctorDescriptionView)
 from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView, TokenObtainPairView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -20,6 +21,7 @@ urlpatterns = [
     path("auth/personal-data/", UserProfileView.as_view(), name="user_profile"),
     path("auth/me/", Me.as_view(), name="user_profile"),
     path('auth/google/', GoogleLogin.as_view(), name='google-login'),
+    path('auth/google/callback/', GoogleCallbackView.as_view(), name='google-callback'),
     path('auth/password_reset/', PasswordResetRequestView.as_view(), name='password_reset_request'),
     path('auth/password_change/', PasswordChangeView.as_view(), name='password_change'),
     path('auth/validate_token/', ValidateTokenView.as_view(), name='validate_token'),
@@ -30,16 +32,16 @@ urlpatterns = [
     path('auth/add_clinic/', AddClinicView.as_view(), name='add_clinic'),
     path('auth/remove_specialty/<int:specialty_id>/', RemoveSpecialtyView.as_view(), name='remove_specialty'),
     path('auth/remove_clinic/<int:clinic_id>/', RemoveClinicView.as_view(), name='remove_clinic'),
-    path('auth/available_ensurances/', AvailableEnsurancesView.as_view(), name='available_ensurances'),
-    path('auth/add_ensurance/', AddEnsuranceView.as_view(), name='add_ensurance'),
-    path('auth/remove_ensurance/<int:ensurance_id>/', RemoveEnsuranceView.as_view(), name='remove_ensurance'),
+    path('auth/available_insurances/', AvailableEnsurancesView.as_view(), name='available_ensurances'),
+    path('auth/add_insurance/', AddEnsuranceView.as_view(), name='add_ensurance'),
+    path('auth/remove_insurance/<int:ensurance_id>/', RemoveEnsuranceView.as_view(), name='remove_ensurance'),
+    path('auth/update_description/', UpdateDoctorDescriptionView.as_view(), name='update_doctor_description'),
 
     path('auth/upload_document/', UploadDoctorDocumentView.as_view(), name='upload_doctor_document'),
     path('auth/delete_document/<int:document_id>/', DeleteDoctorDocumentView.as_view(), name='delete_doctor_document'),
     path('auth/toggle_favorite/<int:doctor_id>/', ToggleFavoriteDoctorView.as_view(), name='toggle_favorite_doctor'),
 
     path('doctors/search/', DoctorSearchView.as_view(), name='doctor_search'),
-    # New endpoints for all values
     path('all_specialties/', AllSpecialtiesView.as_view(), name='all_specialties'),
     path('all_clinics/', AllClinicsView.as_view(), name='all_clinics'),
     path('all_ensurances/', AllEnsurancesView.as_view(), name='all_ensurances'),
@@ -73,6 +75,6 @@ urlpatterns = [
 
     path('doctor/patients/', DoctorPatientsView.as_view(), name='doctor_patients'),
     path('clinics/<int:clinic_id>/', ClinicDetailView.as_view(), name='clinic_detail'),
-
+    path('auth/personal-data/', UserProfileView.as_view(), name='update_user_profile'),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
