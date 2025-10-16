@@ -131,14 +131,14 @@ const ModField: React.FC<ModFieldProps> = ({ title, content, bb, onModify, isMod
           {title === 'Description' && (
             <button
               onClick={handleSaveDescriptionLocal}
-              className="text-white bg-[#293241] hover:bg-[#293241]/90 cursor-pointer text-sm font-normal font-['Inter'] px-2.5 py-1 rounded-md"
+              className="text-white bg-[#293241] hover:bg-[#293241]/90 cursor-pointer text-sm font-normal px-2.5 py-1 rounded-md"
             >
               Save
             </button>
           )}
           <button
             onClick={onCancel}
-            className="text-white bg-[#293241] hover:bg-[#293241]/90 cursor-pointer text-sm font-normal font-['Inter'] px-2.5 py-1 rounded-md"
+            className="text-white bg-[#293241] hover:bg-[#293241]/90 cursor-pointer text-sm font-normal px-2.5 py-1 rounded-md"
           >
             Cancel
           </button>

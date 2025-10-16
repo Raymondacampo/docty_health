@@ -78,7 +78,7 @@ export default function SpecialtySearch({ onSpecialtyAdded }: SpecialtySearchPro
                 <li
                   key={specialty.id}
                   onClick={() => handleAddSpecialty(specialty.id, specialty.name)}
-                  className="px-3 py-2 text-sm font-normal font-['Inter'] text-black hover:bg-[#98c1d1]/25 cursor-pointer"
+                  className="px-3 py-2 text-sm font-normal text-black hover:bg-[#98c1d1]/25 cursor-pointer"
                 >
                   {specialty.name}
                 </li>
@@ -90,7 +90,7 @@ export default function SpecialtySearch({ onSpecialtyAdded }: SpecialtySearchPro
           )}
           <button
             onClick={() => setIsOpen(false)}
-            className="mt-2 text-white bg-[#293241] hover:bg-[#293241]/90 cursor-pointer text-sm font-normal font-['Inter'] px-2.5 py-2 rounded-md"
+            className="mt-2 text-white bg-[#293241] hover:bg-[#293241]/90 cursor-pointer text-sm font-normal px-2.5 py-2 rounded-md"
           >
             Cancel
           </button>
