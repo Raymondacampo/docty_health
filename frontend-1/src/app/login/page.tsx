@@ -111,7 +111,7 @@ export default function LoginPage() {
         <div>
           <span className='text-[#293241] text-xs font-semibold tracking-wide'>Are you a doctor?</span>
           <span className='text-[#4285f4] text-sm font-semibold tracking-wide'> </span>
-          <a href='/doctor_signup' className='text-blue-500 text-sm font-semibold tracking-wide'>Sign up as a doctor</a>
+          <a href='/doctor-signup' className='text-blue-500 text-sm font-semibold tracking-wide'>Sign up as a doctor</a>
         </div>
       </div>
     </div>

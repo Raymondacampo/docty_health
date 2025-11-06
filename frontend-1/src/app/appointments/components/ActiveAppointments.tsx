@@ -83,7 +83,7 @@ const Date = ({
             </div>
             <div>
               <span className="text-[#293241] text-xs font-normal tracking-wide">Location:</span>
-              <span className="text-[#293241] text-sm tracking-wide font-bold"> {appointment.appointment.place?.name || "Virtual"}</span>
+              {/* <span className="text-[#293241] text-sm tracking-wide font-bold"> {appointment.appointment.place?.name ?? "Virtual"}</span> */}
             </div>
           </div>
         </div>
@@ -142,9 +142,9 @@ export default function ActiveAppointments({ appointments, is_doctor, onCancel, 
       <div className="self-stretch text-black text-2xl tracking-wide font-bold">Upcoming appointments</div>
       <div className="self-stretch p-0 py-4 flex flex-col justify-start items-start gap-4 sm:py-4">
         {appointments.length > 0 ? (
-          appointments.map((appointment) => (
+          appointments.map((appointment, index  ) => (
             <Date
-              key={appointment.id}
+              key={index}
               appointment={appointment}
               onCancel={() => {console.log("Cancel appointment ID:", appointment.id);}}
               is_doctor={is_doctor}
