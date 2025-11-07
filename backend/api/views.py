@@ -77,22 +77,39 @@ class SignupView(APIView):
 
 class DoctorSignupView(APIView):
     permission_classes = []
-    
+
     def post(self, request):
         serializer = DoctorSignupSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
+        
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # This ensures BOTH user + doctor are saved atomically
+            with transaction.atomic():
+                user = serializer.save()  # This should return the User instance
+
+            # Now safely generate tokens AFTER everything is saved
             refresh = RefreshToken.for_user(user)
+            
             return Response({
                 'access': str(refresh.access_token),
                 'refresh': str(refresh),
                 'user': {
                     'id': user.id,
                     'username': user.username,
-                    'email': user.email
+                    'email': user.email,
+                    'is_doctor': True,
+                    # Optional: include doctor-specific info
+                    'doctor_id': user.doctor_profile.id if hasattr(user, 'doctor_profile') else None,
                 }
             }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            return Response({
+                'error': 'Signup failed',
+                'detail': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class LoginView(APIView):
     permission_classes = [AllowAny]

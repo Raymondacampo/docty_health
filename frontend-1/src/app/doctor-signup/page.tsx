@@ -1,20 +1,23 @@
 'use client';
 
-import { useState, useEffect, ChangeEvent } from 'react';
-// import { useRouter } from 'next/router';
-import { apiClient, publicApiClient } from '@/app/utils/api';
+import { useState, ChangeEvent } from 'react';
+import { useRouter } from 'next/navigation';
+import { publicApiClient } from '@/app/utils/api';
 import SearchBar from './components/SearchBar';
-// import { useUser } from '@/hooks/User';
-// import LoadingComponent from '../LoadingComponent';
+import Loading from '../components/LoadingComponent';
+import {login} from '@/app/utils/auth';
 
 interface FormFieldProps {
   title: string;
   type: string;
   name: string;
-  placeholder: string;
+  placeholder?: string;
   onChange: (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   err?: string;
   options?: { value: string; label: string }[];
+  extra?: string;
+  checked?: boolean;
+  value?: string;
 }
 
 interface FormData {
@@ -29,6 +32,7 @@ interface FormData {
   specialty: string;
   clinic: string;
   ensurance: string;
+  born_date: string;
   [key: string]: string; // Add index signature
 }
 
@@ -36,37 +40,41 @@ interface Errors {
   [key: string]: string | undefined;
 }
 
-const FormField: React.FC<FormFieldProps> = ({ title, type, name, placeholder, onChange, err, options }) => {
-  return (
-    <div className="self-stretch flex-col justify-start items-start gap-[5px] flex">
-      <div className="self-stretch text-[#3d5a80] text-base font-normal font-['Inter'] tracking-wide">{title}</div>
-      {type === 'select' ? (
-        <select
-          name={name}
-          onChange={onChange}
-          className="text-sm self-stretch px-3 py-3 focus:outline-none text-black rounded-[5px] border border-black justify-start items-center gap-2.5 inline-flex"
-        >
-          <option value="" disabled defaultValue={placeholder}>{placeholder}</option>
-          {options && options.map((option) => (
-            <option key={option.value} value={option.value}>{option.label}</option>
-          ))}
-        </select>
-      ) : (
+const FormField = ({ title, type, name, placeholder, onChange, err, extra, checked, value }: FormFieldProps) => {
+  if (type === 'checkbox') {
+    return (
+      <div className={`self-stretch flex items-center gap-[10px] ${extra}`}>
         <input
-          type={type}
+          type="checkbox"
           name={name}
-          placeholder={placeholder}
+          value={value}
           onChange={onChange}
-          className="text-sm self-stretch px-4 py-3 focus:outline-none text-black rounded-[5px] border border-black justify-start items-center gap-2.5 inline-flex"
+          checked={checked}
+          className="h-5 w-5 text-[#060648] rounded border-gray-500/40 focus:ring-[#060648]"
         />
-      )}
+        <label htmlFor={name} className="text-[#3d5a80] font-medium text-sm">{title}</label>
+        {err && <span className="text-red-500 text-sm ml-2">{err}</span>}
+      </div>
+    );
+  }
+  return (
+    <div className={`w-full flex-col justify-start items-start gap-[5px] flex ${extra}`}>
+      <label htmlFor={name} className="text-[#3d5a80] text-sm">{title}</label>
+      <input
+        type={type}
+        name={name}
+        placeholder={placeholder}
+        onChange={onChange}
+        autoComplete={type === 'password' ? 'new-password' : undefined}
+        className={`w-full px-4 py-3 focus:outline-none text-black rounded-lg border-2 border-gray-500/40 justify-start items-center gap-2.5 inline-flex `}
+      />
       {err && <span className="text-red-500 text-sm">{err}</span>}
     </div>
   );
 };
 
 export default function DoctorSignupForm() {
-//   const router = useRouter();
+  const router = useRouter();
   const [formData, setFormData] = useState<FormData>({
     first_name: '',
     last_name: '',
@@ -79,10 +87,11 @@ export default function DoctorSignupForm() {
     specialty: '',
     clinic: '',
     ensurance: '',
+    born_date: '',
   });
   const [errors, setErrors] = useState<Errors>({});
-  const [loading, setLoading] = useState<boolean>(true);
-
+  const [loading, setLoading] = useState<boolean>(false);
+  const [isCreating, setIsCreating] = useState<boolean>(false);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -159,6 +168,7 @@ export default function DoctorSignupForm() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+    setIsCreating(true);
     setErrors({});
 
     let validationErrors: Errors = {};
@@ -234,11 +244,14 @@ export default function DoctorSignupForm() {
       submitData.specialties = [specialty.id];
       submitData.clinics = [clinic.id];
       submitData.ensurances = ensurance ? [ensurance.id] : [];
-
+      console.log("Submitting data:", submitData);
       const { data } = await publicApiClient.post('/auth/doctor_signup/', submitData);
-      localStorage.setItem('access_token', data.access);
-      localStorage.setItem('refresh_token', data.refresh);
-    //   router.push('/profile');
+      console.log("Signup successful", data);
+      await login(data.access);
+      localStorage.setItem('refresh_token', data.refresh);   
+      setLoading(false);
+      setTimeout(() => router.push('/account'), 500); // slight delay for UX
+    //   
 
     } catch (err: any) {
       console.error("Error:", err.response?.data || err);
@@ -247,7 +260,6 @@ export default function DoctorSignupForm() {
       } else {
         setErrors({ non_field_errors: 'An error occurred. Please try again.' });
       }
-      setLoading(false);
     }
   };
 
@@ -256,79 +268,177 @@ export default function DoctorSignupForm() {
     { value: 'F', label: 'Female' },
   ];
 
+  if (loading || isCreating) {
+    return <Loading text={isCreating ? "Creating account..." : "Loading..."} />;
+  }
+
   return (
-    <div className="w-auto border-black/25 border py-8 bg-white rounded-[15px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] flex-col justify-center items-center gap-8 inline-flex 
-    sm:px-8 sm:max-w-2xl
-    xs:w-full xs:max-w-md xs:px-4">
-      <div className="self-stretch text-center text-[#293241] text-2xl font-bold tracking-wide">Create your Doctor account!</div>
-      <form className="self-stretch" onSubmit={handleSubmit}>
-        <div className="self-stretch flex-col justify-center items-center gap-4 flex">
-          <div className="self-stretch justify-start items-start flex-col flex">
-            <div className='flex w-full
-            md:flex-row md:gap-16
-            xs:flex-col '>
-              <div className='flex flex-col gap-2
-              md:w-[300px] xs:w-full'>
+    <div className="flex flex-col w-full mt-[14dvh] px-2 h-auto mb-[14dvh] justify-center items-center">
+      <div className="self-stretch text-start w-full max-w-xl mx-auto text-[#293241] font-bold text-3xl sm:text-4xl mb-4 sm:mb-6 tracking-wide">
+        Create your doctor account!
+      </div>
+      <form className="w-full max-w-xl flex-col justify-start items-start gap-16 flex" onSubmit={handleSubmit}>
+
+        <div className="self-stretch flex-col justify-center items-center gap-8 flex">
+          <div className="self-stretch flex-col justify-start items-start gap-6 flex">
                 <FormField title="Email" type="text" name="email" placeholder="yourmail@example.com" onChange={handleChange} err={errors.email} />
-                <FormField title="First name" type="text" name="first_name" placeholder="Your first name" onChange={handleChange} err={errors.first_name} />
-                <FormField title="Last name" type="text" name="last_name" placeholder="Your last name" onChange={handleChange} err={errors.last_name} />
-                <FormField
-                  title="Sex"
-                  type="select"
-                  name="sex"
-                  placeholder="Select your sex"
-                  onChange={handleChange}
-                  err={errors.sex}
-                  options={sexOptions}
-                />
+                
+                <div className='grid grid-cols-10 gap-2 w-full'>
+                  <FormField title="First name" type="text" name="first_name" placeholder="Your first name" onChange={handleChange} err={errors.first_name} extra='col-span-4' />
+                  <FormField title="Last name" type="text" name="last_name" placeholder="Your last name" onChange={handleChange} err={errors.last_name} extra='col-span-6' />
+                </div>
+                  <FormField
+                    title="Date of birth"
+                    type="date"
+                    name="born_date"
+                    placeholder="Date of Birth"
+                    onChange={handleChange}
+                    err={errors.born_date}
+                  />
+                <div className="self-stretch flex-col justify-start items-start">
+                  <p className="text-sm font-medium text-[#3d5a80] mb-2">Sex</p>
+                    <div className="flex flex-col gap-4">
+                      <FormField
+                        title="Male"
+                        type="checkbox"
+                        name="sex"
+                        onChange={handleChange}
+                        checked={formData.sex === 'M'}
+                        value="M"
+                      />
+                      <FormField
+                        title="Female"
+                        type="checkbox"
+                        name="sex"
+                        onChange={handleChange}
+                        checked={formData.sex === 'F'}
+                        value="F"
+                      />
+                    </div>
+                    {errors.sex && <span className="text-red-500 text-sm">{errors.sex}</span>}
+                  </div>
                 <FormField title="Password" type="password" name="password" placeholder="Password" onChange={handleChange} err={errors.password} />
                 <FormField title="Repeat password" type="password" name="confirm_password" placeholder="Repeat password" onChange={handleChange} err={errors.confirm_password} />
+
+                <div className='flex w-full justify-between gap-2'>
+                  <div className="w-full flex-col justify-start items-start gap-[5px] flex">
+                    <div className="text-sm text-[#3d5a80] tracking-wide">Specialty</div>
+                    <SearchBar
+                      value={formData.specialty}
+                      onChange={handleSpecialtyChange}
+                      endpoint="/all_specialties/"
+                      placeholder="Search for a specialty"
+                    />
+                    {errors.specialty && <span className="text-red-500 text-sm">{errors.specialty}</span>}
+                  </div>                
+                  <div className="w-full flex-col justify-start items-start gap-[5px] flex">
+                    <div className="text-sm text-[#3d5a80] tracking-wide">Clinic</div>
+                    <SearchBar
+                      value={formData.clinic}
+                      onChange={handleClinicChange}
+                      endpoint="/all_clinics/"
+                      placeholder="Search for a clinic"
+                    />
+                    {errors.clinic && <span className="text-red-500 text-sm">{errors.clinic}</span>}
+                  </div>
+                </div>
+                <div className='flex w-full justify-between gap-2'>
+                  <div className="w-full flex-col justify-start items-start gap-[5px] flex">
+                    <div className="text-sm text-[#3d5a80] tracking-wide">Ensurance (optional)</div>
+                    <SearchBar
+                      value={formData.ensurance}
+                      onChange={handleEnsuranceChange}
+                      endpoint="/all_ensurances/"
+                      placeholder="Search for an ensurance (optional)"
+                    />
+                    {errors.ensurance && <span className="text-red-500 text-sm">{errors.ensurance}</span>}
+                  </div>  
+                  <div className='w-full flex'>
+                    <FormField title="Exequatur" type="text" name="exequatur" placeholder="0000-000" onChange={handleChange} err={errors.exequatur} />
+                  </div>
+                </div>
+                <div className="w-full flex items-center gap-[5px]">
+                  <label
+                    htmlFor="experience"
+                    className="text-[#3d5a80] text-sm"
+                  >
+                    Years of experience
+                  </label>
+
+                    <input
+                      type="text"
+                      name="experience"
+                      inputMode="numeric"
+                      pattern="\d*"
+                      maxLength={2}
+                      autoComplete="off"
+                      onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                        // allow control/meta keys and navigation
+                        if (e.ctrlKey || e.metaKey) return;
+                        const allowedKeys = [
+                          'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter'
+                        ];
+                        if (allowedKeys.includes(e.key)) return;
+
+                        // if it's a single printable character and not a digit, block it
+                        if (e.key.length === 1 && !/^[0-9]$/.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                      onPaste={(e: React.ClipboardEvent<HTMLInputElement>) => {
+                        e.preventDefault(); // we'll handle paste manually
+                        const paste = e.clipboardData.getData('text') || '';
+                        const digits = paste.replace(/\D/g, '');
+                        if (!digits) return; // nothing numeric to paste
+
+                        const input = e.currentTarget;
+                        const current = input.value || '';
+                        // compute how many chars we can accept (respect maxLength)
+                        const max = 2;
+                        const available = Math.max(0, max - current.length);
+
+                        const toInsert = digits.slice(0, available);
+                        // create new value
+                        const newValue = (current + toInsert).slice(0, max);
+
+                        // call your handleChange safely (no event pooling issues)
+                        handleChange({
+                          target: { name: 'experience', value: newValue }
+                        } as unknown as ChangeEvent<HTMLInputElement | HTMLSelectElement>);
+                      }}
+                      onChange={(e) => {
+                        // defensive: in case some non-digit slipped in (edge cases), normalize before calling
+                        const onlyNums = e.target.value.replace(/\D/g, '').slice(0, 2);
+                        handleChange({
+                          target: { name: 'experience', value: onlyNums }
+                        } as unknown as ChangeEvent<HTMLInputElement | HTMLSelectElement>);
+                      }}
+                      className="w-16 px-4 py-3 focus:outline-none text-black rounded-lg border-2 border-gray-500/40"
+                    />
+
+
+                  {errors.experience && (
+                    <span className="text-red-500 text-sm">{errors.experience}</span>
+                  )}
+                </div>
+
+                {/* <FormField 
+                title="Years of experience"
+                type="text" name="experience" 
+                placeholder="How long have you been a doctor?" 
+                onChange={handleChange} 
+                err={errors.experience}
+                extra='max-w-xs' /> */}
               </div>
-              <div className='flex flex-col gap-2
-              md:w-[300px] xs:w-full'>
-                <div className="self-stretch flex-col justify-start items-start gap-[5px] flex">
-                  <div className="self-stretch text-[#3d5a80] text-base font-normal font-['Inter'] tracking-wide">Specialty</div>
-                  <SearchBar
-                    value={formData.specialty}
-                    onChange={handleSpecialtyChange}
-                    endpoint="/all_specialties/"
-                    placeholder="Search for a specialty"
-                  />
-                  {errors.specialty && <span className="text-red-500 text-sm">{errors.specialty}</span>}
-                </div>
-                <div className="self-stretch flex-col justify-start items-start gap-[5px] flex">
-                  <div className="self-stretch text-[#3d5a80] text-base font-normal font-['Inter'] tracking-wide">Clinic</div>
-                  <SearchBar
-                    value={formData.clinic}
-                    onChange={handleClinicChange}
-                    endpoint="/all_clinics/"
-                    placeholder="Search for a clinic"
-                  />
-                  {errors.clinic && <span className="text-red-500 text-sm">{errors.clinic}</span>}
-                </div>
-                <div className="self-stretch flex-col justify-start items-start gap-[5px] flex">
-                  <div className="self-stretch text-[#3d5a80] text-base font-normal font-['Inter'] tracking-wide">Ensurance (optional)</div>
-                  <SearchBar
-                    value={formData.ensurance}
-                    onChange={handleEnsuranceChange}
-                    endpoint="/all_ensurances/"
-                    placeholder="Search for an ensurance (optional)"
-                  />
-                  {errors.ensurance && <span className="text-red-500 text-sm">{errors.ensurance}</span>}
-                </div>
-                <FormField title="Exequatur" type="text" name="exequatur" placeholder="0000-000" onChange={handleChange} err={errors.exequatur} />
-                <FormField title="Years of experience" type="text" name="experience" placeholder="How long have you been a doctor?" onChange={handleChange} err={errors.experience} />
-              </div>
-            </div>
             <button
               type="submit"
               disabled={loading}
-              className="p-2.5 px-4 mt-6 self-stretch bg-[#ee6c4d] rounded-[10px] border border-[#ee6c4d] justify-center items-center gap-2.5 inline-flex"
+              className="p-2.5 px-4 mt-6 self-stretch bg-[#060648] rounded-[10px] justify-center items-center gap-2.5 inline-flex cursor-pointer"
             >
-              <div className="text-white text-base font-['Inter'] tracking-wide">{loading ? 'Creating account...' : 'Sign Up'}</div>
+              {loading ? 'Creating account...' : 'Sign Up'}
             </button>
           </div>
-        </div>
+
       </form>
     </div>
   );

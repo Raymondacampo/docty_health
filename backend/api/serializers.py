@@ -7,6 +7,7 @@ from .models import Doctor, Clinic, Specialty, Ensurance, Review, Schedule, Week
 from datetime import timedelta
 User = get_user_model()
 import logging
+from django.db import transaction
 logger = logging.getLogger(__name__)
 
 class PatientSerializer(serializers.ModelSerializer):
@@ -166,7 +167,7 @@ class SignupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'email', 'password', 'confirm_password')
+        fields = ('first_name', 'last_name', 'email', 'password', 'confirm_password', 'gender', 'born_date')
         extra_kwargs = {
             'first_name': {'required': True},
             'last_name': {'required': True},
@@ -195,7 +196,9 @@ class SignupSerializer(serializers.ModelSerializer):
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
             email=validated_data['email'],
-            password=validated_data['password']
+            password=validated_data['password'],
+            gender=validated_data['gender'],  # Set gender
+            born_date=validated_data.get('date_of_birth')  # Set born_date if provided
         )
         return user
     
@@ -205,120 +208,90 @@ class DoctorSignupSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     confirm_password = serializers.CharField(write_only=True, required=True)
+    born_date = serializers.DateField(required=False, allow_null=True)
     exequatur = serializers.CharField(max_length=20, required=True)
-    experience = serializers.IntegerField(required=True)
-    specialties = serializers.ListField(child=serializers.IntegerField(), required=False)
-    clinics = serializers.ListField(child=serializers.IntegerField(), required=False)
-    specialties = serializers.ListField(
-        child=serializers.IntegerField(),
-        required=True,
-        min_length=1,
-        max_length=1,
-        error_messages={
-            'min_length': 'Exactly one specialty is required.',
-            'max_length': 'Only one specialty can be selected during signup.',
-            'required': 'Specialty is required.'
-        }
-    )
-    clinics = serializers.ListField(
-        child=serializers.IntegerField(),
-        required=True,
-        min_length=1,
-        max_length=1,
-        error_messages={
-            'min_length': 'Exactly one clinic is required.',
-            'max_length': 'Only one clinic can be selected during signup.',
-            'required': 'Clinic is required.'
-        }
-    )
-    ensurances = serializers.ListField(
-        child=serializers.IntegerField(),
-        required=False,
-        max_length=1,
-        default=[],
-        error_messages={
-            'max_length': 'Only one ensurance can be selected during signup.'
-        }
-    )
-    sex = serializers.ChoiceField(choices=[('M', 'Male'), ('F', 'Female')], required=True)  # New field
+    experience = serializers.IntegerField(required=True, min_value=0)
+    # Use PrimaryKeyRelatedField so validated_data will contain actual model instances
+    specialties = serializers.PrimaryKeyRelatedField(many=True, queryset=Specialty.objects.all())
+    clinics = serializers.PrimaryKeyRelatedField(many=True, queryset=Clinic.objects.all())
+    ensurances = serializers.PrimaryKeyRelatedField(many=True, queryset=Ensurance.objects.all(), required=False, allow_empty=True)
+    sex = serializers.ChoiceField(choices=[('M', 'Male'), ('F', 'Female')], required=True)
+
+    def validate_email(self, value):
+        if User.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError("This email is already in use.")
+        return value
+
+    def validate_exequatur(self, value):
+        if Doctor.objects.filter(exequatur=value).exists():
+            raise serializers.ValidationError("This exequatur is already in use.")
+        return value
 
     def validate(self, attrs):
-        # Ensure passwords match
-        if attrs['password'] != attrs['confirm_password']:
+        # Passwords match
+        if attrs.get('password') != attrs.get('confirm_password'):
             raise serializers.ValidationError({"password": "Password fields didn't match."})
-        
-        # Check for unique email
-        if User.objects.filter(email__iexact=attrs['email']).exists():
-            raise serializers.ValidationError({"email": "This email is already in use"})
-        
-        # Check for unique exequatur
-        if Doctor.objects.filter(exequatur=attrs['exequatur']).exists():
-            raise serializers.ValidationError({"exequatur": "This exequatur is already in use"})
-        
-        # Validate sex (redundant due to ChoiceField, but for clarity)
-        if attrs['sex'] not in ['M', 'F']:
-            raise serializers.ValidationError({"sex": "Sex must be 'M' (Male) or 'F' (Female)"})
-        
-        # Validate specialty existence
-        specialty_ids = attrs.get('specialties', [])
-        if specialty_ids and not Specialty.objects.filter(id=specialty_ids[0]).exists():
-            raise serializers.ValidationError({"specialties": "Selected specialty does not exist."})
 
-        # Validate clinic existence
-        clinic_ids = attrs.get('clinics', [])
-        if clinic_ids and not Clinic.objects.filter(id=clinic_ids[0]).exists():
-            raise serializers.ValidationError({"clinics": "Selected clinic does not exist."})
+        # Ensure exactly one specialty and clinic during signup
+        specialties = attrs.get('specialties', [])
+        clinics = attrs.get('clinics', [])
+        if not specialties or len(specialties) != 1:
+            raise serializers.ValidationError({"specialties": "Exactly one specialty is required during signup."})
+        if not clinics or len(clinics) != 1:
+            raise serializers.ValidationError({"clinics": "Exactly one clinic is required during signup."})
 
-        # Validate ensurance existence (if provided)
-        ensurance_ids = attrs.get('ensurances', [])
-        if ensurance_ids and not Ensurance.objects.filter(id=ensurance_ids[0]).exists():
-            raise serializers.ValidationError({"ensurances": "Selected ensurance does not exist."})
-        
+        # ensurances may be empty or have up to 1 item (if you want to enforce max 1)
+        ensurances = attrs.get('ensurances', [])
+        if ensurances and len(ensurances) > 1:
+            raise serializers.ValidationError({"ensurances": "Only one ensurance can be selected during signup."})
+
         return attrs
 
     def create(self, validated_data):
-        # Remove confirm_password as it's not needed for user creation
-        validated_data.pop('confirm_password')
-        
-        # Extract doctor-specific fields
+        # Remove confirm_password
+        validated_data.pop('confirm_password', None)
+
+        # Extract m2m instances
+        specialties = validated_data.pop('specialties', [])
+        clinics = validated_data.pop('clinics', [])
+        ensurances = validated_data.pop('ensurances', [])
+        born_date = validated_data.pop('born_date', None)
+
         exequatur = validated_data.pop('exequatur')
         experience = validated_data.pop('experience')
-        specialties = validated_data.pop('specialties', None)
-        if specialties is None:
-            logger.error("Missing 'specialties' in validated_data: %s", validated_data)
-            raise serializers.ValidationError({"specialties": "This field is required and was not provided."})
-        clinics = validated_data.pop('clinics', None)
-        if clinics is None:
-            logger.error("Missing 'specialties' in validated_data: %s", validated_data)
-            raise serializers.ValidationError({"specialties": "This field is required and was not provided."})
-        ensurances = validated_data.pop('ensurances', [])
-        sex = validated_data.pop('sex')  # Extract sex
+        sex = validated_data.pop('sex')
 
-        # Create the User object
-        user = User.objects.create_user(
-            username=f"user_{uuid.uuid4().hex[:10]}",
-            first_name=validated_data['first_name'],
-            last_name=validated_data['last_name'],
-            email=validated_data['email'],
-            password=validated_data['password']
-        )
+        # other user fields
+        first_name = validated_data.pop('first_name')
+        last_name = validated_data.pop('last_name')
+        email = validated_data.pop('email')
+        password = validated_data.pop('password')
 
-        # Create the Doctor object linked to the user
-        doctor = Doctor.objects.create(
-            user=user,
-            exequatur=exequatur,
-            experience=experience,
-            sex=sex  # Include sex
-        )
+        # Atomic creation so partial objects aren't left on failure
+        with transaction.atomic():
+            user = User.objects.create_user(
+                username=f"user_{uuid.uuid4().hex[:10]}",
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                password=password,
+                born_date=born_date
+            )
 
-        # Set specialties, clinics, and ensurances (each as a single item)
-        doctor.specialties.set(specialties)
-        doctor.clinics.set(clinics)
-        if ensurances:
-            doctor.ensurances.set(ensurances)
+            doctor = Doctor.objects.create(
+                user=user,
+                exequatur=exequatur,
+                experience=experience,
+                sex=sex
+            )
+
+            # specialties/clinics/ensurances are lists of model instances (PrimaryKeyRelatedField)
+            doctor.specialties.set(specialties)
+            doctor.clinics.set(clinics)
+            if ensurances:
+                doctor.ensurances.set(ensurances)
 
         return user
-
 class MinimalUserSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True)  # Extra field for password confirmation
 

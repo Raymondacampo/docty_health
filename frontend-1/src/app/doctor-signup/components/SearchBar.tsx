@@ -76,7 +76,7 @@ export default function SearchBar({
         onChange={handleInputChange}
         onFocus={() => setIsOpen(true)}
         onBlur={() => setTimeout(() => setIsOpen(false), 100)}
-        className={`px-4 text-sm py-3 w-full h-full focus:outline-none ${round}`}
+        className={`w-full px-4 py-3 focus:outline-none text-black rounded-lg border-2 border-gray-500/40 justify-start items-center gap-2.5 inline-flex `}        
         disabled={loading}
       />
       {isOpen && !loading && filteredItems.length > 0 && (
