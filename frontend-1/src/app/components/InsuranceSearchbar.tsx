@@ -88,8 +88,14 @@ export default function InsuranceSearchBar({ value, onChange, round }: Insurance
             animate={{ height: 'auto', opacity: 1, scaleY: 1 }}
             exit={{ height: 0, opacity: 0, scaleY: 0 }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
-            className="text-black text-sm absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
-          >          
+            className="text-black text-sm absolute z-70 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
+          >        
+            <li
+              onMouseDown={() => handleOptionClick("any")}
+              className="px-2 py-3 hover:bg-gray-100 cursor-pointer"
+            >
+              No ensurance
+            </li>  
             {filteredInsurances.map((Insurance) => (
               <li
                 key={Insurance.id}

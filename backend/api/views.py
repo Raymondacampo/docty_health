@@ -797,13 +797,40 @@ class DoctorSearchView(APIView):
         specialty = request.query_params.get('specialty')
         ensurance = request.query_params.get('ensurance')
         location_name = request.query_params.get('location')  # e.g., "Santo Domingo, Distrito Nacional"
-        latitude = request.query_params.get('latitude')
-        longitude = request.query_params.get('longitude')
-        radius = request.query_params.get('radius', 10)  # Default 10 km
         sex = request.query_params.get('sex')
         takes_dates = request.query_params.get('takes_dates')
+        appointment_type = request.query_params.get('appointment_type')
         experience_min = request.query_params.get('experience_min')
+        logger.info("--- Received Query Parameters ---")
+        logger.info(request.query_params)
+        logger.info("---------------------------------")        # logger.info(f"Search parameters received: specialty={specialty}, ensurance={ensurance}, location={location_name}, sex={sex}, takes_dates={takes_dates}, experience_min={experience_min} ")        
+        doctor_filters = {}
+        if specialty:
+            doctor_filters['specialties__name__icontains'] = specialty
+        if ensurance and ensurance != 'any':
+            doctor_filters['ensurances__name__icontains'] = ensurance
+        if location_name:
+            doctor_filters['location_name__icontains'] = location_name
+        if experience_min and experience_min != 'any':
+            try:
+                doctor_filters['experience__gte'] = int(experience_min)
+            except ValueError:
+                pass
+        if sex and sex != 'both':
+            doctor_filters['sex__in'] = sex
+        else:
+            doctor_filters['sex__in'] = ['M', 'F']
 
+        if takes_dates and takes_dates in ['true']:
+            doctor_filters['taking_dates'] = takes_dates in ['true']
+        if appointment_type and appointment_type in ['virtual', 'in_person']:
+            if appointment_type == 'virtual':
+                doctor_filters['takes_virtual'] = True
+            elif appointment_type == 'in_person':
+                doctor_filters['takes_in_person'] = True
+
+        doctors = Doctor.objects.filter(**doctor_filters)
+        logger.info(f"Filtered doctors based on initial parameters: {doctor_filters}")
         # Filter by city/state if location is provided
         if location_name:
             try:
@@ -838,25 +865,25 @@ class DoctorSearchView(APIView):
             elif takes_dates == 'in_person':
                 queryset = queryset.filter(taking_dates=True, takes_in_person=True)
 
-        # Geospatial filter if lat/lon provided
-        if latitude and longitude:
-            try:
-                lat = float(latitude)
-                lon = float(longitude)
-                radius_km = float(radius)
-                user_point = Point(lon, lat, srid=4326)
-                queryset = queryset.filter(
-                    clinics__location__distance_lte=(user_point, D(km=radius_km))
-                ).annotate(
-                    distance=Distance('clinics__location', user_point)
-                ).order_by('distance')
-            except ValueError:
-                return Response({"error": "Invalid latitude, longitude, or radius"}, status=status.HTTP_400_BAD_REQUEST)
+        # # Geospatial filter if lat/lon provided
+        # if latitude and longitude:
+        #     try:
+        #         lat = float(latitude)
+        #         lon = float(longitude)
+        #         radius_km = float(radius)
+        #         user_point = Point(lon, lat, srid=4326)
+        #         queryset = queryset.filter(
+        #             clinics__location__distance_lte=(user_point, D(km=radius_km))
+        #         ).annotate(
+        #             distance=Distance('clinics__location', user_point)
+        #         ).order_by('distance')
+        #     except ValueError:
+        #         return Response({"error": "Invalid latitude, longitude, or radius"}, status=status.HTTP_400_BAD_REQUEST)
 
         queryset = queryset.distinct()
 
         paginator = self.pagination_class()
-        page = paginator.paginate_queryset(queryset, request)
+        page = paginator.paginate_queryset(doctors, request)
         serializer = DoctorSerializer(page, many=True)
 
         return paginator.get_paginated_response(serializer.data)

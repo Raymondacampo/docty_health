@@ -4,32 +4,28 @@ import SpecialtySearchBar from "./SpecialtySearchbar";
 import CityStateSearchBar from "./CityStateSearchbar";
 import { useRouter } from "next/navigation";
 import { FaSearch } from "react-icons/fa";
-import { HeartIcon, PuzzlePieceIcon, CloudIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import InsuranceSearchBar from "./InsuranceSearchbar";
-// Define component props interface for AccessButton
-interface AccessButtonProps {
-  specialty: string;
-  icon: React.ReactNode;
-}
+
 
 export default function SearchBar({small}: {small?: boolean}) {
     const router = useRouter();
     const [specialty, setSpecialty] = useState<string>("");
     const [location, setLocation] = useState<string>("");
-    const [insurances, setInsurance] = useState<string>("");
-    const [phoneMenu, setPhoneMenu] = useState<boolean>(false);
-    const [error, setError] = useState<boolean>(false);
+    const [insurance, setInsurance] = useState<string>("");
+    // const [phoneMenu, setPhoneMenu] = useState<boolean>(false);
+    // const [error, setError] = useState<boolean>(false);
 
     const handleSearch = () => {
         if (!specialty) {
-        setError(true);
+        // setError(true);
         return;
         }
-        setError(false);
+        // setError(false);
         if (specialty || location) {
         const params = new URLSearchParams();
         if (specialty) params.append('specialty', specialty);
         if (location) params.append('location', location);
+        if (insurance) params.append('ensurance', insurance);
         router.push(`/search?${params.toString()}`);
         }
     };
@@ -37,7 +33,7 @@ export default function SearchBar({small}: {small?: boolean}) {
     const handleSpecialtyChange = (newSpecialty: string) => {
         setSpecialty(newSpecialty);
         if (newSpecialty) {
-        setError(false);
+        // setError(false);
         }
     };
 
@@ -65,7 +61,7 @@ export default function SearchBar({small}: {small?: boolean}) {
             </div>
             <div className="lg:w-[30.6%] h-17 border-b-1 border-gray-200/50 lg:border-l-2 ">
                 <InsuranceSearchBar
-                    value={insurances}
+                    value={insurance}
                     onChange={setInsurance}
                     round="font-semibold"
                 />          

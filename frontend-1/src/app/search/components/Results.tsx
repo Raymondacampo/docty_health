@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { publicApiClient } from "@/app/utils/api";
 import Pagination from "@/app/components/Pagination";
 import Doctor from "./Doctor";
-import doctor_profile from "@/assets/images/doctor_profile.png";
+import dclogo from '@/assets/images/dclogo.png';
+import Loading from "@/app/components/LoadingComponent";
 
 interface FiltersProps {
   sortBy: string;
@@ -19,7 +20,7 @@ const Filters: React.FC<FiltersProps> = ({ sortBy, setSortBy, onFiltersToggle })
     <div className="w-full flex items-center justify-between mt-4">
         <button
         onClick={onFiltersToggle}
-        className="px-3 py-1.5 bg-[#293241] rounded-[5px] border border-[#293241] text-white text-sm tracking-wide xl:hidden flex items-center gap-2"
+        className="px-3 py-1.5 bg-[#293241] rounded-sm cursor-pointer border border-[#293241] text-white text-sm tracking-wide xl:hidden flex items-center gap-2"
       >
         Filters
         <svg
@@ -42,10 +43,10 @@ const Filters: React.FC<FiltersProps> = ({ sortBy, setSortBy, onFiltersToggle })
         <select
           value={sortBy}
           onChange={handleSortChange}
-          className="text-black border border-gray-300 p-1 rounded-md text-xs tracking-wide bg-transparent focus:outline-none"
+          className="text-black border cursor-pointer border-gray-300 p-1 rounded-md text-xs tracking-wide bg-transparent focus:outline-none"
         >
-          <option value="relevance">By relevance</option>
-          <option value="expertise">By expertise</option>
+          <option className="cursor-pointer" value="relevance">By relevance</option>
+          <option className="cursor-pointer" value="expertise">By expertise</option>
         </select>
       </div>
     </div>
@@ -57,7 +58,8 @@ interface DoctorsResultsProps {
   location: string;
   ensurance: string;
   sex: string;
-  takes_dates: string;
+  takes_dates: boolean;
+  appointmentType?: string | null;
   experienceValue: string;
   onFiltersToggle: () => void;
   onCountChange: (count: number) => void;
@@ -69,6 +71,7 @@ export default function DoctorsResults({
   ensurance,
   sex,
   takes_dates,
+  appointmentType,
   experienceValue,
   onFiltersToggle,
   onCountChange,
@@ -83,161 +86,20 @@ export default function DoctorsResults({
     const fetchDoctors = async () => {
       setLoading(true);
       try {
-        const params = new URLSearchParams({
-          ...(specialty && { specialty }),
-          ...(location && { location }),
-          ...(ensurance && { ensurance }),
-          ...(sex && { sex }),
-          ...(takes_dates && { takes_dates }),
-          ...(experienceValue !== "any" && { experience_min: experienceValue }),
-          page: currentPage.toString(),
-        });
+        const paramsObj: Record<string, string> = {};
+        if (specialty) paramsObj.specialty = specialty;
+        if (location) paramsObj.location = location;
+        if (ensurance) paramsObj.ensurance = ensurance;
+        if (sex) paramsObj.sex = sex;
+        if (takes_dates) paramsObj.takes_dates = "true";
+        if (appointmentType) paramsObj.appointment_type = appointmentType;
+        if (experienceValue !== "any") paramsObj.experience_min = experienceValue;
+        paramsObj.page = currentPage.toString();
+        const params = new URLSearchParams(paramsObj);
+        console.log("Fetching doctors with params:", params.toString());
         const response = await publicApiClient.get(`/doctors/search/?${params.toString()}`);
-        const data = {
-            "count": 6,
-            "next": null,
-            "previous": null,
-            "results": [
-                {
-                    "id": 2,
-                    "user": {
-                        "id": 4,
-                        "first_name": "El pepe",
-                        "last_name": "Bolenos asynol",
-                        "email": "Elpepe@gmail.com",
-                        "profile_picture": doctor_profile.src
-                    },
-                    "exequatur": "374628",
-                    "experience": 12,
-                    "sex": "M",
-                    "taking_dates": true,
-                    "takes_virtual": false,
-                    "takes_in_person": false,
-                    "description": "In the sun-drenched coastal city of Santo Domingo, where the pulse of the Caribbean meets the rhythm of modern medicine, Dr. Raymond Acampo Sandoval stands as a beacon of compassion and precision in the world of cardiology. Born under the whispering palms of a Dominican village, Raymond's early life was a tapestry woven from the threads of family, tradition, and an unwavering commitment to healing. With over 19 years of experience, he has become a trusted figure in his community, known for his holistic approach to patient care and his dedication to advancing the field of cardiology.",
-                    "specialties": [
-                        {
-                            "id": 1,
-                            "name": "Cardiologist"
-                        }
-                    ],
-                    "clinics": [
-                        {
-                            "id": 2,
-                            "name": "Modern Medical Center",
-                            "city": "Santo Domingo",
-                            "state": "Distrito Nacional",
-                            "location": {
-                                "latitude": 18.475941199999998,
-                                "longitude": -69.9575012
-                            },
-                            "address": "Avenida Charles Sumner Esq, C. Jose Lopez 5, Santo Domingo, Dominican Republic"
-                        }
-                    ],
-                    "ensurances": [
-                        {
-                            "id": 1,
-                            "name": "senasa",
-                            "logo": "/media/ensurance_logos/senasa.jpg"
-                        }
-                    ],
-                    "average_rating": 4.0,
-                    "review_count": 1,
-                    "has_availability": true,
-                    "is_favorited": false,
-                    "cities": [
-                        "Santo Domingo"
-                    ]
-                },
-                {
-                    "id": 4,
-                    "user": {
-                        "id": 8,
-                        "first_name": "pepe",
-                        "last_name": "gonzales marquinez",
-                        "email": "elpepesito@gmail.com",
-                        "profile_picture": doctor_profile.src
-                    },
-                    "exequatur": "967897",
-                    "experience": 19,
-                    "sex": "M",
-                    "taking_dates": false,
-                    "takes_virtual": false,
-                    "takes_in_person": false,
-                    "description": "In the sun-drenched coastal city of Santo Domingo, where the pulse of the Caribbean meets the rhythm of modern medicine, Dr. Raymond Acampo Sandoval stands as a beacon of compassion and precision in the world of cardiology. Born under the whispering palms of a Dominican village, Raymond's early life was a tapestry woven from the threads of family, tradition, and an unwavering commitment to healing. With over 19 years of experience, he has become a trusted figure in his community, known for his holistic approach to patient care and his dedication to advancing the field of cardiology.",
-                    "specialties": [
-                        {
-                            "id": 1,
-                            "name": "Cardiologist"
-                        }
-                    ],
-                    "clinics": [],
-                    "ensurances": [
-                        {
-                            "id": 1,
-                            "name": "senasa",
-                            "logo": "/media/ensurance_logos/senasa.jpg"
-                        }
-                    ],
-                    "average_rating": 5.0,
-                    "review_count": 1,
-                    "has_availability": false,
-                    "is_favorited": false,
-                    "cities": []
-                },
-                {
-                    "id": 3,
-                    "user": {
-                        "id": 5,
-                        "first_name": "El pepe",
-                        "last_name": "Bolenos asynol",
-                        "email": "Elpepe@gmail.com",
-                        "profile_picture": doctor_profile.src
-                    },
-                    "exequatur": "374628",
-                    "experience": 12,
-                    "sex": "M",
-                    "taking_dates": true,
-                    "takes_virtual": false,
-                    "takes_in_person": false,
-                    "description":null,
-                    "specialties": [
-                        {
-                            "id": 1,
-                            "name": "Cardiologist"
-                        }
-                    ],
-                    "clinics": [
-                        {
-                            "id": 2,
-                            "name": "Modern Medical Center",
-                            "city": "Santo Domingo",
-                            "state": "Distrito Nacional",
-                            "location": {
-                                "latitude": 18.475941199999998,
-                                "longitude": -69.9575012
-                            },
-                            "address": "Avenida Charles Sumner Esq, C. Jose Lopez 5, Santo Domingo, Dominican Republic"
-                        }
-                    ],
-                    "ensurances": [
-                        {
-                            "id": 1,
-                            "name": "senasa",
-                            "logo": "/media/ensurance_logos/senasa.jpg"
-                        }
-                    ],
-                    "average_rating": 4.0,
-                    "review_count": 1,
-                    "has_availability": true,
-                    "is_favorited": false,
-                    "cities": [
-                        "Santo Domingo"
-                    ]
-                },
-        ]};
-        
-
-        let results = data.results;
+        console.log("API Response:", response.data);
+        let results = response.data.results;
 
         if (sortBy === "relevance") {
           results.sort((a: any, b: any) => b.average_rating - a.average_rating);
@@ -245,9 +107,9 @@ export default function DoctorsResults({
           results.sort((a: any, b: any) => b.experience - a.experience);
         }
 
-        onCountChange(data.count);
+        onCountChange(response.data.count);
         setDoctors(results);
-        setTotalPages(Math.ceil(data.count / 6));
+        setTotalPages(Math.ceil(response.data.count / 6));
       } catch (error) {
         console.error("Error fetching doctors:", error);
         setDoctors([]);
@@ -260,20 +122,23 @@ export default function DoctorsResults({
     }
     fetchDoctors();
 
-  },[]);
-//   [specialty, location, ensurance, sex, takes_dates, experienceValue, currentPage, sortBy, onCountChange]);
+  },[specialty, location, ensurance, sex, takes_dates, appointmentType, experienceValue, currentPage, sortBy, onCountChange]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
+  if (loading) {
+    return <Loading text="Loading doctors..." />;
+  }
+
   return (
-    <div className="flex-col xl:order-1 order-2 justify-start items-center lg:px-8 gap-4 inline-flex w-full">
-      <div className="xl:w-full xs:w-[90%] max-w-[95%]">
+    <div className="flex-col mx-auto xl:order-1 order-2 justify-start items-center lg:px-8 gap-4 inline-flex w-full">
+      <div className="lg:w-full w-[95%]">
       <Filters sortBy={sortBy} setSortBy={setSortBy} onFiltersToggle={onFiltersToggle} />
       </div>
       
-      <div className="gap-4 flex flex-col w-full lg:px-0 sm:px-4 ">
+      <div className="gap-4 flex justify-center flex-col w-full lg:px-0 sm:px-4 ">
         {loading ? (
         //   <LoadingComponent isLoading={loading} />
         <h1>Loading...</h1>
@@ -284,7 +149,7 @@ export default function DoctorsResults({
             <div className="flex flex-col justify-center items-center gap-1">
               <div className="text-[#060648] text-2xl font-semibold">No doctors found</div>
               <p className="text-[#060648]">Try adjusting your search criteria.</p>
-              <img src="/images/dclogo.png" alt="No results" className="h-[75px] w-[75px] mt-4" />
+              <img src={dclogo.src} alt="No results" className="h-[75px] w-[75px] mt-4" />
             </div>
           </div>
         )}        

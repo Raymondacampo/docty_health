@@ -1,10 +1,8 @@
 import React from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-// import { getApiImgUrl } from "@/utils/api";
-import { UserCircleIcon } from '@heroicons/react/24/solid';
-import { UserSquareIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { UserSquare2Icon } from "lucide-react";
 import { CalendarIcon } from "@heroicons/react/24/outline";
+import Link from "next/link";
 
 interface Specialty {
   name: string;
@@ -47,19 +45,17 @@ const Doctor: React.FC<DoctorProps> = ({ doctor }) => {
   const inPerson = doctor.clinics.length > 0;
   const averageRating = doctor.average_rating || 0;
   const reviewCount = doctor.review_count || 0;
-  const hasAvailability = doctor.has_availability;
 
   const handleViewProfile = () => {
     // router.push(`/profile/${doctor.id}`);
         router.push(`/profile`);
 
   };
-  console.log(doctor)
 
   return (
-    <div className="w-full  p-8 relative rounded-lg bg-white shadow-[0px_4px_4px_0px_rgba(0,0,0,0.1)] justify-between items-center flex  
+    <div className="w-full  p-8 relative rounded-lg bg-white shadow-sm justify-between items-center flex  
     lg:mx-0 lg:ml-4
-    max-w-[95%] flex-col gap-4 mx-auto">
+    lg:max-w-[95%] flex-col gap-4 mx-auto">
         {/* RIBBON */}
         <div className="self-stretch justify-between items-start gap-6 inline-flex flex-col">
         <div className="items-start flex gap-4">
@@ -73,7 +69,7 @@ const Doctor: React.FC<DoctorProps> = ({ doctor }) => {
           )}
             <div className="flex flex-col text-black gap-2.5">
                 {/* RATING */}
-                <div className="items-end gap-2 flex py-1 absolute top-8 right-8">
+                <div className="items-end gap-2 flex py-1 absolute top-0 sm:top-8 right-8">
                         <div className="h-auto justify-center items-center gap-1 flex">
                             <svg width="17" height="16" viewBox="0 0 15 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M7.4999 11.24L3.8699 13.432C3.76324 13.4846 3.66424 13.506 3.5729 13.496C3.48224 13.4853 3.3939 13.454 3.3079 13.402C3.22124 13.3486 3.1559 13.2733 3.1119 13.176C3.0679 13.0786 3.0639 12.9723 3.0999 12.857L4.0659 8.74695L0.870902 5.97695C0.780902 5.90362 0.721569 5.81595 0.692902 5.71395C0.664236 5.61195 0.670569 5.51429 0.711903 5.42095C0.753236 5.32762 0.808236 5.25095 0.876902 5.19095C0.946236 5.13295 1.03957 5.09362 1.1569 5.07295L5.3729 4.70495L7.0169 0.812953C7.06224 0.702953 7.12757 0.62362 7.2129 0.574953C7.29824 0.526286 7.3939 0.501953 7.4999 0.501953C7.6059 0.501953 7.7019 0.526286 7.7879 0.574953C7.8739 0.62362 7.9389 0.702953 7.9829 0.812953L9.6269 4.70495L13.8419 5.07295C13.9599 5.09295 14.0536 5.13262 14.1229 5.19195C14.1922 5.25062 14.2476 5.32695 14.2889 5.42095C14.3296 5.51429 14.3356 5.61195 14.3069 5.71395C14.2782 5.81595 14.2189 5.90362 14.1289 5.97695L10.9339 8.74695L11.8999 12.857C11.9372 12.971 11.9336 13.077 11.8889 13.175C11.8442 13.273 11.7786 13.3483 11.6919 13.401C11.6066 13.4543 11.5182 13.486 11.4269 13.496C11.3362 13.506 11.2376 13.4846 11.1309 13.432L7.4999 11.24Z" fill="#ee6c4d"/>
@@ -94,25 +90,18 @@ const Doctor: React.FC<DoctorProps> = ({ doctor }) => {
                     <div className="self-stretch flex-col justify-start items-start flex gap-2">
                         <div className="flex flex-col gap-1">
                             <div className="self-stretch border-b border-[#293241]/0 justify-between items-start inline-flex overflow-hidden">
-                                <button onClick={handleViewProfile} className="text-[#293241] text-2xl font-bold tracking-wide">
+                                <button onClick={handleViewProfile} className="text-[#293241] text-start text-xl sm:text-2xl font-bold tracking-wide">
                                     Dr. {doctor.user.first_name} {doctor.user.last_name}
                                 </button>
                             </div>
                             <div className="self-stretch justify-start items-center gap-[9px] inline-flex">
-                                <div className="font-semibold tracking-wide">{specialties.toUpperCase()} </div>
+                                <div className="font-semibold tracking-wide text-sm">{specialties.toUpperCase()} </div>
                             </div>                            
                         </div>
 
                     {takingDates && (
                         <div className="justify-start items-center gap-2.5 inline-flex">
                         <CalendarIcon className="w-4 h-4 font-bold text-[#3D5A80]"/>
-                        {/* <div data-svg-wrapper className="relative">
-                            <svg width="12" height="14" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M4 10.5L9 5.5M4 5.5L9 10.5" stroke="#3D5A80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M1 2.5C1 1.67157 1.67157 1 2.5 1H9.5C10.3284 1 11 1.67157 11 2.5V4.08579C11 4.5 10.6642 4.83579 10.25 4.83579H1.75C1.33579 4.83579 1 4.5 1 4.08579V2.5Z" stroke="#3D5A80" strokeWidth="1.5"/>
-                            <path d="M1 4.83594L1.3456 10.9691C1.41935 12.1709 2.41168 13.0859 3.61596 13.0859H8.38404C9.58832 13.0859 10.5806 12.1709 10.6544 10.9691L11 4.83594" stroke="#3D5A80" strokeWidth="1.5"/>
-                            </svg>
-                        </div> */}
                         <div className="w-[97px] h-[18px] text-[#3d5a80] text-sm font-normal tracking-wide whitespace-nowrap">Taking appointments</div>
                         </div>
                     )}
@@ -153,28 +142,24 @@ const Doctor: React.FC<DoctorProps> = ({ doctor }) => {
                 </div>
         </div>
         {/* DESCRIPTION */}
-        <div>
-            <p
-            className="
-            line-clamp-2          // Default: 2 lines on small screens
-            md:line-clamp-3       // 3 lines on medium screens and up
-            text-sm md:text-base  // Adjust font size responsively
-            text-gray-700
-            overflow-hidden
-          ">
+        <div className="flex w-full">
+            <p className="line-clamp-2 text-start md:line-clamp-3 text-sm md:text-base text-gray-700 overflow-hidden ">
             {doctor.description ? doctor.description : "No description available."}
             </p>
         </div>
         {/* BUTTONS */}
-        <div className="flex flex-col justify-center 
+        <div className="flex flex-col w-full justify-center 
         sm:flex-col sm:w-auto sm:border-none sm:gap-2.5 
         xs:flex-row xs:flex-wrap xs:w-full xs:border-t xs:pt-2 xs:gap-x-4 xs:gap-y-2">
+          <Link href={`/doctor/${doctor.id}`}>
             <button
             onClick={handleViewProfile}
-            className=" py-1.5 px-16 hover:bg-[#060648]/85 bg-[#060648] rounded-md justify-center items-center gap-2.5 bottom-0 inline-flex sm:w-auto w-full"
+            className="cursor-pointer py-1.5 px-16 hover:bg-[#060648]/85 bg-[#060648] rounded-md justify-center items-center gap-2.5 bottom-0 inline-flex  w-full
+            sm:w-auto"
             >
             <span className="text-white font-bold text-lg text-nowrap tracking-wide">View profile</span>
-            </button>       
+            </button>    
+          </Link>   
         </div>
 
     </div>

@@ -88,7 +88,7 @@ export default function SpecialtySearchBar({ value, onChange, round }: Specialty
             animate={{ height: 'auto', opacity: 1, scaleY: 1 }}
             exit={{ height: 0, opacity: 0, scaleY: 0 }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
-            className="text-black text-sm absolute w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
+            className="text-black text-sm absolute z-70 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
           >          
             {filteredSpecialties.map((specialty) => (
               <li
