@@ -45,7 +45,7 @@ export default function SearchBar({small}: {small?: boolean}) {
             Agenda tu cita con los doctores que necesites</h1>
         <div className="w-full flex flex-col 
         lg:bg-white lg:border-2 lg:border-black lg:rounded-lg lg:flex-row lg:h-18 lg:py-0 ">
-            <div className="lg:w-[30.6%] h-17 lg:border-none border-b-1 border-gray-200/50">
+            <div className="lg:w-[30.6%]  lg:border-none border-b-1 border-gray-200/50">
                 <SpecialtySearchBar
                     value={specialty}
                     onChange={handleSpecialtyChange}

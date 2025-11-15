@@ -69,18 +69,19 @@ export default function SpecialtySearchBar({ value, onChange, round }: Specialty
   };
 
   return (
-    <div className="w-full h-full relative text-black">
+    <div className={`w-full h-full text-black ` + (isOpen ? 'bg-white fixed w-full h-screen left-0 top-0 z-200' : 'relative')}>
       <input
+        id="specialty-search"
         type="text"
         placeholder="Search for a specialty"
         value={tempValue}
         onChange={handleInputChange}
         onFocus={() => setIsOpen(true)}
         onBlur={handleBlur}
-        className={`pr-4 pl-9 py-2 w-full h-full focus:outline-none ${round}`}
+        className={`pr-4 pl-9 py-2 lg:w-full h-17 focus:outline-none ${round}` + (isOpen ? ' relative' : '')}
         disabled={loading}
       />
-      <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#293241] w-4 h-4 scale-90"/>
+      <FaSearch className="absolute left-3 top-8 transform -translate-y-1/2 text-[#293241] w-4 h-4 scale-90"/>
       {isOpen && !loading && filteredSpecialties.length > 0 && (
         <AnimatePresence>
           <motion.ul
