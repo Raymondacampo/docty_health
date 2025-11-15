@@ -53,9 +53,9 @@ const Doctor: React.FC<DoctorProps> = ({ doctor }) => {
   };
 
   return (
-    <div className="w-full  p-8 relative rounded-lg bg-white shadow-sm justify-between items-center flex  
+    <div className="w-full flex-col gap-4 mx-auto px-4 py-6 relative rounded-lg bg-white shadow-sm justify-between items-center flex  
     lg:mx-0 lg:ml-4
-    lg:max-w-[95%] flex-col gap-4 mx-auto">
+    lg:max-w-[95%] sm:p-8 ">
         {/* RIBBON */}
         <div className="self-stretch justify-between items-start gap-6 inline-flex flex-col">
         <div className="items-start flex gap-4">
@@ -69,7 +69,7 @@ const Doctor: React.FC<DoctorProps> = ({ doctor }) => {
           )}
             <div className="flex flex-col text-black gap-2.5">
                 {/* RATING */}
-                <div className="items-end gap-2 flex py-1 absolute top-0 sm:top-8 right-8">
+                <div className="items-end gap-2 flex py-1 absolute top-0 sm:top-8 right-4">
                         <div className="h-auto justify-center items-center gap-1 flex">
                             <svg width="17" height="16" viewBox="0 0 15 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M7.4999 11.24L3.8699 13.432C3.76324 13.4846 3.66424 13.506 3.5729 13.496C3.48224 13.4853 3.3939 13.454 3.3079 13.402C3.22124 13.3486 3.1559 13.2733 3.1119 13.176C3.0679 13.0786 3.0639 12.9723 3.0999 12.857L4.0659 8.74695L0.870902 5.97695C0.780902 5.90362 0.721569 5.81595 0.692902 5.71395C0.664236 5.61195 0.670569 5.51429 0.711903 5.42095C0.753236 5.32762 0.808236 5.25095 0.876902 5.19095C0.946236 5.13295 1.03957 5.09362 1.1569 5.07295L5.3729 4.70495L7.0169 0.812953C7.06224 0.702953 7.12757 0.62362 7.2129 0.574953C7.29824 0.526286 7.3939 0.501953 7.4999 0.501953C7.6059 0.501953 7.7019 0.526286 7.7879 0.574953C7.8739 0.62362 7.9389 0.702953 7.9829 0.812953L9.6269 4.70495L13.8419 5.07295C13.9599 5.09295 14.0536 5.13262 14.1229 5.19195C14.1922 5.25062 14.2476 5.32695 14.2889 5.42095C14.3296 5.51429 14.3356 5.61195 14.3069 5.71395C14.2782 5.81595 14.2189 5.90362 14.1289 5.97695L10.9339 8.74695L11.8999 12.857C11.9372 12.971 11.9336 13.077 11.8889 13.175C11.8442 13.273 11.7786 13.3483 11.6919 13.401C11.6066 13.4543 11.5182 13.486 11.4269 13.496C11.3362 13.506 11.2376 13.4846 11.1309 13.432L7.4999 11.24Z" fill="#ee6c4d"/>
@@ -102,7 +102,7 @@ const Doctor: React.FC<DoctorProps> = ({ doctor }) => {
                     {takingDates && (
                         <div className="justify-start items-center gap-2.5 inline-flex">
                         <CalendarIcon className="w-4 h-4 font-bold text-[#3D5A80]"/>
-                        <div className="w-[97px] h-[18px] text-[#3d5a80] text-sm font-normal tracking-wide whitespace-nowrap">Taking appointments</div>
+                        <div className="w-[97px] h-[18px] text-[#3d5a80] text-xs sm:text-sm font-normal tracking-wide whitespace-nowrap">Taking appointments</div>
                         </div>
                     )}
                     {doctor.docty_health_system && (
@@ -112,7 +112,7 @@ const Doctor: React.FC<DoctorProps> = ({ doctor }) => {
                             <path d="M7.5 0.46875C3.60547 0.46875 0.46875 3.60547 0.46875 7.5C0.46875 11.3945 3.60547 14.5312 7.5 14.5312C11.3945 14.5312 14.5312 11.3945 14.5312 7.5C14.5312 3.60547 11.3945 0.46875 7.5 0.46875ZM11.25 8.4375H8.4375V11.25H6.5625V8.4375H3.75V6.5625H6.5625V3.75H8.4375V6.5625H11.25V8.4375Z" fill="#3D5A80"/>
                             </svg>
                         </div>
-                        <div className="w-[97px] h-[18px] text-[#3d5a80] text-sm font-normal tracking-wide whitespace-nowrap">DoctyHealth system</div>
+                        <div className="w-[97px] h-[18px] text-[#3d5a80] text-xs sm:text-sm font-normal tracking-wide whitespace-nowrap">DoctyHealth system</div>
                         </div>
                     )}
                     {inPerson && (
@@ -124,7 +124,7 @@ const Doctor: React.FC<DoctorProps> = ({ doctor }) => {
                             <path d="M10.8042 10H11.0555C11.5774 10.0002 12.0812 10.2005 12.4724 10.5635C12.8636 10.9264 13.1152 11.4269 13.1799 11.971L13.459 14.314C13.4841 14.5251 13.4662 14.7393 13.4064 14.9426C13.3467 15.1458 13.2465 15.3334 13.1125 15.4928C12.9785 15.6523 12.8137 15.78 12.6292 15.8674C12.4446 15.9549 12.2445 16 12.042 16H2.42799C2.22554 16 2.02538 15.9549 1.84082 15.8674C1.65626 15.78 1.49151 15.6523 1.3575 15.4928C1.22349 15.3334 1.1233 15.1458 1.06356 14.9426C1.00382 14.7393 0.985914 14.5251 1.01102 14.314L1.28942 11.971C1.35416 11.4267 1.60595 10.9259 1.99743 10.563C2.38891 10.2 2.89312 9.99979 3.41524 10H3.66579" stroke="#3D5A80" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
                         </div>
-                        <div className="w-[68px] h-[19px] text-[#3d5a80] text-sm font-normal tracking-wide">In person</div>
+                        <div className="w-[68px] h-[19px] text-[#3d5a80] text-xs sm:text-sm font-normal tracking-wide">In person</div>
                         </div>
                     )}
                     <div className="self-stretch justify-start items-center gap-3 inline-flex">
@@ -134,7 +134,7 @@ const Doctor: React.FC<DoctorProps> = ({ doctor }) => {
                             <path d="M8.94443 6.19246C8.94443 6.8045 8.68689 7.39147 8.22847 7.82424C7.77005 8.25702 7.14829 8.50015 6.49999 8.50015C5.85168 8.50015 5.22993 8.25702 4.7715 7.82424C4.31308 7.39147 4.05554 6.8045 4.05554 6.19246C4.05554 5.58042 4.31308 4.99345 4.7715 4.56067C5.22993 4.1279 5.85168 3.88477 6.49999 3.88477C7.14829 3.88477 7.77005 4.1279 8.22847 4.56067C8.68689 4.99345 8.94443 5.58042 8.94443 6.19246Z" fill="white" stroke="#3D5A80"/>
                         </svg>
                         </div>
-                        <div className="grow shrink basis-0 text-[#3d5a80] text-sm font-normal tracking-wide">{clinics}</div>
+                        <div className="grow shrink basis-0 text-[#3d5a80] text-xs sm:text-sm font-normal tracking-wide">{clinics}</div>
                     </div>
                     </div>
                 </div>
