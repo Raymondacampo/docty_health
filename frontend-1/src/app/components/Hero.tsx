@@ -33,12 +33,27 @@ export default function Hero() {
         <div className="max-w-4xl lg:max-w-7xl w-full mx-auto py-8 relative z-10">
           <h2 className="text-2xl sm:text-3xl text-black max-w-xl font-semibold pl-2 mb-4">Especialidades más buscadas</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
+          {links.map((link) => (
+            <Link 
+              href={`/search?specialty=${encodeURIComponent(link.title)}`} 
+              key={link.title} 
+              className="no-underline block h-full"
+            >
+              <QuickLink 
+                title={link.title} 
+                specialty={link.specialty} 
+                icon={link.icon} 
+              />
+            </Link>
+          ))}
+        </div>
+          {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
             {links.map((link) => (
               <Link href={`/search?specialty=${encodeURIComponent(link.title)}`} key={link.title} className="no-underline">
                 <QuickLink key={link.title} title={link.title} specialty={link.specialty} icon={link.icon} />
               </Link>
             ))}              
-          </div>
+          </div> */}
         </div>
 
     </div>

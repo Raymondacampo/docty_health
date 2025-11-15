@@ -273,7 +273,7 @@ export default function DoctorSignupForm() {
   }
 
   return (
-    <div className="flex flex-col w-full mt-[14dvh] px-2 h-auto mb-[14dvh] justify-center items-center">
+    <div className="flex flex-col w-full mt-[12dvh] px-2 h-auto mb-[14dvh] justify-center items-center">
       <div className="self-stretch text-start w-full max-w-xl mx-auto text-[#293241] font-bold text-3xl sm:text-4xl mb-4 sm:mb-6 tracking-wide">
         Create your doctor account!
       </div>
