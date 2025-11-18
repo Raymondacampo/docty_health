@@ -73,7 +73,6 @@ const FormField = ({ text, type, name, placeholder, onChange, err, extra, checke
 };
 
 export default function SignupForm() {
-//   const { user, loading } = useUser();
   const router = useRouter();
   const [formData, setFormData] = useState<FormData>({
     first_name: '',

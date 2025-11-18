@@ -24,7 +24,10 @@ function AppContent({ children }: { children: React.ReactNode }) {
     <>
       {isLoading && <Loading />}
       <Navbar />
-      {children}
+      <div className='text-black'>
+        {children}        
+      </div>
+
       <footer>
         <div className='w-full h-[25dvh] bg-[#293241] flex-wrap p-4 items-center gap-20 inline-flex md:justify-center xs:justify-start xs:px-8'>
           <div className='flex flex-col items-start gap-2'>
