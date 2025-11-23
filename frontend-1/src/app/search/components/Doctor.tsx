@@ -151,7 +151,7 @@ const Doctor: React.FC<DoctorProps> = ({ doctor }) => {
         <div className="flex flex-col w-full justify-center 
         sm:flex-col sm:w-auto sm:border-none sm:gap-2.5 
         xs:flex-row xs:flex-wrap xs:w-full xs:border-t xs:pt-2 xs:gap-x-4 xs:gap-y-2">
-          <Link href={`/doctor/${doctor.id}`}>
+          <Link href={`/doc-profile/${doctor.id}`}>
             <button
             onClick={handleViewProfile}
             className="cursor-pointer py-1.5 px-16 hover:bg-[#060648]/85 bg-[#060648] rounded-md justify-center items-center gap-2.5 bottom-0 inline-flex  w-full

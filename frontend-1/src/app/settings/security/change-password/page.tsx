@@ -3,6 +3,7 @@ import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/app/utils/api';
 import { useLoading } from '@/app/utils/LoadingContext';
+import { useAlert } from '@/app/context/AlertContext';
 
 export default function ChangePassword() {
   const [password, setPassword] = useState('');
@@ -11,6 +12,7 @@ export default function ChangePassword() {
   const [success, setSuccess] = useState(false);
   const router = useRouter();
   const { setIsLoading } = useLoading();
+  const { showAlert } = useAlert();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -32,9 +34,11 @@ export default function ChangePassword() {
     try {
       await apiClient.post('/auth/password_change/', { new_password: password });
       setSuccess(true);
+      showAlert('Password changed successfully', 'success');
       setTimeout(() => router.push('/settings/security'), 1000);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to change password');
+      showAlert(err.response?.data?.error || 'Failed to change password', 'error');
       console.error('Password change error:', err);
     } finally {
       setIsLoading(false);
@@ -76,7 +80,7 @@ export default function ChangePassword() {
             {error && <p className="text-red-500 text-sm text-center">{error}</p>}
             <button
               type="submit"
-              className="w-full py-2 px-4 bg-[#060648] text-white rounded-md hover:bg-[#c65b40] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#060648]"
+              className="w-full py-2 px-4 bg-[#060648] text-white rounded-md hover:bg-[#0541a6] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#060648]"
             >
               Change Password
             </button>

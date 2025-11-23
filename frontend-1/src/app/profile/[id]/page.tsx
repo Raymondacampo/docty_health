@@ -1,12 +1,14 @@
 // app/page.tsx
 'use client';
-import About from "./components/About";
-import Insurances from "./components/Insurances";
-import Description from "./components/Description";
-import Locations from "./components/Locations";
-import Reviews from "./components/Reviews";
-import doctors_bg from "@/assets/images/doctors_bg.png";
-import doctor_profile from "@/assets/images/doctor_profile.png";
+// Make sure About.tsx or About/index.tsx exists in ./components
+// If About is located elsewhere, update the path accordingly, e.g.:
+// import About from "../components/About";
+// import Insurances from "./components/Insurances";
+// import Description from "./components/Description";
+// import Locations from "./components/Locations";
+// import Reviews from "./components/Reviews";
+// import doctors_bg from "@/assets/images/doctors_bg.png";
+// import doctor_profile from "@/assets/images/doctor_profile.png";
 
 const reviewsData = {
   reviews: [
@@ -37,57 +39,57 @@ const reviewsData = {
 };
 
 export default function ProfilePage() {
-  const doctor = {
-    id: 7,
-    is_favorited: false,
-    user: {
-      id: 11,
-      first_name: "Jacques",
-      last_name: "a campo",
-      email: "jacquesacampo@gmail.com",
-      profile_picture: doctor_profile.src,
-      age: 76,
-    },
-    exequatur: "8888888",
-    experience: 54,
-    sex: "M",
-    taking_dates: false,
-    takes_virtual: true,
-    takes_in_person: true,
-    description: null,
-    specialties: [
-      {
-        id: 1,
-        name: "Cardiologist",
-      },
-    ],
-    clinics: [
-      {
-        id: 2,
-        name: "Modern Medical Center",
-        city: "Santo Domingo",
-        state: "Distrito Nacional",
-        location: {
-          latitude: 18.475941199999998,
-          longitude: -69.9575012,
-        },
-        address: "Avenida Charles Sumner Esq, C. Jose Lopez 5, Santo Domingo, Dominican Republic",
-      },
-    ],
-    ensurances: [
-      {
-        id: 1,
-        name: "senasa",
-        logo: "https://juanpabloduarte.com/media/ensurance_logos/senasa.jpg",
-      },
-    ],
-    average_rating: 4.5,
-    review_count: 2,
-  };
+  // const doctor = {
+  //   id: 7,
+  //   is_favorited: false,
+  //   user: {
+  //     id: 11,
+  //     first_name: "Jacques",
+  //     last_name: "a campo",
+  //     email: "jacquesacampo@gmail.com",
+  //     profile_picture: doctor_profile.src,
+  //     age: 76,
+  //   },
+  //   exequatur: "8888888",
+  //   experience: 54,
+  //   sex: "M",
+  //   taking_dates: false,
+  //   takes_virtual: true,
+  //   takes_in_person: true,
+  //   description: null,
+  //   specialties: [
+  //     {
+  //       id: 1,
+  //       name: "Cardiologist",
+  //     },
+  //   ],
+  //   clinics: [
+  //     {
+  //       id: 2,
+  //       name: "Modern Medical Center",
+  //       city: "Santo Domingo",
+  //       state: "Distrito Nacional",
+  //       location: {
+  //         latitude: 18.475941199999998,
+  //         longitude: -69.9575012,
+  //       },
+  //       address: "Avenida Charles Sumner Esq, C. Jose Lopez 5, Santo Domingo, Dominican Republic",
+  //     },
+  //   ],
+  //   ensurances: [
+  //     {
+  //       id: 1,
+  //       name: "senasa",
+  //       logo: "https://juanpabloduarte.com/media/ensurance_logos/senasa.jpg",
+  //     },
+  //   ],
+  //   average_rating: 4.5,
+  //   review_count: 2,
+  // };
 
   return (
     <div className="w-full min-h-screen relative flex flex-col justify-start items-center pb-16 gap-[81px] bg-transparent">
-    <div
+    {/* <div
         className="absolute inset-0 -z-10 bg-no-repeat bg-cover bg-right lg:bg-center"
         style={{
           backgroundImage: `url(${doctors_bg.src})`,
@@ -121,7 +123,7 @@ export default function ProfilePage() {
           reviewCount={doctor.review_count || 0}
           ratingDistribution={reviewsData.rating_distribution}
         />
-      </div>
+      </div> */}
     </div>
   );
 }

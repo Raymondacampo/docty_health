@@ -1,12 +1,12 @@
 // import { getApiImgUrl } from "@/utils/api";
-
+import type { EnsuranceType } from "../page";
 type Insurance = {
     logo: string;
     name: string;
 };
 
 interface InsurancesProps {
-    insurances: Insurance[];
+    insurances: EnsuranceType[];
     name: string;
 }
 
@@ -17,9 +17,9 @@ export default function Insurances({ insurances, name }: InsurancesProps) {
             {insurances.length > 0 &&
             <div className="w-full justify-start items-start gap-5 inline-flex flex-wrap">
                 {insurances.map((e, index) => 
-                    <div key={index} className="border rounded-xl w-full lg:w-auto pr-4 pl-2 justify-start items-center gap-4 flex">
-                        <img src={`${e.logo}`} className="w-[75px] h-[75px] bg-[#5c5c5c]"></img>
-                        <div className="text-center text-[#293241] text-base font-normal tracking-wide">{e.name}</div>
+                    <div key={index} className="border rounded-xl w-full lg:w-auto pr-4 py-2 pl-2 justify-start items-center gap-4 flex">
+                        {e?.logo && <img src={`${e.logo}`} className="w-[65px] h-[65px] bg-[#5c5c5c]"></img>}
+                        {e?.name && <div className="text-center text-[#293241] text-base font-normal tracking-wide">{e.name}</div>}
                     </div>
                 )}
             </div>            

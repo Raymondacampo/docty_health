@@ -90,7 +90,7 @@ function NavbarContent() {
   ];
 
   return (
-    <nav className='h-[10vh] absolute z-20 top-0 w-full pt-5 pb-3 bg-transparent'>
+    <nav className={`h-[10vh] absolute top-0 w-full pt-5 pb-3 bg-transparent` + (isDropdownOpen || isMenuOpen ? ' z-100' : ' z-20')}>
       <div className='w-full flex items-end justify-between px-4 sm:px-8 lg:px-16 xl:px-48'>
         <Link href='/' className='flex items-end'>
           <Image src={dclogo} alt='Logo' width={50} height={50} className='object-contain' priority />

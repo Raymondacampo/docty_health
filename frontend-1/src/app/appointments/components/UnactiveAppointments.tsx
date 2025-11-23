@@ -1,23 +1,24 @@
 import React, { useState } from "react";
 import Pagination from "./Pagination";
+import type { Appointment } from "./ActiveAppointments";
 
 interface DateProps {
-    appointment: any;
+    appointment: Appointment;
     is_doctor: boolean;
 }
 
-const Date: React.FC<DateProps> = ({ appointment, is_doctor }) => {
+const AppointmentComponent: React.FC<DateProps> = ({ appointment, is_doctor }: DateProps) => {
 
-    const doctorName = appointment.week_availability?.doctor
-        ? `Dr. ${appointment.week_availability.doctor.first_name} ${appointment.week_availability.doctor.last_name}`
+    const doctorName = appointment.week_availability?.doctor && appointment.doctor
+        ? `Dr. ${appointment.doctor.first_name} ${appointment.doctor.last_name}`
         : "Unknown Doctor";
     const patientName = appointment.patient
         ? `${appointment.patient.first_name} ${appointment.patient.last_name}`
         : "Unknown Patient";
-    const location = appointment.weekday?.place?.name || "Virtual";
+    const location = appointment.appointment?.place?.name || "Virtual";
 
     return (
-        <div className="w-full p-4 bg-white shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] flex  justify-start items-center">
+        <div className="w-full p-4 bg-white shadow-sm border border-gray-300 rounded-sm flex  justify-start items-center">
         <div className="flex w-full justify-start items-center gap-[13px]">
 
             <div className="flex flex-col sm:flex-row w-full justify-between items-start">
@@ -29,7 +30,7 @@ const Date: React.FC<DateProps> = ({ appointment, is_doctor }) => {
             <div className="self-stretch flex flex-wrap items-center gap-x-2.5">
                 <div>
                 <span className="text-gray-500 text-xs font-extralight tracking-wide">Date: </span>
-                <span className="text-gray-500 text-sm font-bold tracking-wide ">{appointment.weekday?.day}</span>
+                <span className="text-gray-500 text-sm font-bold tracking-wide ">{appointment.appointment?.day}</span>
                 </div>
                 <div>
                 <span className="text-gray-500 text-xs font-extralight tracking-wide">Time: </span>
@@ -65,7 +66,7 @@ export default function UnactiveAppointments({ appointments, is_doctor }: Unacti
       <div className="self-stretch py-4 p-0 flex flex-col justify-start items-start gap-3 sm:p-4">
         {currentAppointments.length > 0 ? (
           currentAppointments.map((appointment) => (
-            <Date key={appointment.appointment_id} appointment={appointment} is_doctor={is_doctor} />
+            <AppointmentComponent key={appointment.id} appointment={appointment} is_doctor={is_doctor} />
           ))
         ) : (
           <div className="text-[#293241]">No previous appointments</div>

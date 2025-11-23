@@ -375,8 +375,8 @@ class Review(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(5)],
         help_text="Rating from 1 to 5"
     )
-    headline = models.CharField(max_length=100, help_text="Short summary of the review")
-    body = models.TextField(help_text="Detailed review text")
+    headline = models.CharField(max_length=100, help_text="Short summary of the review", null=True, blank=True)
+    body = models.TextField(help_text="Detailed review text", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

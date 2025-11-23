@@ -2,11 +2,10 @@ from django.urls import path
 from .views import (get_data, LoginView, UserProfileView, SignupView, LogoutView, GoogleLogin, DoctorSignupView, PasswordResetRequestView,
 PasswordChangeView, ValidateTokenView,AvailableSpecialtiesView, AddSpecialtyView, AddClinicView, AvailableClinicsView,
 RemoveClinicView, RemoveSpecialtyView, UploadDoctorDocumentView, DeleteDoctorDocumentView, AvailableEnsurancesView, 
-AddEnsuranceView, RemoveEnsuranceView, DoctorSearchView, AllSpecialtiesView, AllClinicsView, AllEnsurancesView, DoctorDetailView,
-DoctorDetailView, ReviewsDetailView, CreateReviewView, UpdateReviewView, DeleteReviewView,UserReviewView, ToggleFavoriteDoctorView, IsDoctorView,
+AddEnsuranceView, RemoveEnsuranceView, DoctorSearchView, AllSpecialtiesView, AllClinicsView, AllEnsurancesView, DoctorDetailView, ReviewsDetailView, CreateReviewView, UpdateReviewView, DeleteReviewView,UserReviewView, ToggleFavoriteDoctorView, IsDoctorView,
 CreateScheduleView, UpdateScheduleView, DeleteScheduleView, MySchedulesView, CreateWeekDayView, ClinicDetailView, WeekScheduleView, AvailableWeeksView,
 DoctorAvailableDaysView, WeekSchedulesView,CreateAppointmentView, DeleteWeekAvailabilityView, UserAppointmentsView, DeleteAppointmentView, DoctorPatientsView, Me,
-GoogleCallbackView, UpdateDoctorDescriptionView)
+GoogleCallbackView, UpdateDoctorDescriptionView, DoctorInFavorite)
 from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView, TokenObtainPairView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -62,7 +61,8 @@ urlpatterns = [
     path('auth/my_schedules/', MySchedulesView.as_view(), name='my_schedules'),
     path('auth/create_appointment/', CreateAppointmentView.as_view(), name='create_appointment'),
 
-
+    path('doctors/<int:doctor_id>/', DoctorDetailView.as_view(), name='doctor_detail'),
+    path('doctor_in_favorite/<int:doctor_id>/', DoctorInFavorite.as_view(), name='doctor_in_favorite'),
     path('auth/schedules/', MySchedulesView.as_view(), name='schedules'),  # Reuse MySchedulesView
     path('auth/create_weekday/', CreateWeekDayView.as_view(), name='create_week_day'),
     path('auth/weekschedule/', WeekScheduleView.as_view(), name='week_schedule'),  # New endpoint

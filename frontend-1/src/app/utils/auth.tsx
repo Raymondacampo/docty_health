@@ -21,7 +21,7 @@ interface JWTPayload {
   [key: string]: any;
 }
 
-export async function login(token: string, isGoogle: boolean = false, isGoogleCallback: boolean = false): Promise<void> {
+export async function login(token: string, isGoogle: boolean = false, isGoogleCallback: boolean = false, redirectUri?: string | null): Promise<void> {
   if (typeof window !== "undefined") {
     if (isGoogle) {
       if (isGoogleCallback) {
@@ -31,7 +31,7 @@ export async function login(token: string, isGoogle: boolean = false, isGoogleCa
         saveToken(access);
         localStorage.setItem("refresh_token", refresh);
         document.cookie = `access_token=${access}; path=/;`;
-        window.location.href = '/account'; // Redirect after successful login
+        window.location.href = redirectUri || '/account';      
       } else {
         // Send Google ID token to backend (for popup flow, kept for compatibility)
         console.log("Sending Google token to backend:", token);
@@ -43,7 +43,7 @@ export async function login(token: string, isGoogle: boolean = false, isGoogleCa
         saveToken(access);
         localStorage.setItem("refresh_token", refresh);
         document.cookie = `access_token=${access}; path=/;`;
-        window.location.href = '/account';
+        window.location.href = redirectUri || '/account';
       }
     } else {
       // Standard login: store access token directly
