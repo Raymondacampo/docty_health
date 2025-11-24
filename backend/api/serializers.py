@@ -316,16 +316,19 @@ class ReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"rating": "Rating must be between 1 and 5."})
         return attrs
 
-
+class ClinicNestedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Clinic
+        fields = ['id', 'name']
     
 class ScheduleSerializer(serializers.ModelSerializer):
     doctor = serializers.PrimaryKeyRelatedField(queryset=Doctor.objects.all())
     place = serializers.PrimaryKeyRelatedField(queryset=Clinic.objects.all(), allow_null=True)
     hours = serializers.JSONField()
-
+    clinic = ClinicNestedSerializer(source='place', read_only=True)
     class Meta:
         model = Schedule
-        fields = ['id', 'doctor', 'place', 'hours', 'title', 'created_at']
+        fields = ['id', 'doctor', 'place', 'clinic', 'hours', 'title', 'created_at']
         read_only_fields = ['id', 'created_at']
 
     def validate(self, attrs):

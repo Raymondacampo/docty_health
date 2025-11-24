@@ -32,7 +32,7 @@ export function middleware(req: NextRequest) {
   }
 
   // Check for doctor-specific page access
-  if (req.nextUrl.pathname.startsWith('/settings/doctor-settings')) {
+  if (req.nextUrl.pathname.startsWith('/settings/doctor-settings') || req.nextUrl.pathname.startsWith('/settings/appointment-system') ) {
     if (!token) {
       console.log('No token for /settings/doctor-settings, redirecting to /login');
       return NextResponse.redirect(new URL("/login", req.url));

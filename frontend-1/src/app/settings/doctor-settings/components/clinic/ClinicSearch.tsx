@@ -16,11 +16,11 @@ export default function ClinicSearch({ onClinicAdded }: ClinicSearchProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [clinics, setClinics] = useState<Clinic[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  // const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchClinics = async () => {
-    setLoading(true);
+    // setLoading(true);
     setError(null);
     try {
       const { data } = await apiClient.get<Clinic[]>('/auth/available_clinics/');
@@ -29,7 +29,7 @@ export default function ClinicSearch({ onClinicAdded }: ClinicSearchProps) {
       setError('Failed to load clinics');
       console.error(err);
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
   };
 
@@ -57,7 +57,7 @@ export default function ClinicSearch({ onClinicAdded }: ClinicSearchProps) {
             setIsOpen(true);
             fetchClinics();
           }}
-          className="text-white text-sm font-normal bg-[#293241] hover:bg-[#293241]/90 cursor-pointer px-2 py-1.5 rounded-sm"
+          className="text-white text-sm font-normal hover:bg-[#060648]/85 bg-[#060648] cursor-pointer px-2 py-1.5 rounded-sm"
         >
           Add +
         </button>
@@ -70,9 +70,9 @@ export default function ClinicSearch({ onClinicAdded }: ClinicSearchProps) {
             placeholder="Search clinics..."
             className="text-black w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#4285f4] focus:border-[#4285f4] text-sm"
           />
-          {loading && <div className="text-sm text-gray-500">Loading...</div>}
+          {/* {loading && <div className="text-sm text-gray-500">Loading...</div>} */}
           {error && <div className="text-sm text-red-500">{error}</div>}
-          {!loading && !error && filteredClinics.length > 0 && (
+          {!error && filteredClinics.length > 0 && (
             <ul className="max-h-[150px] overflow-y-auto border border-gray-300 rounded-md bg-white">
               {filteredClinics.map((clinic) => (
                 <li
@@ -85,12 +85,12 @@ export default function ClinicSearch({ onClinicAdded }: ClinicSearchProps) {
               ))}
             </ul>
           )}
-          {!loading && !error && filteredClinics.length === 0 && (
+          {!error && filteredClinics.length === 0 && (
             <div className="text-sm text-gray-500">No available clinics found</div>
           )}
           <button
             onClick={() => setIsOpen(false)}
-            className="mt-2 text-white bg-[#293241] hover:bg-[#293241]/90 cursor-pointer text-sm font-normal px-2.5 py-2 rounded-md"
+            className="mt-2 text-white hover:bg-[#060648]/85 bg-[#060648] cursor-pointer text-sm font-normal px-2.5 py-2 rounded-md"
           >
             Cancel
           </button>

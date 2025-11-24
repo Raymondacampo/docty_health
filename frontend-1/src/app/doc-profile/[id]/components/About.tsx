@@ -104,7 +104,7 @@ export default function About({
             </div>
           </div>
           <div className="w-full lg:w-[20rem] lg:relative -top-8">
-            <AppointmentModal doctor={doctor} />
+            <AppointmentModal doctor={doctor} isAuth={isUserAuthenticated} />
           </div>
       </div>       
     </div>

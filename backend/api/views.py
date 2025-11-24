@@ -889,7 +889,7 @@ class DoctorSearchView(APIView):
         return paginator.get_paginated_response(serializer.data)
     
 class DoctorDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request, doctor_id):
         print("User:", request.user)
@@ -1483,7 +1483,7 @@ class DoctorAvailableDaysView(APIView):
             weekdays = WeekDay.objects.filter(
                 week_availability__doctor=doctor.user
             ).select_related('place').order_by('day')
-
+            logger.info(f"Fetched {weekdays.count()} weekdays for doctor {doctor_id}")
             today = date.today()
             available_days = []
             for weekday in weekdays:
@@ -1494,13 +1494,13 @@ class DoctorAvailableDaysView(APIView):
                 booked_hours = Appointment.objects.filter(
                     appointment=weekday
                 ).values_list('time', flat=True)
-
+                logger.info(f"Weekday {weekday.day} booked hours: {list(booked_hours)}")
                 # Remove booked hours from available hours
                 available_hours = [
                     hour for hour in weekday.hours
                     if hour not in booked_hours
                 ]
-
+                logger.info(f"Weekday {weekday.day} available hours after filtering: {available_hours}")
                 # Only include days with available hours
                 if available_hours:
                     available_days.append({

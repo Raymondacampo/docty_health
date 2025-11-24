@@ -3,15 +3,19 @@
 import { useState, useEffect } from 'react';
 import { apiClient, publicApiClient } from '@/app/utils/api';
 import { format } from 'date-fns';
-import { parseISO } from 'date-fns/parseISO';
-import { BsCalendar3 } from 'react-icons/bs'; // Bootstrap Icons set
-// import CustomAlert from '@/components/CustomAlert';
-// import { useAuth } from '@/context/auth';
+import { useAlert } from '@/app/context/AlertContext';
+import { createPortal } from 'react-dom';
+import { useRouter } from 'next/navigation';
 
-// Define interfaces for TypeScript type safety
+// Types
 interface User {
   first_name: string;
   last_name: string;
+}
+
+interface Doctor {
+  id: number;
+  user: User;
 }
 
 interface Place {
@@ -20,28 +24,24 @@ interface Place {
 
 interface AvailableDay {
   id: number;
-  day: string;
-  is_virtual: boolean;
-  place: Place;
+  day: string; // ISO date string
   hours: string[];
+  is_virtual: boolean;
+  place?: Place;
 }
 
-interface Doctor {
-  id: number;
-  user: User;
-}
-
-interface Alert {
+interface AlertState {
   message: string | null;
   status: 'success' | 'error' | null;
 }
 
-interface AppointmentModalProps {
-  doctor: Doctor;
+interface AuthContextType {
+  user: any; // Replace with your actual User type if available
 }
 
-export default function AppointmentModal({ doctor }: AppointmentModalProps) {
-//   const { user } = useAuth();
+export default function AppointmentModal({ doctor, isAuth }: { doctor: Doctor; isAuth: boolean | null }) {
+  const { showAlert } = useAlert();
+  const router = useRouter();
   const [isModalOpen, setModalOpen] = useState<boolean>(false);
   const [availableDays, setAvailableDays] = useState<AvailableDay[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -49,15 +49,16 @@ export default function AppointmentModal({ doctor }: AppointmentModalProps) {
   const [selectedDay, setSelectedDay] = useState<AvailableDay | null>(null);
   const [selectedHour, setSelectedHour] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
-  const [successAlert, setSuccessAlert] = useState<Alert>({ message: null, status: null });
-  const [errorAlert, setErrorAlert] = useState<Alert>({ message: null, status: null });
 
   const fetchAvailableDays = async () => {
+    console.log('Fetching available days for doctor ID:', doctor.id);
     setLoading(true);
+    setError(null);
     try {
-      const response = await publicApiClient.get<{ available_days: AvailableDay[] }>(
+      const response = await publicApiClient.get(
         `/doctors/${doctor.id}/available_days/`
       );
+      console.log('Available days response:', response.data);
       setAvailableDays(response.data.available_days);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to fetch available days');
@@ -67,6 +68,11 @@ export default function AppointmentModal({ doctor }: AppointmentModalProps) {
   };
 
   const openModal = () => {
+    if (!isAuth) {
+      const redirectUrl = encodeURIComponent(window.location.pathname);
+      router.push(`/login?redirect=${redirectUrl}`);
+      return;
+    }
     setModalOpen(true);
     fetchAvailableDays();
   };
@@ -77,42 +83,36 @@ export default function AppointmentModal({ doctor }: AppointmentModalProps) {
     setError(null);
     setSelectedDay(null);
     setSelectedHour(null);
-    setErrorAlert({ message: null, status: null });
   };
 
   const handleDayClick = (day: AvailableDay) => {
     setSelectedDay(day);
     setSelectedHour(null);
-    setErrorAlert({ message: null, status: null });
   };
 
   const handleHourClick = (hour: string) => {
     setSelectedHour(hour);
-    setErrorAlert({ message: null, status: null });
   };
 
   const handleDoneClick = async () => {
     if (!selectedDay || !selectedHour) return;
+
     setSubmitting(true);
-    setErrorAlert({ message: null, status: null });
+
     try {
-      const response = await apiClient.post<{ message: string }>(
-        '/auth/create_appointment/',
-        {
-          weekday_id: selectedDay.id,
-          hour: selectedHour,
-        }
-      );
-      closeModal(); // Close modal immediately
-      setSuccessAlert({ message: response.data.message, status: 'success' });
-      setTimeout(() => {
-        setSuccessAlert({ message: null, status: null });
-      }, 3000); // Clear success alert after 3 seconds
-    } catch (err: any) {
-      setErrorAlert({
-        message: err.response?.data?.error || 'Failed to create appointment',
-        status: 'error',
+      const response = await apiClient.post<{ message: string }>('/auth/create_appointment/', {
+        weekday_id: selectedDay.id,
+        hour: selectedHour,
       });
+
+      closeModal();
+      showAlert('Appointment created successfully!', 'success');
+
+      setTimeout(() => {
+      }, 3000);
+    } catch (err: any) {
+
+      showAlert(err.response?.data?.error || 'Failed to create appointment', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -120,8 +120,8 @@ export default function AppointmentModal({ doctor }: AppointmentModalProps) {
 
   const formatDate = (dateString: string): string => {
     try {
-      const date = parseISO(dateString);
-      return format(date, 'EEE, MMMM d, yyyy'); // e.g., "MON, June 2, 2025"
+      const date = new Date(dateString);
+      return format(date, 'EEE, MMMM d, yyyy');
     } catch (error) {
       console.error('Error parsing date:', error);
       return dateString;
@@ -129,27 +129,21 @@ export default function AppointmentModal({ doctor }: AppointmentModalProps) {
   };
 
   return (
-    <div className="w-full flex justify-center">
-      {/* {successAlert.message && (
-        <CustomAlert message={successAlert.message} status={successAlert.status} />
-      )} */}
-
+    <div className="w-full">
       <button
         onClick={openModal}
-        className="flex gap-4 lg:gap-8 px-4 lg:px-8 py-3 lg:py-4 items-center font-bold  bg-gradient-to-t from-[#060648] via-[#060648]/90 to-[#060648] text-white px-4 hover:bg-[#293241]/90 py-2 rounded lg:rounded-xl transition"
+        className="w-full bg-white border border-blue-700 text-blue-700 px-4 hover:bg-gray-100 py-2 rounded-md transition"
       >
-        <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl">
-          <BsCalendar3 className="w-full h-full" />
-        </div>
-        <span className='lg:w-[100px] flex text-start lg:text-lg'>Book Appointment</span>
+        Make Appointment
       </button>
 
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+      {isModalOpen && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white shadow-lg p-6 w-full relative sm:max-w-xl sm:h-auto sm:rounded-lg xs:h-screen">
             <button
               onClick={closeModal}
               className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
+              aria-label="Close modal"
             >
               <svg
                 className="w-6 h-6"
@@ -168,8 +162,7 @@ export default function AppointmentModal({ doctor }: AppointmentModalProps) {
             </button>
 
             <h2 className="text-xl font-semibold mb-4 sm:mt-0 xs:mt-4">
-              Book an Appointment with Dr. {doctor.user.first_name}{' '}
-              {doctor.user.last_name}
+              Book an Appointment with Dr. {doctor.user.first_name} {doctor.user.last_name}
             </h2>
 
             {loading && <p className="text-gray-600">Loading available days...</p>}
@@ -177,10 +170,6 @@ export default function AppointmentModal({ doctor }: AppointmentModalProps) {
             {!loading && !error && availableDays.length === 0 && (
               <p className="text-gray-600">No available days for this doctor.</p>
             )}
-
-            {/* {errorAlert.message && (
-              <CustomAlert message={errorAlert.message} status={errorAlert.status} />
-            )} */}
 
             {availableDays.length > 0 && (
               <div className="mb-4">
@@ -197,7 +186,7 @@ export default function AppointmentModal({ doctor }: AppointmentModalProps) {
                       }`}
                     >
                       {formatDate(day.day)}{' '}
-                      {day.is_virtual ? '(Virtual)' : `(${day.place.name})`}
+                      {day.is_virtual ? '(Virtual)' : `(${day.place?.name || 'In-person'})`}
                     </button>
                   ))}
                 </div>
@@ -232,30 +221,32 @@ export default function AppointmentModal({ doctor }: AppointmentModalProps) {
               >
                 Cancel
               </button>
-              {!selectedHour ? (
+
+              {selectedHour && isAuth ? (
                 <button
                   onClick={handleDoneClick}
                   disabled={submitting}
                   className={`bg-[#ee6c4d] text-white px-4 py-2 rounded-md transition ${
-                    submitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#ee6c4d] hover:opacity-90'
+                    submitting
+                      ? 'opacity-50 cursor-not-allowed'
+                      : 'hover:opacity-90'
                   }`}
                 >
-                    <BsCalendar3 size={20} /> {/* Icon with custom size */}
                   {submitting ? 'Submitting...' : 'Make appointment'}
                 </button>
               ) : (
                 <a
                   href="/login"
-                  className="bg-[#ee6c4d] text-white px-4 py-2 rounded-md transition hover:bg-[#ee6c4d] hover:opacity-90"
+                  className="bg-[#ee6c4d] text-white px-4 py-2 rounded-md transition hover:opacity-90 inline-block text-center"
                 >
-                    <BsCalendar3 size={20} /> {/* Icon with custom size */}
                   Make appointment
                 </a>
               )}
             </div>
           </div>
         </div>
-      )}
+      
+      , document.body)}
     </div>
   );
 }
