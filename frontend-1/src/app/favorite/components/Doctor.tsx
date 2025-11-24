@@ -1,5 +1,5 @@
 import { UserCircleIcon } from "@heroicons/react/24/outline";
-
+import Link from "next/link";
 type DoctorProps = {
   doctor: {
     id: number;
@@ -16,7 +16,7 @@ type DoctorProps = {
 const Doctor = ({ doctor, onRemove }: DoctorProps) => {
     // const backendBaseUrl = getApiImgUrl();
   return (
-    <div className="w-full bg-white rouded-sm shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] justify-between items-center gap-4 flex flex-wrap sm:px-4 xs:px-2 py-4">
+    <div className="w-full bg-white rounded-md shadow-md border border-gray-400 justify-between items-center gap-4 flex flex-wrap sm:px-4 xs:px-2 py-4">
       <div className="justify-start items-center sm:gap-4 flex">
         {/* <img src={`${backendBaseUrl}${doctor.user.profile_picture}`} className="bg-[#d9d9d9] rounded-full sm:w-24 sm:h-24 xs:w-16 xs:h-16"></img> */}
         <div className="flex-col justify-center items-start inline-flex">
@@ -47,11 +47,11 @@ const Doctor = ({ doctor, onRemove }: DoctorProps) => {
         </div>
       </div>
       <div className="sm:flex-col w-full px-4 sm:px-0 sm:w-[150px] justify-start items-center gap-x-4 gap-y-2 inline-flex">
-          <a href={`/profile/${doctor.id}`} className="self-stretch w-full py-1.5 rounded-md bg-gray-100 items-center gap-2.5 inline-flex justify-center">
+          <Link href={`/doc-profile/${doctor.id}`} className="self-stretch w-full py-1.5 rounded-md bg-gray-100 items-center gap-2.5 inline-flex justify-center">
             <div className="text-[#060648] tracking-wide justify-center items-center">
               View profile
             </div>
-          </a>
+          </Link>
         <button
           onClick={() => onRemove(doctor.id)}
           className="self-stretch w-full py-1.5 bg-[#060648] rounded-md justify-center items-center gap-2.5 inline-flex"

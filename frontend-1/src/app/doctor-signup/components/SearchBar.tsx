@@ -1,4 +1,4 @@
-import { useState, useEffect, ChangeEvent, MouseEvent } from "react";
+import { useState, useEffect, ChangeEvent } from "react";
 import { publicApiClient } from "@/app/utils/api";
 
 interface SearchBarProps {

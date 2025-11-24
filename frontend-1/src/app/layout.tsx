@@ -6,6 +6,8 @@ import { FaFacebookF, FaInstagram, FaTwitter } from 'react-icons/fa';
 import { LoadingProvider, useLoading } from './utils/LoadingContext';
 import Loading from './components/LoadingComponent';
 import { Suspense } from 'react';
+import Alert from './components/Alert';
+import { AlertProvider } from './context/AlertContext';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -23,13 +25,14 @@ function AppContent({ children }: { children: React.ReactNode }) {
   return (
     <>
       {isLoading && <Loading />}
-      <Navbar />
-      <div className='text-black'>
-        {children}        
-      </div>
+      <AlertProvider>
+        <Navbar />
+        <Alert />
+        {children} 
+      </AlertProvider>       
 
       <footer>
-        <div className='w-full h-[25dvh] bg-[#293241] flex-wrap p-4 items-center gap-20 inline-flex md:justify-center xs:justify-start xs:px-8'>
+        <div className='w-full sm:h-[25dvh] bg-[#293241] flex-wrap p-4 items-center gap-20 inline-flex md:justify-center xs:justify-start xs:px-8'>
           <div className='flex flex-col items-start gap-2'>
             <div className='text-lg text-[#EDEDED] font-semibold border-b border-white/20'>DoctyHealth © 2023 All rights reserved</div>
             <div className='flex flex-col items-start gap-2'>

@@ -8,6 +8,7 @@ import { apiClient } from "../utils/api";
 import { FaSearch } from 'react-icons/fa';
 // import AbsoluteSearchOverlay from "@/components/AbsoluteSearchOverlay";
 import Doctor from "./components/Doctor";
+import Loading from "../components/LoadingComponent";
 
 type DoctorProps = {
   doctor: {
@@ -32,110 +33,98 @@ export default function FavoriteDoctors() {
 //   const {alert, showAlert} = useAlert();
 
 //   const router = useRouter();
-//   const fetchFavoriteDoctors = async () => {
-//     setLoading(true);
-//     setError(null);
-//     const redirectUrl = router.query.redirect || '/';
-//     try {
-//       const response = await apiClient.get("/auth/me/");
-//       setDoctors(response.data.favorite_doctors || []);
-//     } catch (err) {
-//       router.push(redirectUrl);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
 
-const favorite_doctors = [
-        {
-            "id": 1,
-            "user": {
-                "id": 8,
-                "first_name": "pepe",
-                "last_name": "gonzales marquinez",
-                "email": "elpepesito@gmail.com",
-                "profile_picture": null
-            },
-            "exequatur": "967897",
-            "experience": 19,
-            "sex": "M",
-            "taking_dates": false,
-            "takes_virtual": false,
-            "takes_in_person": false,
-            "description": null,
-            "specialties": [
-                {
-                    "id": 1,
-                    "name": "Cardiologist"
-                }
-            ],
-            "clinics": [],
-            "ensurances": [
-                {
-                    "id": 1,
-                    "name": "senasa",
-                    "logo": "https://juanpabloduarte.com/media/ensurance_logos/senasa.jpg"
-                }
-            ],
-            "average_rating": 5.0,
-            "review_count": 1,
-            "has_availability": false,
-            "is_favorited": true,
-            "cities": []
-        },
-                {
-            "id": 4,
-            "user": {
-                "id": 8,
-                "first_name": "pepe",
-                "last_name": "gonzales marquinez",
-                "email": "elpepesito@gmail.com",
-                "profile_picture": null
-            },
-            "exequatur": "967897",
-            "experience": 19,
-            "sex": "M",
-            "taking_dates": false,
-            "takes_virtual": false,
-            "takes_in_person": false,
-            "description": null,
-            "specialties": [
-                {
-                    "id": 1,
-                    "name": "Cardiologist"
-                }
-            ],
-            "clinics": [],
-            "ensurances": [
-                {
-                    "id": 1,
-                    "name": "senasa",
-                    "logo": "https://juanpabloduarte.com/media/ensurance_logos/senasa.jpg"
-                }
-            ],
-            "average_rating": 5.0,
-            "review_count": 1,
-            "has_availability": false,
-            "is_favorited": true,
-            "cities": []
-        }
-    ]
+
+// const favorite_doctors = [
+//         {
+//             "id": 1,
+//             "user": {
+//                 "id": 8,
+//                 "first_name": "pepe",
+//                 "last_name": "gonzales marquinez",
+//                 "email": "elpepesito@gmail.com",
+//                 "profile_picture": null
+//             },
+//             "exequatur": "967897",
+//             "experience": 19,
+//             "sex": "M",
+//             "taking_dates": false,
+//             "takes_virtual": false,
+//             "takes_in_person": false,
+//             "description": null,
+//             "specialties": [
+//                 {
+//                     "id": 1,
+//                     "name": "Cardiologist"
+//                 }
+//             ],
+//             "clinics": [],
+//             "ensurances": [
+//                 {
+//                     "id": 1,
+//                     "name": "senasa",
+//                     "logo": "https://juanpabloduarte.com/media/ensurance_logos/senasa.jpg"
+//                 }
+//             ],
+//             "average_rating": 5.0,
+//             "review_count": 1,
+//             "has_availability": false,
+//             "is_favorited": true,
+//             "cities": []
+//         },
+//                 {
+//             "id": 4,
+//             "user": {
+//                 "id": 8,
+//                 "first_name": "pepe",
+//                 "last_name": "gonzales marquinez",
+//                 "email": "elpepesito@gmail.com",
+//                 "profile_picture": null
+//             },
+//             "exequatur": "967897",
+//             "experience": 19,
+//             "sex": "M",
+//             "taking_dates": false,
+//             "takes_virtual": false,
+//             "takes_in_person": false,
+//             "description": null,
+//             "specialties": [
+//                 {
+//                     "id": 1,
+//                     "name": "Cardiologist"
+//                 }
+//             ],
+//             "clinics": [],
+//             "ensurances": [
+//                 {
+//                     "id": 1,
+//                     "name": "senasa",
+//                     "logo": "https://juanpabloduarte.com/media/ensurance_logos/senasa.jpg"
+//                 }
+//             ],
+//             "average_rating": 5.0,
+//             "review_count": 1,
+//             "has_availability": false,
+//             "is_favorited": true,
+//             "cities": []
+//         }
+//     ]
 
   useEffect(() => {
-      // fetchFavoriteDoctors();
-      setDoctors(
-        favorite_doctors.map((doctor) => ({
-          id: doctor.id,
-          user: {
-            first_name: doctor.user.first_name,
-            last_name: doctor.user.last_name,
-            profile_picture: doctor.user.profile_picture ?? "",
-          },
-          specialties: doctor.specialties.map((spec) => ({
-            name: spec.name,
-          })),
-        }))
-      );
+      const fetchFavoriteDoctors = async () => {
+        setError(null);
+        // const redirectUrl = router.query.redirect || '/';
+        try {
+          const response = await apiClient.get("/auth/personal-data/");
+          console.log("Favorite doctors fetched:", response.data);
+          setDoctors(response.data.favorite_doctors || []);
+        } catch (err) {
+          // router.push(redirectUrl);
+        } finally {
+          setLoading(false);
+        }
+      };    
+      fetchFavoriteDoctors();
     }, []);
 
 
@@ -155,7 +144,7 @@ const favorite_doctors = [
     }
   };
 
-//   if (loading) return <LoadingComponent isLoading={loading}/>;
+  if (loading) return <Loading />;
   if (error) return <div className="text-red-500 text-center">Error: {error}</div>;
 
   return (
@@ -165,7 +154,7 @@ const favorite_doctors = [
         <div className="self-stretch w-full text-black text-3xl tracking-wide font-semibold sm:mb-4">
           Favorite doctors
         </div>
-        <div className="self-stretch w-full flex-col justify-center gap-8 flex mx-auto">
+        <div className="self-stretch w-full flex-col justify-center gap-4 flex mx-auto">
           {doctors.length === 0 ? (
           <div className="w-full h-80 flex justify-center items-center">
             <div className="flex flex-col justify-center items-center gap-4">

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-// import { apiClient, getApiImgUrl } from "@/utils/api";
+import { apiClient } from "@/app/utils/api";
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { UserCircleIcon } from "@heroicons/react/24/solid";
+import { useAlert } from "@/app/context/AlertContext";
 
 export type Appointment = {
   id: number;
@@ -40,31 +40,26 @@ export type Appointment = {
   };
 };
 
-const Date = ({
+const Appointment = ({
   appointment,
   onCancel,
   is_doctor,
   darker
 }: {
   appointment: Appointment;
-  onCancel: (appointmentId: string | number) => void;
+  onCancel: (appointmentId: number) => void;
   is_doctor: boolean;
   darker?: boolean;
 }) => {
-  console.log(appointment)
-  // const backendBaseUrl = getApiImgUrl();
   const doctorName = appointment.doctor
     ? `Dr. ${appointment.doctor.first_name} ${appointment.doctor.last_name}`
     : "Unknown Doctor";
   const patientName = appointment.patient
     ? `${appointment.patient.first_name} ${appointment.patient.last_name}`
     : "Unknown Patient";
-  // const location = appointment.weekday?.place?.name || "Virtual";
-  // Check if the user is both patient and doctor (same user ID)
-  const is_both_patient_and_doctor = appointment.patient?.id && appointment.doctor?.id && appointment.patient.id === appointment.doctor.id;
 
   return (
-    <div className={`self-stretch shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] flex flex-col sm:flex-row justify-between sm:items-center flex-wrap px-4 py-2 xs:items-center ${darker ? "bg-gray-50" : "bg-white"}`}>
+    <div className={`self-stretch shadow-md border border-gray-400 rounded-md flex flex-col sm:flex-row justify-between sm:items-center flex-wrap px-4 py-2 xs:items-center ${darker ? "bg-gray-50" : "bg-white"}`}>
       <div className="flex justify-start items-center gap-4">
         <div className="flex flex-col justify-start py-5 items-start gap-1">
           {is_doctor ? (
@@ -83,7 +78,7 @@ const Date = ({
             </div>
             <div>
               <span className="text-[#293241] text-xs font-normal tracking-wide">Location:</span>
-              {/* <span className="text-[#293241] text-sm tracking-wide font-bold"> {appointment.appointment.place?.name ?? "Virtual"}</span> */}
+              <span className="text-[#293241] text-sm tracking-wide font-bold"> {appointment.appointment.place?.name ?? "Virtual"}</span>
             </div>
           </div>
         </div>
@@ -92,7 +87,7 @@ const Date = ({
         className="px-4 py-1.5 bg-[#060648] rounded-md flex justify-center items-center gap-2.5"
         onClick={() => onCancel(appointment.id)}
       >
-        <div className="text-white font-bold tracking-wide whitespace-nowrap sm:text-base xs:text-sm">Cancel date</div>
+        <div className="text-white font-bold tracking-wide whitespace-nowrap sm:text-base xs:text-sm">Cancel appoinment</div>
       </button>
     </div>
   );
@@ -107,30 +102,30 @@ type ActiveAppointmentsProps = {
 };
 
 export default function ActiveAppointments({ appointments, is_doctor, onCancel, setAlert, darker }: ActiveAppointmentsProps) {
+  const { showAlert } = useAlert();
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const [appointmentToCancel, setAppointmentToCancel] = useState(null);
+  const [appointmentToCancel, setAppointmentToCancel] = useState<number | null>(null);
 
-  // const handleCancel = (appointmentId) => {
-  //   setAppointmentToCancel(appointmentId);
-  //   setIsConfirmModalOpen(true);
-  // };
+  const handleCancel = (appointmentId: number) => {
+    setAppointmentToCancel(appointmentId);
+    setIsConfirmModalOpen(true);
+  };
 
-  // const confirmCancel = async () => {
-  //   try {
-  //     await apiClient.delete(`appointments/${appointmentToCancel}/`);
-  //     setAlert({ message: "Appointment cancelled successfully", status: "success" });
-  //     setTimeout(() => setAlert({ message: null, status: null }), 3000);
-  //     onCancel(); // Refresh appointments
-  //   } catch (err) {
-  //     const errorMessage = err.response?.data?.error || "Failed to cancel appointment";
-  //     setAlert({ message: errorMessage, status: "error" });
-  //     setTimeout(() => setAlert({ message: null, status: null }), 3000);
-  //     console.error("Cancel error:", err);
-  //   } finally {
-  //     setIsConfirmModalOpen(false);
-  //     setAppointmentToCancel(null);
-  //   }
-  // };
+  const confirmCancel = async () => {
+    try {
+      await apiClient.delete(`appointments/${appointmentToCancel}/`);
+      console.log("Appointment cancelled:", appointmentToCancel);
+      showAlert("Appointment cancelled successfully", "success");
+      onCancel(); // Refresh appointments
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.error || "Failed to cancel appointment";
+      showAlert(errorMessage, "error");
+      console.error("Cancel error:", err);
+    } finally {
+      setIsConfirmModalOpen(false);
+      setAppointmentToCancel(null);
+    }
+  };
 
   const cancelCancel = () => {
     setIsConfirmModalOpen(false);
@@ -143,10 +138,10 @@ export default function ActiveAppointments({ appointments, is_doctor, onCancel, 
       <div className="self-stretch p-0 py-4 flex flex-col justify-start items-start gap-4 sm:py-4">
         {appointments.length > 0 ? (
           appointments.map((appointment, index  ) => (
-            <Date
+            <Appointment
               key={index}
               appointment={appointment}
-              onCancel={() => {console.log("Cancel appointment ID:", appointment.id);}}
+              onCancel={handleCancel}
               is_doctor={is_doctor}
               darker={darker}
             />
@@ -157,7 +152,7 @@ export default function ActiveAppointments({ appointments, is_doctor, onCancel, 
       </div>
       {isConfirmModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="relative bg-white shadow-xl p-6 w-full max-w-md rounded-lg sm:mx-4">
+          <div className="relative w-[95%] bg-white shadow-xl p-6 max-w-md rounded-lg sm:mx-4">
             <button
               onClick={cancelCancel}
               className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
@@ -177,8 +172,8 @@ export default function ActiveAppointments({ appointments, is_doctor, onCancel, 
                 Cancel
               </button>
               <button
-                onClick={() => {console.log("Confirm cancel for appointment ID:", appointmentToCancel);}}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                onClick={confirmCancel}
+                className="px-4 py-2 bg-[#060648] text-white rounded-md hover:bg-[#05053a]"
               >
                 Confirm
               </button>

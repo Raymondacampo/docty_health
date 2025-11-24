@@ -2,7 +2,7 @@
 import { useRouter } from 'next/navigation';
 import { useLoading } from '../utils/LoadingContext';
 
-export default function GoogleButton({ setError }: { setError: (error: string) => void }) {
+export default function GoogleButton({ setError, redirect }: { setError: (error: string) => void; redirect?: string }) {
   const router = useRouter();
   const { setIsLoading } = useLoading();
 
@@ -12,9 +12,12 @@ export default function GoogleButton({ setError }: { setError: (error: string) =
       const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
       const redirectUri = `${window.location.origin}/auth/callback`;
       const scope = 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile';
+
+      const state = redirect ? `&state=${encodeURIComponent(redirect)}` : '';
+
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(
         redirectUri
-      )}&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent`;
+      )}&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent${state}`;
 
       window.location.href = authUrl;
     } catch (error) {

@@ -45,7 +45,6 @@ class DoctorSerializer(serializers.ModelSerializer):
     average_rating = serializers.SerializerMethodField()
     review_count = serializers.SerializerMethodField()
     has_availability = serializers.SerializerMethodField()
-    is_favorited = serializers.SerializerMethodField()
     cities = serializers.SerializerMethodField()
 
     class Meta:
@@ -53,32 +52,7 @@ class DoctorSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'exequatur', 'experience', 'sex', 'taking_dates',
                   'takes_virtual', 'takes_in_person', 'description', 'specialties',
                   'clinics', 'ensurances', 'average_rating', 'review_count',
-                  'has_availability', 'is_favorited', 'cities']
-
-    def get_is_favorited(self, obj):
-        request = self.context.get('request')
-        if not request:
-            print("⚡ NO request in context")
-            return False
-
-        user = getattr(request, 'user', None)
-        if not user:
-            print("⚡ NO user in request")
-            return False
-
-        if not user.is_authenticated:
-            print(f"⚡ User not authenticated: {user}")
-            return False
-
-        # Print user and doctor info
-        # print(f"⚡ Authenticated user ID: {user.id}")
-        # print(f"⚡ Favorite doctors IDs: {list(user.favorite_doctors.values_list('id', flat=True))}")
-        # print(f"⚡ Checking doctor ID: {obj.id}")
-
-        is_favorited = user.favorite_doctors.filter(pk=obj.pk).exists()
-        # print(f"⚡ is_favorited result: {is_favorited}")
-        
-        return is_favorited
+                  'has_availability', 'cities']
 
     def get_user(self, obj):
         return {
@@ -198,7 +172,7 @@ class SignupSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             password=validated_data['password'],
             gender=validated_data['gender'],  # Set gender
-            born_date=validated_data.get('date_of_birth')  # Set born_date if provided
+            born_date=validated_data.get('born_date')  # Set born_date if provided
         )
         return user
     

@@ -1,10 +1,10 @@
-import TotalRating from "../ui/TotalRatings";
-import Star from "../ui/Star";
-import LeaveAReview from "../ui/LeaveReview";
+import TotalRating from "../../ui/TotalRatings";
+import Star from "../../ui/Star";
+import LeaveAReview from "../../ui/LeaveReview";
 type ReviewType = {
   id: string | number;
   user: {
-    id: string | number;
+    id: number;
     first_name: string;
     last_name: string;
   };
@@ -13,8 +13,6 @@ type ReviewType = {
   body: string;
   created_at: string;
 };
-
-
 
 const Review = ({ review }: { review: ReviewType }) => {
   const { user, rating, headline, body, created_at } = review;
@@ -58,6 +56,7 @@ const Review = ({ review }: { review: ReviewType }) => {
 };
 
 type ReviewsProps = {
+  doctor_id?: number;
   reviews: ReviewType[];
   totalReviews: number;
   currentPage: number;
@@ -69,6 +68,7 @@ type ReviewsProps = {
 };
 
 export default function Reviews({
+  doctor_id,
   reviews,
   totalReviews,
   currentPage,
@@ -108,7 +108,9 @@ export default function Reviews({
           reviewCount={reviewCount}
           ratingDistribution={ratingDistribution}
         />
-        <LeaveAReview onReviewSubmitted={loadMoreReviews} />
+        {doctor_id &&
+          <LeaveAReview doctorId={doctor_id} onReviewSubmitted={loadMoreReviews} />
+        }
       </div>
       <div className="w-full px-2 flex-col justify-start items-start gap-10 flex">
         <div className="w-full flex-col justify-start items-start gap-6 flex">

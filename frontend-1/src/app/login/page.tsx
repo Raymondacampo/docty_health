@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { publicApiClient } from '../utils/api';
 import { login, isAuthenticated } from '../utils/auth';
 import GoogleButton from '../components/GoogleLogin';
@@ -17,7 +17,8 @@ export default function LoginPage() {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [isAuth, setIsAuth] = useState<boolean | null>(null);
-
+  const searchParams = useSearchParams(); // ← This reads ?redirect=...
+  const redirect = searchParams.get('redirect') || '';
   useEffect(() => {
     const checkAuth = async () => {
       const authenticated = await isAuthenticated();
@@ -39,7 +40,11 @@ export default function LoginPage() {
       console.log('Login successful:', data);
       localStorage.setItem('refresh_token', data.refresh);
       await login(data.access);
-      setTimeout(() => router.push('/account'), 500); // slight delay for UX
+      if (redirect) {
+        router.push(decodeURIComponent(redirect));
+      } else {
+        setTimeout(() => router.push('/account'), 100); // slight delay for UX
+      }
     } catch (err: any) {
       console.error('Login failed:', err.response?.data || err.message);
       setError('Invalid email or password');
@@ -100,7 +105,7 @@ export default function LoginPage() {
         </div>
       </form>
       <div className='w-full max-w-sm flex-col my-2 justify-center items-center gap-2.5 flex'>
-        <GoogleButton setError={setError} />
+        <GoogleButton setError={setError} redirect={redirect} />
       </div>
       <div className='flex flex-col justify-center items-center'>
         <div>
