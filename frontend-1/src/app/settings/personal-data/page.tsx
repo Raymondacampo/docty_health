@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { apiClient } from "../../utils/api";
 import { useLoading } from '../../utils/LoadingContext';
-
+import { useAlert } from "@/app/context/AlertContext";
 
 const Field = ({ title, content }: { title: string; content: string }) => {
   return (
@@ -300,6 +300,7 @@ export default function PersonalDataPage() {
   const { setIsLoading } = useLoading();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { showAlert } = useAlert();
   type PersonalData = {
     first_name: string;
     last_name: string;
@@ -360,13 +361,12 @@ export default function PersonalDataPage() {
       } else if (typeof value === 'string') {
         updatedData = { ...updatedData, [field]: value };
       }
-      console.log(`Sending update for ${field}:`, updatedData);
       const response = await apiClient.put('/auth/personal-data/', updatedData);
-      console.log('Update response:', response.data);
+      showAlert('Personal data updated successfully', 'success');
       setPersonalData(response.data);
       toggleEdit(field === 'fullName' ? 'fullName' : (field as keyof typeof editStates));
     } catch (error) {
-      console.error(`Error updating ${field}:`, error);
+      showAlert(`Failed to update ${field}. Please try again.`, 'error');
       setErrorMessage(`Failed to update ${field}. Please try again.`);
     } finally {
       setLoading(false);

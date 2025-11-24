@@ -1,36 +1,41 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import SearchHead from "./components/Head";
 import SearchFilters from "./components/Filters";
 import DoctorsResults from "./components/Results";
 import SearchAdds from "./components/Ads";
+import Loading from "../components/LoadingComponent";
 
 interface TempFilters {
   specialty: string;
   ensurance: string;
   location: string;
   sex: string;
-  takesDates: string;
+  takesDates: boolean;
+  appointmentType?: string | null;
   experienceValue: string;
 }
 
 export default function Search() {
   const router = useRouter();
+  const [loading, setLoading] = useState<boolean>(true);
   const searchParams = useSearchParams();
   const [specialty, setSpecialty] = useState<string>("");
   const [ensurance, setEnsurance] = useState<string>("");
   const [location, setLocation] = useState<string>("");
   const [sex, setSex] = useState<string>("both");
-  const [takesDates, setTakesDates] = useState<string>("any");
+  const [takesDates, setTakesDates] = useState<boolean>(false);
+  const [appointmentType, setAppointmentType] = useState<string | null>(null);
   const [experienceValue, setExperienceValue] = useState<string>("any");
   const [tempFilters, setTempFilters] = useState<TempFilters>({
     specialty: "",
     ensurance: "",
     location: "",
     sex: "both",
-    takesDates: "any",
+    takesDates: false,
+    appointmentType: null,
     experienceValue: "any",
   });
   const [showFilters, setShowFilters] = useState<boolean>(false);
@@ -40,12 +45,15 @@ export default function Search() {
   useEffect(() => {
     const newSpecialty = searchParams.get("specialty") || "";
     const newLocation = searchParams.get("location") || "";
+    const newEnsurance = searchParams.get("ensurance") || "";
+    setEnsurance(newEnsurance);
     setSpecialty(newSpecialty);
     setLocation(newLocation);
     setTempFilters((prev) => ({
       ...prev,
       specialty: newSpecialty,
       location: newLocation,
+      ensurance: newEnsurance,
     }));
   }, [searchParams]);
 
@@ -62,19 +70,26 @@ export default function Search() {
 
   useEffect(() => {
     if (!isXsScreen && (specialty || location)) {
-      const query = new URLSearchParams({
-        ...(specialty && { specialty }),
-        ...(ensurance && { ensurance }),
-        ...(location && { location }),
-        ...(sex && sex !== "both" && { sex }),
-        ...(takesDates && takesDates !== "any" && { takes_dates: takesDates }),
-        ...(experienceValue && experienceValue !== "any" && { experienceValue }),
-      });
+      const params: Record<string, string> = {};
+      if (specialty) params.specialty = specialty;
+      if (ensurance) params.ensurance = ensurance;
+      if (location) params.location = location;
+      if (sex && sex !== "both") params.sex = sex;
+      if (takesDates) params.takes_dates = String(takesDates);
+      if (appointmentType) params.appointment_type = appointmentType;
+      if (experienceValue && experienceValue !== "any")
+        params.experienceValue = experienceValue;
+      const query = new URLSearchParams(params);
       router.push(`?${query.toString()}`, { scroll: false });
     }
-  }, [specialty, ensurance, location, sex, takesDates, experienceValue, isXsScreen, router]);
+  }, [specialty, ensurance, location, sex, takesDates, appointmentType, experienceValue, isXsScreen, router]);
+
+  useEffect(() => {
+    setLoading(false);
+  }, [searchParams]);
 
   const applyFilters = () => {
+    console.log("Applying filters:", tempFilters);
     setSpecialty(tempFilters.specialty);
     setEnsurance(tempFilters.ensurance);
     setLocation(tempFilters.location);
@@ -88,8 +103,12 @@ export default function Search() {
     setTempFilters((prev) => ({ ...prev, ...newFilters }));
   };
 
+  if (loading) {
+    return <Loading text="Searching for doctors..." />;
+  }
+
   return (
-    <div className="w-full mt-[10dvh] flex flex-col mb-16">
+    <div className="w-full mt-[12dvh] sm:mt-[10dvh] flex flex-col mb-16">
       <SearchHead
         specialty={specialty}
         location={location}
@@ -122,11 +141,17 @@ export default function Search() {
             onSex={(value: string) =>
               isXsScreen ? updateTempFilters({ sex: value }) : setSex(value)
             }
-            takes_dates={isXsScreen ? tempFilters.takesDates : takesDates}
-            onTake={(value: string) =>
+            takes_appointments={isXsScreen ? tempFilters.takesDates : takesDates}
+            onTake={(value: boolean) =>
               isXsScreen
                 ? updateTempFilters({ takesDates: value })
                 : setTakesDates(value)
+            }
+            appointmentType={isXsScreen ? tempFilters.appointmentType : appointmentType}
+            onAppointment={(value: string) =>
+              isXsScreen
+                ? updateTempFilters({ appointmentType: value })
+                : setAppointmentType(value)
             }
             experienceValue={
               isXsScreen ? tempFilters.experienceValue : experienceValue
@@ -141,13 +166,14 @@ export default function Search() {
             isXsScreen={isXsScreen}
           />
         )}
-        <div className="flex max-w-[1400px] ml-auto w-full">
+        <div className="flex max-w-[1400px] justify-between w-full">
           <DoctorsResults
             specialty={specialty}
             location={location}
             ensurance={ensurance}
             sex={sex}
             takes_dates={takesDates}
+            appointmentType={appointmentType}
             experienceValue={experienceValue}
             onFiltersToggle={() => setShowFilters(true)}
             onCountChange={setCount}

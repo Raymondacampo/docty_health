@@ -10,7 +10,7 @@ from django.conf import settings
 from rest_framework.generics import RetrieveUpdateAPIView
 from .serializers import UserProfileSerializer, SignupSerializer, DoctorSignupSerializer, EnsuranceSerializer
 from .serializers import ClinicSerializer, SpecialtySerializer, DoctorSerializer, ReviewSerializer, WeekAvailabilitySerializer, WeekDaySerializer, ScheduleSerializer, AppointmentSerializer
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.decorators import api_view
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
@@ -77,22 +77,39 @@ class SignupView(APIView):
 
 class DoctorSignupView(APIView):
     permission_classes = []
-    
+
     def post(self, request):
         serializer = DoctorSignupSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
+        
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # This ensures BOTH user + doctor are saved atomically
+            with transaction.atomic():
+                user = serializer.save()  # This should return the User instance
+
+            # Now safely generate tokens AFTER everything is saved
             refresh = RefreshToken.for_user(user)
+            
             return Response({
                 'access': str(refresh.access_token),
                 'refresh': str(refresh),
                 'user': {
                     'id': user.id,
                     'username': user.username,
-                    'email': user.email
+                    'email': user.email,
+                    'is_doctor': True,
+                    # Optional: include doctor-specific info
+                    'doctor_id': user.doctor_profile.id if hasattr(user, 'doctor_profile') else None,
                 }
             }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            return Response({
+                'error': 'Signup failed',
+                'detail': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
@@ -780,13 +797,40 @@ class DoctorSearchView(APIView):
         specialty = request.query_params.get('specialty')
         ensurance = request.query_params.get('ensurance')
         location_name = request.query_params.get('location')  # e.g., "Santo Domingo, Distrito Nacional"
-        latitude = request.query_params.get('latitude')
-        longitude = request.query_params.get('longitude')
-        radius = request.query_params.get('radius', 10)  # Default 10 km
         sex = request.query_params.get('sex')
         takes_dates = request.query_params.get('takes_dates')
+        appointment_type = request.query_params.get('appointment_type')
         experience_min = request.query_params.get('experience_min')
+        logger.info("--- Received Query Parameters ---")
+        logger.info(request.query_params)
+        logger.info("---------------------------------")        # logger.info(f"Search parameters received: specialty={specialty}, ensurance={ensurance}, location={location_name}, sex={sex}, takes_dates={takes_dates}, experience_min={experience_min} ")        
+        doctor_filters = {}
+        if specialty:
+            doctor_filters['specialties__name__icontains'] = specialty
+        if ensurance and ensurance != 'any':
+            doctor_filters['ensurances__name__icontains'] = ensurance
+        if location_name:
+            doctor_filters['location_name__icontains'] = location_name
+        if experience_min and experience_min != 'any':
+            try:
+                doctor_filters['experience__gte'] = int(experience_min)
+            except ValueError:
+                pass
+        if sex and sex != 'both':
+            doctor_filters['sex__in'] = sex
+        else:
+            doctor_filters['sex__in'] = ['M', 'F']
 
+        if takes_dates and takes_dates in ['true']:
+            doctor_filters['taking_dates'] = takes_dates in ['true']
+        if appointment_type and appointment_type in ['virtual', 'in_person']:
+            if appointment_type == 'virtual':
+                doctor_filters['takes_virtual'] = True
+            elif appointment_type == 'in_person':
+                doctor_filters['takes_in_person'] = True
+
+        doctors = Doctor.objects.filter(**doctor_filters)
+        logger.info(f"Filtered doctors based on initial parameters: {doctor_filters}")
         # Filter by city/state if location is provided
         if location_name:
             try:
@@ -821,37 +865,51 @@ class DoctorSearchView(APIView):
             elif takes_dates == 'in_person':
                 queryset = queryset.filter(taking_dates=True, takes_in_person=True)
 
-        # Geospatial filter if lat/lon provided
-        if latitude and longitude:
-            try:
-                lat = float(latitude)
-                lon = float(longitude)
-                radius_km = float(radius)
-                user_point = Point(lon, lat, srid=4326)
-                queryset = queryset.filter(
-                    clinics__location__distance_lte=(user_point, D(km=radius_km))
-                ).annotate(
-                    distance=Distance('clinics__location', user_point)
-                ).order_by('distance')
-            except ValueError:
-                return Response({"error": "Invalid latitude, longitude, or radius"}, status=status.HTTP_400_BAD_REQUEST)
+        # # Geospatial filter if lat/lon provided
+        # if latitude and longitude:
+        #     try:
+        #         lat = float(latitude)
+        #         lon = float(longitude)
+        #         radius_km = float(radius)
+        #         user_point = Point(lon, lat, srid=4326)
+        #         queryset = queryset.filter(
+        #             clinics__location__distance_lte=(user_point, D(km=radius_km))
+        #         ).annotate(
+        #             distance=Distance('clinics__location', user_point)
+        #         ).order_by('distance')
+        #     except ValueError:
+        #         return Response({"error": "Invalid latitude, longitude, or radius"}, status=status.HTTP_400_BAD_REQUEST)
 
         queryset = queryset.distinct()
 
         paginator = self.pagination_class()
-        page = paginator.paginate_queryset(queryset, request)
+        page = paginator.paginate_queryset(doctors, request)
         serializer = DoctorSerializer(page, many=True)
 
         return paginator.get_paginated_response(serializer.data)
     
 class DoctorDetailView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, doctor_id):
+        print("User:", request.user)
         try:
             doctor = Doctor.objects.get(id=doctor_id)
             serializer = DoctorSerializer(doctor, context={'request': request})
             return Response(serializer.data, status=status.HTTP_200_OK)
+        except Doctor.DoesNotExist:
+            return Response({"error": "Doctor not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class DoctorInFavorite(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, doctor_id):
+        try:
+            doctor = Doctor.objects.get(id=doctor_id)
+            is_favorite = doctor in request.user.favorite_doctors.all()
+            return Response({"is_favorite": is_favorite}, status=status.HTTP_200_OK)
         except Doctor.DoesNotExist:
             return Response({"error": "Doctor not found"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
@@ -907,6 +965,7 @@ class CreateReviewView(APIView):
         try:
             doctor = Doctor.objects.get(id=doctor_id)
             user = request.user
+            print(user)
 
             # Check if user has already reviewed this doctor
             if Review.objects.filter(user=user, doctor=doctor).exists():

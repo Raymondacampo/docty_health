@@ -1,14 +1,16 @@
 import React, { useState } from "react";
 
 interface TakesDatesFilterProps {
-  value: string;
-  onChange: (value: string) => void;
+  taking_appointments: boolean;
+  appointment_type?: string | null;
+  onChange: (value: boolean) => void;
+  onAppointment: (value: string) => void;
 }
 
-export default function TakesDatesFilter({ value, onChange }: TakesDatesFilterProps) {
-  const [isDoctyChecked, setIsDoctyChecked] = useState<boolean>(value === "true" || value === "virtual" || value === "in_person");
-  const [isVirtualChecked, setIsVirtualChecked] = useState<boolean>(value === "virtual");
-  const [isInPersonChecked, setIsInPersonChecked] = useState<boolean>(value === "in_person");
+export default function TakesDatesFilter({ taking_appointments, appointment_type, onChange, onAppointment }: TakesDatesFilterProps) {
+  const [isDoctyChecked, setIsDoctyChecked] = useState<boolean>(taking_appointments === true);
+  const [isVirtualChecked, setIsVirtualChecked] = useState<boolean>(appointment_type === "virtual");
+  const [isInPersonChecked, setIsInPersonChecked] = useState<boolean>(appointment_type === "in_person");
 
   const handleDoctyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
@@ -16,9 +18,9 @@ export default function TakesDatesFilter({ value, onChange }: TakesDatesFilterPr
     if (!checked) {
       setIsVirtualChecked(false);
       setIsInPersonChecked(false);
-      onChange(""); // No filter applied
+      onChange(false); // No filter applied
     } else {
-      onChange("true"); // Default to just taking_dates=true
+      onChange(true); // Default to just taking_dates=true
     }
   };
 
@@ -27,11 +29,11 @@ export default function TakesDatesFilter({ value, onChange }: TakesDatesFilterPr
     setIsVirtualChecked(checked);
     if (checked) {
       setIsInPersonChecked(false); // Mutually exclusive for simplicity
-      onChange("virtual");
+      onAppointment("virtual");
     } else if (isInPersonChecked) {
-      onChange("in_person");
+      onAppointment("virtual");
     } else {
-      onChange("true");
+       onAppointment("virtual");;
     }
   };
 
@@ -40,11 +42,11 @@ export default function TakesDatesFilter({ value, onChange }: TakesDatesFilterPr
     setIsInPersonChecked(checked);
     if (checked) {
       setIsVirtualChecked(false); // Mutually exclusive for simplicity
-      onChange("in_person");
+      onAppointment("in_person");
     } else if (isVirtualChecked) {
-      onChange("virtual");
+      onAppointment("in_person");
     } else {
-      onChange("true");
+      onAppointment("in_person");
     }
   };
 

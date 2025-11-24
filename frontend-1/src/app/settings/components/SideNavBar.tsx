@@ -34,6 +34,8 @@ const SimpleSideNavbar: React.FC = () => {
       return 'security';
     } else if (path.includes('doctor-settings')) {
       return 'doctor-settings';
+    }else if (path.includes('appointment-system')) {
+      return 'appointment-system';
     }
     return 'my-account';
   };
@@ -108,6 +110,7 @@ const SimpleSideNavbar: React.FC = () => {
             </Link>
           ))}
           {!isClient && (
+            <>
             <Link
                 href={"/settings/doctor-settings"}
                 className={`
@@ -119,8 +122,23 @@ const SimpleSideNavbar: React.FC = () => {
                 `}
                 onClick={() => setActivePage("doctor-settings")}
               >
-                <span>doctor settings</span>
-            </Link>
+                <span>Doctor settings</span>
+            </Link>     
+                        <Link
+                href={"/settings/appointment-system"}
+                className={`
+                  flex items-center px-4 py-3 rounded-sm text-sm  transition-colors duration-200 w-full border-b border-gray-200
+                  ${activePage === "appointment-system" 
+                    ? 'bg-[#293241] font-bold text-white' 
+                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-medium'
+                  }
+                `}
+                onClick={() => setActivePage("appointment-system")}
+              >
+                <span>Appointment system</span>
+            </Link>       
+            </>
+
           )}
         </div>
       </div>

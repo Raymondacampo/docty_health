@@ -9,38 +9,12 @@ import { apiClient } from "../utils/api";
 import { useRouter } from "next/navigation";
 import { isAuthenticated } from "../utils/auth";
 import { fetchActiveAppointments } from "../lib/appointments";
-
-// const active_appointments = [
-//     {
-//         "appointment_id": 1,
-//         "week_availability": {
-//             "id": 1,
-//             "doctor": 2,
-//             "week": "2025-09-17"
-//         },
-//         "weekday": {
-//             "id": 1,
-//             "week_availability": 1,
-//             "day": "2025-09-17",
-//             "hours": "['08:00', '08:30', '09:00']",
-//             "place": 1
-//         },
-//         "time": "08:30",
-//         "active": true,
-//         "patient": {
-//             "id": 2,
-//             "first_name": "Raymond",
-//             "last_name": "A’campo",
-//             "profile_picture": undefined
-//         }
-//     }
-// ]
-
+import Loading from "../components/LoadingComponent";
 
 export default function AccountPage() {
     const [isDoctor, setIsDoctor] = useState(false);
     const router = useRouter();
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [active_appointments, setActiveAppointments] = useState<any[]>([]);
     const [favoriteDoctors, setFavoriteDoctors] = useState<any[]>([]);
     // const isauth = isAuthenticated();
@@ -48,9 +22,7 @@ export default function AccountPage() {
         // Fetch user role from API or context
         const fetchUserRole = async () => {
             try {
-                setLoading(true);
                 const response = await apiClient.get('/auth/me/');
-                setLoading(false);
                 setIsDoctor(response.data.is_doctor); // Adjust based on actual API response
             } catch (error) {
                 console.error('Error fetching user role:', error);
@@ -60,11 +32,9 @@ export default function AccountPage() {
 
         const fetchPersonalData = async () => {
             try {
-                setLoading(true);
                 const response = await apiClient.get('/auth/personal-data/');
                 console.log(response.data);
                 setFavoriteDoctors(response.data.favorite_doctors || []);
-                setLoading(false);
                 // Process personal details as needed
             } catch (error) {
                 console.error('Error fetching personal details:', error);
@@ -89,17 +59,22 @@ export default function AccountPage() {
             console.log("User is not authenticated");
             router.push('/login');
             } else {
-            console.log("User is authenticated");
-            fetchUserRole();
-            fetchPersonalData();
-            loadAppointments();
+                try{
+                    console.log("User is authenticated");
+                    fetchUserRole();
+                    fetchPersonalData();
+                    loadAppointments();                    
+                }finally{
+                    setLoading(false);
+                }
             }
         };
+
         checkAuthAndFetch();
     }, []);
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <Loading />;
     }
 
     return (

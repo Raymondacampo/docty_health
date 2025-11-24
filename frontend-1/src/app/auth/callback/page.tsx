@@ -16,6 +16,8 @@ export default function GoogleCallback() {
     const handleCallback = async () => {
       setIsLoading(true);
       const code = searchParams.get('code');
+      const redirectUrl = searchParams.get('state');
+
       if (!code) {
         setError('No authorization code received.');
         setIsLoading(false);
@@ -23,8 +25,13 @@ export default function GoogleCallback() {
       }
 
       try {
-        await login(code, true, true); // isGoogle=true, isGoogleCallback=true
-        // No need to setIsLoading(false) here; redirect in login() will occur
+        await login(code, true, true, redirectUrl); // isGoogle=true, isGoogleCallback=true
+        if (redirectUrl) {
+            router.replace(redirectUrl);
+        } else {
+            // Default path if no redirect URL was provided
+            router.replace('/dashboard'); 
+        }
       } catch (err: any) {
         console.error('Google callback error:', err.response?.data || err.message);
         setError('Failed to authenticate with Google. Please try again.');
@@ -33,7 +40,7 @@ export default function GoogleCallback() {
     };
 
     handleCallback();
-  }, [searchParams, setIsLoading]);
+  }, [searchParams, setIsLoading, router]);
 
   if (error) {
     return (

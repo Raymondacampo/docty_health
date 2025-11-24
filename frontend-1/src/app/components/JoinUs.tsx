@@ -1,5 +1,6 @@
 import Image from "next/image";
 import doctors from "@/assets/images/doctors.png";
+import Link from "next/dist/client/link";
 export default function JoinUs() {
     return(
         <div className="w-full flex flex-col items-center justify-center py-20 gap-8 px-4
@@ -17,7 +18,9 @@ export default function JoinUs() {
             <div className="flex flex-col items-center text-center text-black">
                 <h1 className="text-4xl font-bold">Are you a doctor?</h1>
                 <p className="text-lg mt-1">Join our platform to reach more patients and grow your practice.</p>
-                <button className="bg-[#293241] text-2xl text-white px-6 py-2.5 mt-6 rounded">Join Now</button>
+                <Link href="/doctor-signup" className="no-underline mt-6">
+                    <button className="bg-[#293241] text-2xl text-white px-6 py-2.5  rounded cursor-pointer">Join Now</button>
+                </Link>
             </div>
         </div>
     );

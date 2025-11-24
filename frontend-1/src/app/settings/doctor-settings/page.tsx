@@ -10,6 +10,7 @@ import { SpecialtyMenu } from './components/specialty/SpecialtyMenu';
 import InsuranceSearch from './components/insurance/InsuranceSearch';
 import { InsuranceMenu } from './components/insurance/InsuranceMenu';
 import { apiClient } from '@/app/utils/api';
+import { useAlert } from '@/app/context/AlertContext';
 
 interface FieldProps {
   title: string;
@@ -131,14 +132,14 @@ const ModField: React.FC<ModFieldProps> = ({ title, content, bb, onModify, isMod
           {title === 'Description' && (
             <button
               onClick={handleSaveDescriptionLocal}
-              className="text-white bg-[#293241] hover:bg-[#293241]/90 cursor-pointer text-sm font-normal font-['Inter'] px-2.5 py-1 rounded-md"
+              className="text-white bg-[#293241] hover:bg-[#293241]/90 cursor-pointer text-sm font-normal px-2.5 py-1 rounded-md"
             >
               Save
             </button>
           )}
           <button
             onClick={onCancel}
-            className="text-white bg-[#293241] hover:bg-[#293241]/90 cursor-pointer text-sm font-normal font-['Inter'] px-2.5 py-1 rounded-md"
+            className="text-white bg-[#293241] hover:bg-[#293241]/90 cursor-pointer text-sm font-normal px-2.5 py-1 rounded-md"
           >
             Cancel
           </button>
@@ -163,7 +164,7 @@ export default function DoctorSettingsPage() {
   const { setIsLoading } = useLoading();
   const [modifyingField, setModifyingField] = useState<string | null>(null);
   const [user, setUser] = useState<DoctorData | null>(null);
-  const [alert, setAlert] = useState<{msg: string, status: string} | null>(null);
+  const { showAlert } = useAlert();
 
   const fetchUser = async () => {
     try {
@@ -181,12 +182,10 @@ export default function DoctorSettingsPage() {
     fetchUser();
   }, []);
 
-  const onReload = ({msg, status}: {msg: string, status: string}) => {
-    setAlert({msg, status});
+  const onReload = () => {
     fetchUser();
     setModifyingField(null);
-    setTimeout(() => setAlert(null), 3000);
-  };
+    };
 
   const handleModify = (field: string) => {
     setModifyingField(field);
@@ -199,15 +198,14 @@ export default function DoctorSettingsPage() {
   const handleSaveDescription = async (description: string) => {
     try {
       await apiClient.put('/auth/update_description/', { description });
-      console.log('Description updated successfully');
+      showAlert('Description updated successfully', 'success');
       // Refetch user data to update the UI
       const response = await apiClient.get('/auth/personal-data/');
       setUser(response.data.doctor);
       setModifyingField(null);
-      onReload({msg: 'Description updated successfully', status: 'success'});
+      onReload();
     } catch (error) {
-      console.error('Failed to update description:', error);
-      console.error('Failed to save description. Please try again.');
+      showAlert('Failed to save description. Please try again.', 'error');
     }
   };
 
@@ -217,11 +215,6 @@ export default function DoctorSettingsPage() {
 
   return (
     <div className="my-[10dvh] max-w-5xl xl:ml-16 text-black">
-      {alert && (
-        <div className={`fixed top-4 right-4 px-8 font-bold py-4 rounded-md text-black z-[9999] ${alert.status === 'success' ? 'bg-blue-100' : 'bg-red-500'}`}>
-          {alert.msg}
-        </div>
-      )}
       <h1 className="text-2xl mb-8">Doctor Settings</h1>
       <div className="xl:px-4 flex flex-col gap-6">
         <Field title="Exequatur" content={user?.exequatur || '123456789'} wide />

@@ -1,39 +1,25 @@
 
 import { useState, useEffect, useRef } from "react";
-// import { getApiImgUrl } from "../utils/api";
-// import AverageRatingStars from "./components/AverageRatingStar";
-// import FavoriteButton from "./components/FavouriteButton";
-// import AppointmentModal from "./components/AppointmentModal";
 import { UserCircleIcon } from "@heroicons/react/24/solid";
-import FavoriteButton from "../ui/FavoriteButton";
-import AverageRatingStars from "../ui/AverageRatingStar";
-import AppointmentModal from "../ui/AppointmentModal";
+import FavoriteButton from "../../ui/FavoriteButton";
+import AverageRatingStars from "../../ui/AverageRatingStar";
+import AppointmentModal from "../../ui/AppointmentModal";
 import Image from "next/image";
-type Doctor = {
-  id: number;
-  is_favorited: boolean;
-  specialties: { name: string }[];
-  cities?: string[];
-  user: {
-    first_name: string;
-    last_name: string;
-    profile_picture?: string;
-    email: string;
-  };
-};
+import type { DoctorPageProps } from "../page"; 
 
 interface AboutProps {
-  doctor: Doctor;
+  doctor: DoctorPageProps;
   averageRating: number;
   reviewCount: number;
+  isUserAuthenticated: boolean | null;
 }
 
 export default function About({ 
   doctor, 
   averageRating, 
   reviewCount, 
+  isUserAuthenticated
 }: AboutProps) {
-  // const backendBaseUrl = getApiImgUrl();
   const menuRef = useRef(null);
   const [isMenuFixed, setIsMenuFixed] = useState(false);
   const menuOriginalTop = useRef(null);
@@ -68,6 +54,7 @@ export default function About({
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+    console.log(isUserAuthenticated)
   }, []);
 
   return (
@@ -110,7 +97,9 @@ export default function About({
                     ( {reviewCount} reviews )
                   </p>
                 </div>
-                <FavoriteButton isFavorited={doctor.is_favorited} doctorId={doctor.id} />
+                {isUserAuthenticated !== null && (
+                  <FavoriteButton doctorId={doctor.id} isUserAuthenticated={isUserAuthenticated} />
+                )}
               </div>
             </div>
           </div>

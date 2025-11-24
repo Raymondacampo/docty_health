@@ -1,17 +1,9 @@
 'use client';
 
-import { useEffect, useState, FormEvent, ChangeEvent } from 'react';
+import { useState, FormEvent, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '../utils/api';
-// import GoogleButton from '../GoogleLogin';
-// import { useUser } from '@/hooks/User';
-// import LoadingComponent from '../LoadingComponent';
-
-interface User {
-  email: string;
-  id: string;
-  username: string;
-}
+import { login } from '../utils/auth';
 
 interface FormData {
   first_name: string;
@@ -20,7 +12,7 @@ interface FormData {
   password: string;
   confirm_password: string;
   date_of_birth: string;
-  sex: string;
+  gender: string;
 }
 
 interface Errors {
@@ -32,7 +24,7 @@ interface Errors {
   password?: string;
   confirm_password?: string;
   date_of_birth?: string;
-  sex?: string;
+  gender?: string;
 }
 
 interface FormFieldProps {
@@ -71,6 +63,7 @@ const FormField = ({ text, type, name, placeholder, onChange, err, extra, checke
         type={type}
         name={name}
         placeholder={placeholder}
+        autoComplete={type === 'password' ? 'new-password' : undefined}
         onChange={onChange}
         className={`self-stretch px-4 py-3 focus:outline-none text-black rounded-lg border-2 border-gray-500/40 justify-start items-center gap-2.5 inline-flex `}
       />
@@ -80,7 +73,6 @@ const FormField = ({ text, type, name, placeholder, onChange, err, extra, checke
 };
 
 export default function SignupForm() {
-//   const { user, loading } = useUser();
   const router = useRouter();
   const [formData, setFormData] = useState<FormData>({
     first_name: '',
@@ -89,7 +81,7 @@ export default function SignupForm() {
     password: '',
     confirm_password: '',
     date_of_birth: '',
-    sex: '',
+    gender: '',
   });
   const [errors, setErrors] = useState<Errors>({});
   const [isLoading, setLoading] = useState<boolean>(false);
@@ -105,22 +97,22 @@ export default function SignupForm() {
     
     let newValue = type === 'checkbox' ? (checked ? value : '') : value;
     
-    // For sex field, ensure only one checkbox is selected
-    if (type === 'checkbox' && name === 'sex') {
-      // Uncheck the other checkbox by clearing sex if needed
+    // For gender field, ensure only one checkbox is selected
+    if (type === 'checkbox' && name === 'gender') {
+      // Uncheck the other checkbox by clearing gender if needed
       if (checked) {
-        setFormData({ ...formData, sex: value });
-      } else if (formData.sex === value) {
-        setFormData({ ...formData, sex: '' });
+        setFormData({ ...formData, gender: value });
+      } else if (formData.gender === value) {
+        setFormData({ ...formData, gender: '' });
       } else {
-        setFormData({ ...formData, sex: formData.sex });
+        setFormData({ ...formData, gender: formData.gender });
       }
     } else {
       setFormData({ ...formData, [name]: newValue });
     }
 
     let newErrors: Errors = { ...errors };
-    if (newValue.trim() === '' && name !== 'sex') {
+    if (newValue.trim() === '' && name !== 'gender') {
       newErrors[name] = `${name.replace('_', ' ').replace('confirm password', 'Repeat password')} is required`;
     } else {
       delete newErrors[name];
@@ -151,11 +143,11 @@ export default function SignupForm() {
       }
     }
 
-    if (name === 'sex') {
-      if (newValue.trim() !== '' && !['male', 'female'].includes(newValue)) {
-        newErrors.sex = 'Please select a valid option';
+    if (name === 'gender') {
+      if (newValue.trim() !== '' && !['M', 'F'].includes(newValue)) {
+        newErrors.gender = 'Please select a valid option';
       } else {
-        delete newErrors.sex;
+        delete newErrors.gender;
       }
     }
 
@@ -169,7 +161,7 @@ export default function SignupForm() {
 
     let validationErrors: Errors = {};
     Object.keys(formData).forEach((key) => {
-      if ((formData[key as keyof FormData] as string).trim() === '' && key !== 'confirm_password' && key !== 'sex') {
+      if ((formData[key as keyof FormData] as string).trim() === '' && key !== 'confirm_password' && key !== 'gender') {
         validationErrors[key] = `${key.replace('_', ' ').replace('confirm password', 'Repeat password')} is required`;
       }
     });
@@ -186,8 +178,8 @@ export default function SignupForm() {
       validationErrors.confirm_password = 'Passwords do not match';
     }
 
-    if (!formData.sex || !['male', 'female'].includes(formData.sex)) {
-      validationErrors.sex = 'Please select your sex';
+    if (!formData.gender || !['M', 'F'].includes(formData.gender)) {
+      validationErrors.gender = 'Please select your gender';
     }
 
     if (Object.keys(validationErrors).length > 0) {
@@ -198,9 +190,9 @@ export default function SignupForm() {
 
     try {
       const { data } = await apiClient.post('/auth/signup/', formData);
-      localStorage.setItem('access_token', data.access);
+      await login(data.access);
       localStorage.setItem('refresh_token', data.refresh);
-      router.push('/account');
+      setTimeout(() => router.push('/account'), 500); // slight delay for UX
     } catch (err: any) {
       if (err.response?.data) {
         setErrors(err.response.data);
@@ -270,21 +262,21 @@ export default function SignupForm() {
                 <FormField
                   text="Male"
                   type="checkbox"
-                  name="sex"
+                  name="gender"
                   onChange={handleChange}
-                  checked={formData.sex === 'male'}
-                  value="male"
+                  checked={formData.gender === 'M'}
+                  value="M"
                 />
                 <FormField
                   text="Female"
                   type="checkbox"
-                  name="sex"
+                  name="gender"
                   onChange={handleChange}
-                  checked={formData.sex === 'female'}
-                  value="female"
+                  checked={formData.gender === 'F'}
+                  value="F"
                 />
               </div>
-              {errors.sex && <span className="text-red-500 text-sm">{errors.sex}</span>}
+              {errors.gender && <span className="text-red-500 text-sm">{errors.gender}</span>}
             </div>
             <FormField
               text="Password"
@@ -318,7 +310,7 @@ export default function SignupForm() {
             <div>
               <span className="text-[#293241] text-xs font-semibold tracking-wide">Are you a doctor?</span>
               <span className="text-[#4285f4] text-sm font-semibold tracking-wide"> </span>
-              <a href="/doctor_signup" className="text-blue-500 text-sm font-semibold tracking-wide">Sign up as a doctor</a>
+              <a href="/doctor-signup" className="text-blue-500 text-sm font-semibold tracking-wide">Sign up as a doctor</a>
             </div>  
           </div>
         </div>

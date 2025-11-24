@@ -1,4 +1,4 @@
-import ClinicMap from "../ui/ClinicMap";
+import ClinicMap from "../../ui/ClinicMap";
 
 type LocationType = {
     name: string;
