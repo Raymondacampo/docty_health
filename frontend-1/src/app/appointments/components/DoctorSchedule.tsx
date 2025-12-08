@@ -4,7 +4,7 @@ import { FaEllipsisV } from 'react-icons/fa';
 import { apiClient } from '@/app/utils/api';
 import ScheduleCreationModal from './ScheduleCreationModal';
 import { useAlert } from '@/app/context/AlertContext';
-import type { ScheduleType } from '../page';
+import type { ScheduleType } from '../../settings/appointment-system/page';
 import { isObject } from 'framer-motion';
 
 interface DoctorScheduleProps {
