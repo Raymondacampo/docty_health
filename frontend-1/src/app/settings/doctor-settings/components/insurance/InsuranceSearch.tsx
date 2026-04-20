@@ -57,7 +57,7 @@ export default function InsuranceSearch({ onInsuranceAdded }: InsuranceSearchPro
             setIsOpen(true);
             fetchInsurances();
           }}
-          className="text-white text-sm font-normal bg-[#293241] px-2 py-1.5 rounded-sm"
+          className="text-white text-sm font-normal hover:bg-[#060648]/85 bg-[#060648] px-2 py-1.5 rounded-sm"
         >
           Add +
         </button>
@@ -90,7 +90,7 @@ export default function InsuranceSearch({ onInsuranceAdded }: InsuranceSearchPro
           )}
           <button
             onClick={() => setIsOpen(false)}
-            className="mt-2 text-white bg-[#293241] hover:bg-[#293241]/90 cursor-pointer text-sm font-normal px-2.5 py-2 rounded-md"
+            className="mt-2 text-white hover:bg-[#060648]/85 bg-[#060648] cursor-pointer text-sm font-normal px-2.5 py-2 rounded-md"
           >
             Cancel
           </button>

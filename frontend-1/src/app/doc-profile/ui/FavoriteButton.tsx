@@ -10,16 +10,10 @@ export default function FavoriteButton({ doctorId, isUserAuthenticated }: { doct
   const router = useRouter();
 
   useEffect(() => {
-    console.log("isUserAuthenticated", isUserAuthenticated);
     const fetchFavoriteStatus = async () => {
-      if (!isUserAuthenticated) {
-        const redirectUrl = encodeURIComponent(window.location.pathname);
-        router.push(`/login?redirect=${redirectUrl}`);
-        return;
-      } else {
+      if (isUserAuthenticated) {
         try {
           const isfav = await apiClient.get(`/doctor_in_favorite/${doctorId}/`);
-          console.log("is fadsdsdsdsdv", isfav.data);
           setFavorited(isfav.data.is_favorite);
         } catch (error) {
           console.error("Failed to fetch favorite status", error);
@@ -30,8 +24,12 @@ export default function FavoriteButton({ doctorId, isUserAuthenticated }: { doct
   }, []);
 
   const handleFavoriteToggle = async () => {
-    setFavorited(!favorited);
     try {
+      if (!isUserAuthenticated) {
+        const redirectUrl = encodeURIComponent(window.location.pathname);
+        router.push(`/login?redirect=${redirectUrl}`);
+        return;
+      }
       const response = await apiClient.post(`/auth/toggle_favorite/${doctorId}/`);
       setFavorited(response.data.is_favorited);
       showAlert(

@@ -48,17 +48,21 @@ export default function SearchFilters({
   isXsScreen,
 }: SearchFiltersProps) {
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ width: 0, opacity: 0, scaleX: 0, transformOrigin: 'left' }}
-        animate={{ width: 'auto', opacity: 1, scaleX: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.5 }}
-        className={`h-[100dvh] w-full inset-0  flex justify-center gap-5
-          xl:items-center xl:w-auto xl:h-auto
-          sm:max-w-[350px] sm:top-0 sm:left-0 sm:fixed shadow-sm z-60 
-          ` + (isXsScreen ? "fixed pb-12" : "xl:relative")}
-      >
+    // <AnimatePresence>
+    //   <motion.div
+    //     initial={{ width: 0, opacity: 0, scaleX: 0, transformOrigin: 'left' }}
+    //     animate={{ width: 'auto', opacity: 1, scaleX: 1 }}
+    //     exit={{ opacity: 0 }}
+    //     transition={{ duration: 0.5 }}
+    //     className={`h-[100dvh] w-full inset-0  flex justify-center gap-5
+    //       xl:items-center xl:w-auto xl:h-auto
+    //       sm:max-w-[350px] sm:top-0 sm:left-0 sm:fixed shadow-sm z-60 
+    //       ` + (isXsScreen ? "fixed pb-12" : "xl:relative")}
+    //   >
+    <div className={`h-[100dvh] w-full inset-0  flex justify-center gap-5
+      xl:items-center xl:w-auto xl:h-auto
+      sm:max-w-[350px] sm:top-0 sm:left-0 sm:fixed shadow-sm z-60 `+ (isXsScreen ? "fixed pb-12" : "xl:relative")}>
+          
         <div
           className={`p-4 w-full bg-white flex-col justify-start items-start gap-8 flex h-auto
             xl:w-80 xl:h-auto
@@ -91,20 +95,20 @@ export default function SearchFilters({
               </button>
             </div>
 
-            <div className="self-stretch flex-col justify-start items-start gap-5 flex px-2">
+            <div className="self-stretch flex-col justify-start items-start gap-5 flex px-2 relative">
               <div className="w-full flex flex-col justify-start gap-1.5">
                 <div className="font-lg text-lg text-gray-700">Specialty</div>
-                <div className="h-[40px] border rounded-md border-black">
+                <div className="h-[40px] border rounded-md border-gray-400 w-full">
                   <SpecialtySearchBar
                     value={specialty}
                     onChange={onSpecialty}
-                    round={"rounded-md text-sm"}
+                    round={"rounded-md text-sm border-gray-200"}
                   />
                 </div>
               </div>
               <div className="w-full flex flex-col justify-start gap-1.5">
                 <div className="font-lg text-lg text-gray-700">City</div>
-                <div className="h-[40px] border border-black rounded-md">
+                <div className="h-[40px] border border-gray-400 w-full rounded-md">
                   <CityStateSearchBar
                     value={location}
                     onChange={onLocation}
@@ -114,7 +118,7 @@ export default function SearchFilters({
               </div>
               <div className="w-full flex flex-col justify-start gap-1.5">
                 <div className="font-lg text-lg text-gray-700">Insurance</div>
-                <div className="h-[40px] border border-black rounded-md">
+                <div className="h-[40px] border border-gray-400 w-full rounded-md">
                   <InsuranceSearchBar
                     value={ensurance}
                     onChange={onEnsurance}
@@ -139,7 +143,7 @@ export default function SearchFilters({
 
           )}
         </div>
-      </motion.div>
-    </AnimatePresence>
+    </div>
+    // </AnimatePresence>
   );
 }

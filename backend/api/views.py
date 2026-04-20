@@ -889,7 +889,7 @@ class DoctorSearchView(APIView):
         return paginator.get_paginated_response(serializer.data)
     
 class DoctorDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request, doctor_id):
         print("User:", request.user)
@@ -1257,9 +1257,9 @@ class WeekScheduleView(APIView):
 
         week = request.data.get('week')
         try:
-            parsed_week = datetime.strptime(week, "%Y-%m-%d").date()
-        except ValueError:
-            return Response({"error": "Invalid date format for 'week'. Expected YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
+            parsed_week = datetime.strptime(week, "%m/%d/%Y").date()
+        except ValueError as e:
+            return Response({"error": f"Invalid date format for 'week'. Expected MM/DD/YYYY. {parsed_week}"}, status=status.HTTP_400_BAD_REQUEST)
 
         normalized_week = parsed_week
         weekdays = request.data.get('weekdays', [])
@@ -1293,14 +1293,14 @@ class WeekScheduleView(APIView):
                 # Create WeekDay entries
                 created_weekdays = []
                 for weekday in weekdays:
-
                     weekday_data = {
                         'week_availability': week_availability.id,
                         'day': weekday['day'],
                         'hours': weekday['hours'],
-                        'place': weekday.get('place'),
+                        'place_id': weekday.get('place') if weekday.get('place') else None,
                     }
                     weekday_serializer = WeekDaySerializer(data=weekday_data)
+                    logger.info(f"Constructed weekday_data: {weekday_serializer} MIUUUU 1111")
                     if not weekday_serializer.is_valid():
                         return Response(weekday_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                     # Explicitly pass doctor to save
@@ -1309,7 +1309,7 @@ class WeekScheduleView(APIView):
                         'id': week_day.id,
                         'day': week_day.day,
                         'hours': week_day.hours,
-                        'place': week_day.place.id if week_day.place else None,
+                        'place': weekday.get('place') if weekday.get('place') else None,
                     })
 
 
@@ -1330,6 +1330,7 @@ class WeekScheduleView(APIView):
         user = request.user
         
         if not hasattr(user, 'doctor'):
+            logger.info("User is not a doctor")
             return Response({"error": "User is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
         
         week_availability_id = request.data.get('week_availability_id')
@@ -1337,6 +1338,7 @@ class WeekScheduleView(APIView):
         weekdays = request.data.get('weekdays', [])
 
         if not week_availability_id or not week or not weekdays:
+            logger.info(f"Missing data: week_availability_id={week_availability_id}, week={week}, weekdays={weekdays}")
             return Response({"error": "Week availability ID, week, and weekdays are required"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -1350,36 +1352,48 @@ class WeekScheduleView(APIView):
                 week_serializer.save()
 
                 # Validate clinics
-                doctor_clinics = user.doctor.clinics.values_list('id', flat=True)
+                # doctor_clinics = user.doctor.clinics.values_list('id', flat=True)
+                doctor_clinic_ids = list(user.doctor.clinics.values_list('id', flat=True))
                 for weekday in weekdays:
-                    place_id = weekday.get('place')
-                    if place_id and place_id not in doctor_clinics:
+                    place_id = weekday.get('place') if weekday.get('place') else None
+                    if place_id and place_id not in doctor_clinic_ids:
                         return Response(
                             {"error": f"Clinic ID {place_id} is not associated with this doctor"},
                             status=status.HTTP_400_BAD_REQUEST
                         )
-
                 # Delete existing WeekDay entries
                 WeekDay.objects.filter(week_availability=week_availability).delete()
 
                 # Create new WeekDay entries
                 created_weekdays = []
                 for weekday in weekdays:
+                    if not isinstance(weekday, dict):
+                        logger.error(f"Invalid weekday data type: Expected dict, got {type(weekday)}")
+                        return Response(
+                            {"error": "Each weekday entry must be a dictionary"},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                    
+                    logger.info(f"Processing weekday data: {weekday}")
+                    logger.info(f"Processing weekday data: {weekday}")
                     weekday_data = {
                         'week_availability': week_availability.id,
                         'day': weekday['day'],
                         'hours': weekday['hours'],
-                        'place': weekday.get('place'),
+                        'place': weekday.get('place') if weekday.get('place') else None,
                     }
+                    logger.info(f"Constructed weekday_data: {weekday_data}")
                     weekday_serializer = WeekDaySerializer(data=weekday_data)
                     if not weekday_serializer.is_valid():
+                        logger.info(f"Weekday serializer errors: {weekday_serializer.errors}")
                         return Response(weekday_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                     week_day = weekday_serializer.save()
+                    logger.info(f"PPPPPPPRRRRRROOOOOOCCCCCCEEEEEESSSSSSOOOOOOOUUUUUUUU 333 {week_day.id}")
                     created_weekdays.append({
                         'id': week_day.id,
                         'day': week_day.day,
                         'hours': week_day.hours,
-                        'place': week_day.place.id if week_day.place else None,
+                        'place': weekday.get('place') if weekday.get('place') else None,
                     })
 
                 return Response({
@@ -1393,8 +1407,10 @@ class WeekScheduleView(APIView):
                 }, status=status.HTTP_200_OK)
 
         except WeekAvailability.DoesNotExist:
+            logger.info("Week availability not found or unauthorized")
             return Response({"error": "Week availability not found or unauthorized"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
+            logger.error(f"Error updating week schedule HAHAHA: {str(e)}")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class WeekSchedulesView(APIView):
@@ -1446,23 +1462,42 @@ class ClinicDetailView(APIView):
 
 class AvailableWeeksView(APIView):
     permission_classes = [IsAuthenticated]
+    
     def get(self, request):
         user = request.user
 
+        # 1. Determine the start of the current week (Monday)
         today = date.today()
-        start_of_this_week = today - timedelta(days=(today.weekday() + 1) % 7)
+        # today.weekday() returns 0 for Monday, 6 for Sunday. 
+        # Subtracting this number of days always lands on the preceding Monday.
+        current_monday = today - timedelta(days=today.weekday())
         
-        # Generate next 10 weeks from this Monday
-        candidate_weeks = [start_of_this_week + timedelta(weeks=i) for i in range(6)]
+        # 2. Generate the next 5 Mondays (representing 5 candidate weeks)
+        NUM_WEEKS = 5
+        candidate_weeks = [current_monday + timedelta(weeks=i) for i in range(NUM_WEEKS)]
 
-        # Get already scheduled weeks for the user
-        taken_weeks = set(
-            WeekAvailability.objects.filter(doctor=user).values_list('week', flat=True)
-        )
+        # 3. Get already scheduled weeks for the doctor
+        # We assume the 'week' field in WeekAvailability is stored as a date object.
+        try:
+            taken_weeks = set(
+                WeekAvailability.objects.filter(doctor=user).values_list('week', flat=True)
+            )
+        except AttributeError:
+            # Handle case where user is not associated with a doctor (safety check)
+            return Response({"error": "User is not a doctor."}, status=400)
+        except Exception as e:
+            logger.error(f"Database error fetching taken weeks: {str(e)}")
+            return Response({"error": "Failed to fetch scheduled weeks."}, status=500)
 
-        # Filter out taken weeks
+        # 4. Filter out taken weeks
+        # Note: We compare date objects directly, which is clean and reliable.
         free_weeks = [w for w in candidate_weeks if w not in taken_weeks]
-        logger.info(f"Free weeks for user {user.id}: {free_weeks} and {taken_weeks}")
+        
+        # Optional: Logging for visibility
+        logger.info(f"Generated candidate weeks: {[w.isoformat() for w in candidate_weeks]}")
+        logger.info(f"Taken weeks: {[t.isoformat() for t in taken_weeks]}")
+        logger.info(f"Free weeks for doctor {user.doctor.id}: {[w.isoformat() for w in free_weeks]}")
+        
         return Response({
             "available_weeks": [w.isoformat() for w in free_weeks]
         })
@@ -1483,7 +1518,7 @@ class DoctorAvailableDaysView(APIView):
             weekdays = WeekDay.objects.filter(
                 week_availability__doctor=doctor.user
             ).select_related('place').order_by('day')
-
+            logger.info(f"Fetched {weekdays.count()} weekdays for doctor {doctor_id}")
             today = date.today()
             available_days = []
             for weekday in weekdays:
@@ -1494,13 +1529,13 @@ class DoctorAvailableDaysView(APIView):
                 booked_hours = Appointment.objects.filter(
                     appointment=weekday
                 ).values_list('time', flat=True)
-
+                logger.info(f"Weekday {weekday.day} booked hours: {list(booked_hours)}")
                 # Remove booked hours from available hours
                 available_hours = [
                     hour for hour in weekday.hours
                     if hour not in booked_hours
                 ]
-
+                logger.info(f"Weekday {weekday.day} available hours after filtering: {available_hours}")
                 # Only include days with available hours
                 if available_hours:
                     available_days.append({
@@ -1606,7 +1641,7 @@ class UserAppointmentsView(APIView):
     def get(self, request):
         user = request.user
         is_doctor = hasattr(user, 'doctor')
-        status_filter = request.query_params.get('status', None)
+        # status_filter = request.query_params.get('status', None)
 
         # Base queryset based on user type
         if is_doctor:
@@ -1621,12 +1656,12 @@ class UserAppointmentsView(APIView):
             ).select_related(
                 'appointment', 'appointment__week_availability', 'appointment__place'
             ).order_by('appointment__day', 'time')
-
+        logger.info(f"{appointments}")
         # Filter by status if provided
-        if status_filter == 'active':
-            appointments = appointments.filter(active=True)
-        elif status_filter == 'inactive':
-            appointments = appointments.filter(active=False)
+        # if status_filter == 'active':
+        #     appointments = appointments.filter(active=True)
+        # elif status_filter == 'inactive':
+        #     appointments = appointments.filter(active=False)
 
         # Serialize appointments
         serializer = self.serializer_class(
@@ -1640,24 +1675,24 @@ class UserAppointmentsView(APIView):
         active_appointments = []
         inactive_appointments = []
         
-        if status_filter is None or status_filter not in ['active', 'inactive']:
-            active_appointments = [appt for appt in serialized_data if appt['active']]
-            inactive_appointments = [appt for appt in serialized_data if not appt['active']]
-        elif status_filter == 'active':
-            active_appointments = serialized_data
-        elif status_filter == 'inactive':
-            inactive_appointments = serialized_data
+        # if status_filter is None or status_filter not in ['active', 'inactive']:
+        active_appointments = [appt for appt in serialized_data if appt['active']]
+        inactive_appointments = [appt for appt in serialized_data if not appt['active']]
+        # elif status_filter == 'active':
+        #     active_appointments = serialized_data
+        # elif status_filter == 'inactive':
+        #     inactive_appointments = serialized_data
 
         # Return response based on status filter
-        if status_filter == 'active':
-            return Response({'active_appointments': active_appointments}, status=status.HTTP_200_OK)
-        elif status_filter == 'inactive':
-            return Response({'inactive_appointments': inactive_appointments}, status=status.HTTP_200_OK)
-        else:
-            return Response({
-                'active_appointments': active_appointments,
-                'inactive_appointments': inactive_appointments
-            }, status=status.HTTP_200_OK)            
+        # if status_filter == 'active':
+        #     return Response({'active_appointments': active_appointments}, status=status.HTTP_200_OK)
+        # elif status_filter == 'inactive':
+        #     return Response({'inactive_appointments': inactive_appointments}, status=status.HTTP_200_OK)
+        return Response({
+            'active_appointments': active_appointments,
+            'inactive_appointments': inactive_appointments
+        }, status=status.HTTP_200_OK)  
+                  
 class DeleteAppointmentView(APIView):
     permission_classes = [IsAuthenticated]
 

@@ -358,7 +358,7 @@ class Appointment(models.Model):
     )
     appointment = models.ForeignKey(
         WeekDay,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="appointments",
         help_text="Schedule for the appointment."
     )

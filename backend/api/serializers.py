@@ -8,6 +8,7 @@ from datetime import timedelta
 User = get_user_model()
 import logging
 from django.db import transaction
+from datetime import date
 logger = logging.getLogger(__name__)
 
 class PatientSerializer(serializers.ModelSerializer):
@@ -55,12 +56,23 @@ class DoctorSerializer(serializers.ModelSerializer):
                   'has_availability', 'cities']
 
     def get_user(self, obj):
+        user = obj.user
+        age = None
+        
+        if user.born_date:
+            today = date.today()
+            # Calculamos la diferencia de años
+            age = today.year - user.born_date.year - (
+                (today.month, today.day) < (user.born_date.month, user.born_date.day)
+            )
+
         return {
-            'id': obj.user.id,
-            'first_name': obj.user.first_name,
-            'last_name': obj.user.last_name,
-            'email': obj.user.email,
-            'profile_picture': obj.user.profile_picture.url if obj.user.profile_picture else None,
+            'id': user.id,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'email': user.email,
+            'profile_picture': user.profile_picture.url if user.profile_picture else None,
+            'age': age, # Ahora devuelve la edad numérica
         }
 
     def get_average_rating(self, obj):
@@ -316,16 +328,19 @@ class ReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"rating": "Rating must be between 1 and 5."})
         return attrs
 
-
+class ClinicNestedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Clinic
+        fields = ['id', 'name']
     
 class ScheduleSerializer(serializers.ModelSerializer):
     doctor = serializers.PrimaryKeyRelatedField(queryset=Doctor.objects.all())
     place = serializers.PrimaryKeyRelatedField(queryset=Clinic.objects.all(), allow_null=True)
     hours = serializers.JSONField()
-
+    clinic = ClinicNestedSerializer(source='place', read_only=True)
     class Meta:
         model = Schedule
-        fields = ['id', 'doctor', 'place', 'hours', 'title', 'created_at']
+        fields = ['id', 'doctor', 'place', 'clinic', 'hours', 'title', 'created_at']
         read_only_fields = ['id', 'created_at']
 
     def validate(self, attrs):
