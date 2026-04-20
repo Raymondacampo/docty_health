@@ -49,7 +49,6 @@ INSTALLED_APPS = [
     'dj_rest_auth',
     'dj_rest_auth.registration',
     'corsheaders',  # Enables cross-origin requests (CORS)
-    'django.contrib.gis',
     'api',
 
     "allauth",
@@ -64,6 +63,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
 ]
 # ALLAUTH
 
@@ -208,7 +208,8 @@ LOGGING = {
 DATABASES = {
     'default': dj_database_url.config(
         default='postgresql://doctyhealth_db_user:gwXUc68RoK6hiJk0txecBLP6b7cCN6UI@dpg-d7j5vhnavr4c7385herg-a/doctyhealth_db',
-        conn_max_age=600
+        conn_max_age=600,
+        engine='django.contrib.gis.db.backends.postgis',
     )
 }
 
