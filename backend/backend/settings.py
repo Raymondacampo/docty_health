@@ -106,6 +106,7 @@ SOCIALACCOUNT_PROVIDERS = {
 
 MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # <--- AQUÍ
     'api.middleware.CustomXFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',  # Allows frontend to access API
     'django.middleware.security.SecurityMiddleware',
@@ -256,6 +257,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 MEDIA_URL = "/media/"  # URL to access media files
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")  # Directory to store uploaded files
 
