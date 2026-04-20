@@ -322,6 +322,10 @@ export default function DoctorSignupPage() {
           {isLoading ? 'Creating Account...' : 'Create Doctor Account'}
         </button>
       </form>
+      <div className='flex items-center gap-1 mt-4'>
+        <span className='text-[#293241] text-xs font-semibold tracking-wide'> or </span>
+        <a href='/doctor-signup' className='text-blue-500 text-sm font-semibold tracking-wide'>Claim profile</a>
+      </div>
     </div>
   );
 }
