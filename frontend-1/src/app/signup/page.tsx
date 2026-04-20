@@ -311,6 +311,8 @@ export default function SignupForm() {
               <span className="text-[#293241] text-xs font-semibold tracking-wide">Are you a doctor?</span>
               <span className="text-[#4285f4] text-sm font-semibold tracking-wide"> </span>
               <a href="/doctor-signup" className="text-blue-500 text-sm font-semibold tracking-wide">Sign up as a doctor</a>
+              <span className='text-[#293241] text-xs font-semibold tracking-wide'> or </span>
+              <a href='/doctor-signup' className='text-blue-500 text-sm font-semibold tracking-wide'>Claim profile</a>
             </div>  
           </div>
         </div>
