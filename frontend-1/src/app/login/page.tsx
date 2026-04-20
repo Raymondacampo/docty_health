@@ -71,7 +71,7 @@ export default function LoginPage() {
               placeholder='Email'
               value={credentials.email}
               onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
-              className='text-black self-stretch px-4 py-3 focus:outline-none rounded-3xl border border-black justify-start items-center gap-2.5 inline-flex'
+              className='text-black self-stretch px-4 py-3 focus:outline-none rounded-3xl border border-gray-400 justify-start items-center gap-2.5 inline-flex'
             />
           </div>
           <div className='self-stretch flex-col justify-start items-start flex'>
@@ -82,7 +82,7 @@ export default function LoginPage() {
               value={credentials.password}
               onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
               autoComplete='off'
-              className='text-black self-stretch focus:outline-none px-4 py-3 rounded-3xl border border-black justify-start items-center gap-2.5 inline-flex'
+              className='text-black self-stretch focus:outline-none px-4 py-3 rounded-3xl border border-gray-400 justify-start items-center gap-2.5 inline-flex'
             />
             <div className='flex justify-between w-full pt-2'>
               {error && <p className='text-red-500 text-sm mb-4'>{error}</p>}
@@ -97,9 +97,9 @@ export default function LoginPage() {
             <button
               type='submit'
               disabled={loading}
-              className='self-stretch py-3 cursor-pointer bg-[#060648] rounded-3xl justify-center items-center gap-2.5 inline-flex'
+              className='self-stretch py-3.5 cursor-pointer bg-[#060648] rounded-3xl justify-center items-center gap-2.5 inline-flex'
             >
-              <div className='text-white  font-bold tracking-wide'>{loading ? 'Logging in...' : 'Login'}</div>
+              <div className='text-white font-bold tracking-wide'>{loading ? 'Logging in...' : 'Login'}</div>
             </button>
           </div>
         </div>

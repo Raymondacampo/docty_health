@@ -6,11 +6,13 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import { addDays, format } from 'date-fns';
 // import { formatInTimeZone } from 'date-fns-tz';
 import { apiClient } from '@/app/utils/api';
-import ClinicSearch from '@/app/settings/doctor-settings/components/clinic/ClinicSearch';
+import ClinicSearchBar from './ClinicSearchBar';
 import ScheduleSelect from './WeekScheduleSelect';
+import { useAlert } from '@/app/context/AlertContext';
+
 
 interface Clinic {
-  id: number;
+  id: string | number;
   name: string;
 }
 
@@ -36,9 +38,10 @@ interface WeekDayConfig {
 
 interface CreateWeekScheduleModalProps {
   onScheduleCreated: (data: any) => void;
+  onCreate?: () => void;
 }
 
-const CreateWeekScheduleModal: React.FC<CreateWeekScheduleModalProps> = ({ onScheduleCreated }) => {
+const CreateWeekScheduleModal: React.FC<CreateWeekScheduleModalProps> = ({ onScheduleCreated, onCreate = () => {} }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -57,8 +60,9 @@ const CreateWeekScheduleModal: React.FC<CreateWeekScheduleModalProps> = ({ onSch
   const [availableWeeks, setAvailableWeeks] = useState<WeekOption[]>([]);
   const [isLoadingWeeks, setIsLoadingWeeks] = useState(false);
   const [weekError, setWeekError] = useState<string | null>(null);
-
+  const [availabilityType, setAvailabilityType] = useState<'virtual' | 'in-person'>('virtual');
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { showAlert } = useAlert();
 
   const hoursOfDay = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`);
 
@@ -77,6 +81,22 @@ const CreateWeekScheduleModal: React.FC<CreateWeekScheduleModalProps> = ({ onSch
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isDropdownOpen]);
 
+  useEffect(() => {
+    if (isOpen) {
+      // Bloquea el scroll al abrir
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Lo restaura al cerrar
+      document.body.style.overflow = 'unset';
+    }
+
+    // "Cleanup function": Se asegura de restaurar el scroll 
+    // si el componente se desmonta inesperadamente
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   // Fetch data when modal opens
   useEffect(() => {
     if (!isOpen) return;
@@ -86,10 +106,9 @@ const CreateWeekScheduleModal: React.FC<CreateWeekScheduleModalProps> = ({ onSch
     apiClient.get('/auth/schedules/')
       .then(res => {
         // Map 'name' to 'title' for compatibility
+        console.log('Fetched schedules:', res.data);
         const mappedSchedules = res.data.map((s: any) => ({
-          ...s,
-          title: s.name,
-        }));
+          ...s        }));
         setSchedules(mappedSchedules);
       })
       .catch(err => {
@@ -102,24 +121,26 @@ const CreateWeekScheduleModal: React.FC<CreateWeekScheduleModalProps> = ({ onSch
     setIsLoadingWeeks(true);
     apiClient.get('/auth/available-weeks/')
       .then(res => {
+        console.log('Fetched available weeks:', res.data);
         const weeks: WeekOption[] = res.data.available_weeks.map((weekStr: string) => {
-          const [year, month, day] = weekStr.split('-').map(Number);
-          const date = new Date(Date.UTC(year, month - 1, day));
+          // const [year, month, day] = weekStr.split('-').map(Number);
+          // const date = new Date(Date.UTC(year, month - 1, day));
+          const date = new Date(weekStr + 'T00:00:00');
           const label = `Week of ${date.toLocaleDateString('en-US', {
-                timeZone: 'UTC',
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric'
-                })}`;
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+          })}`;
+          // const label = `Week of ${date.toLocaleDateString('en-US', {
+          //       timeZone: 'UTC',
+          //       month: 'long',
+          //       day: 'numeric',
+          //       year: 'numeric'
+          //       })}`;
           return {
-            label: `Week of ${date.toLocaleDateString('en-US', {
-                timeZone: 'UTC',
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric'
-                })}`,
+            label: label,
             start: date,
-            end: new Date(Date.UTC(year, month - 1, day + 6)),
+            end: addDays(date, 6),
             original: weekStr,
           };
         });
@@ -159,11 +180,12 @@ const CreateWeekScheduleModal: React.FC<CreateWeekScheduleModalProps> = ({ onSch
     setIsDropdownOpen(false);
   };
 
-  const getSelectedWeekText = () => {
+const getSelectedWeekText = () => {
     if (selectedWeek === null) return 'Select a week';
     if (isLoadingWeeks) return 'Loading weeks...';
     if (weekError) return 'Error loading weeks';
     const week = availableWeeks[selectedWeek];
+    // This uses the stored Date objects, which is correct.
     return week
       ? `${week.label} (${format(week.start, 'MMMM do, yyyy')} - ${format(week.end, 'MMMM do, yyyy')})`
       : 'Select a week';
@@ -177,6 +199,7 @@ const CreateWeekScheduleModal: React.FC<CreateWeekScheduleModalProps> = ({ onSch
         initials: format(day, 'EEE').toUpperCase(),
         label: format(day, 'EEEE, MMMM do'),
         date: format(day, 'yyyy-MM-dd'),
+        dateObj: day, // <-- NEW: The actual Date object for display formatting
       };
     });
   };
@@ -194,7 +217,7 @@ const CreateWeekScheduleModal: React.FC<CreateWeekScheduleModalProps> = ({ onSch
     setSelectedSchedule(scheduleId);
     if (!scheduleId) {
       setSelectedHours([]);
-      setSelectedClinic(null);
+      setSelectedClinic(null); // Force virtual
       return;
     }
 
@@ -203,19 +226,23 @@ const CreateWeekScheduleModal: React.FC<CreateWeekScheduleModalProps> = ({ onSch
 
     setSelectedHours(schedule.hours);
 
-    if (schedule.place) {
-      try {
-        const res = await apiClient.get(`/clinics/${schedule.place}/`);
-        setSelectedClinic({ id: res.data.id, name: res.data.name });
-      } catch (err) {
-        console.error(err);
-        setScheduleError('Failed to load clinic.');
+    // Only auto-set clinic if we're in "In Person" mode
+    if (selectedClinic !== null || schedule.place === null) {
+      // If already in person, or no change needed
+      // Or if template has no place, stay virtual
+      if (schedule.place) {
+        try {
+          const res = await apiClient.get(`/clinics/${schedule.place}/`);
+          setSelectedClinic({ id: res.data.id, name: res.data.name });
+        } catch (err) {
+          console.error(err);
+        }
+      } else {
+        setSelectedClinic(null);
       }
-    } else {
-      setSelectedClinic(null);
     }
+    // If user is in Virtual mode, do nothing — keep clinic null even if template has one
   };
-
   const handleHourToggle = (hour: string) => {
     setSelectedHours(prev =>
       prev.includes(hour)
@@ -224,20 +251,22 @@ const CreateWeekScheduleModal: React.FC<CreateWeekScheduleModalProps> = ({ onSch
     );
   };
 
-  const handleClinicChange = (response: { msg: string; status: string }) => {
-    // You may need to fetch the clinic info here, or update this logic as needed
-    // For now, just clear the selected clinic
-    setSelectedClinic(null);
+  const handleClinicChange = (clinic: Clinic) => {
+    setSelectedClinic(clinic);
   };
 
   const handleDoneAction = () => {
     if (selectedDay && selectedHours.length > 0) {
       setWeekDays(prev => {
         const filtered = prev.filter(wd => wd.day !== selectedDay);
-        return [...filtered, { day: selectedDay, hours: selectedHours, place: selectedClinic }];
+        return [...filtered, {
+          day: selectedDay,
+          hours: selectedHours,
+          place: selectedClinic // will be null if virtual
+        }];
       });
 
-      // Reset action panel
+      // Reset
       setSelectedDay(null);
       setSelectedHours([]);
       setSelectedClinic(null);
@@ -287,20 +316,22 @@ const CreateWeekScheduleModal: React.FC<CreateWeekScheduleModalProps> = ({ onSch
       onScheduleCreated(res.data);
       resetForm();
     } catch (err: any) {
-      const msg = err.response?.data?.error || 'Failed to save schedule.';
-      setSaveError(msg);
+      showAlert(err.response?.data?.error || 'Failed to create schedule', 'error');
+      setSaveError('Failed to create schedule. Please try again.');
     } finally {
       setIsSaving(false);
+      showAlert('Week schedule created', 'success');
+      onCreate();
     }
   };
 
   // ... rest of return JSX stays almost identical (only minor cleanup)
 
-  return (
+return (
     <div>
       <button
         onClick={() => setIsOpen(true)}
-        className="px-6 py-3 bg-[#ee6c4d] text-white font-medium rounded-lg hover:bg-[#d85a3c] transition"
+        className="px-6 py-3 bg-[#060648] text-white font-medium rounded-lg hover:bg-[#060648]/90 transition"
       >
         + Create Week Schedule
       </button>
@@ -309,7 +340,8 @@ const CreateWeekScheduleModal: React.FC<CreateWeekScheduleModalProps> = ({ onSch
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div
-            className="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-4"
+            // Updated class names for flex layout to separate content and footer
+            className="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl h-[80dvh] max-h-[90vh] mx-4 flex flex-col"
             onClick={e => e.stopPropagation()}
           >
             {/* Close button */}
@@ -320,7 +352,8 @@ const CreateWeekScheduleModal: React.FC<CreateWeekScheduleModalProps> = ({ onSch
               <XMarkIcon className="h-7 w-7" />
             </button>
 
-            <div className="p-8">
+            {/* --- SCROLLABLE CONTENT AREA --- */}
+            <div className="flex-grow overflow-y-auto p-8 pb-4"> 
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Create Week Schedule</h2>
 
               {/* Week Selector */}
@@ -339,8 +372,8 @@ const CreateWeekScheduleModal: React.FC<CreateWeekScheduleModalProps> = ({ onSch
                       <div
                         key={i}
                         onClick={() => handleWeekSelect(i)}
-                        className={`px-4 py-3 hover:bg-orange-50 cursor-pointer ${
-                          selectedWeek === i ? 'bg-[#ee6c4d] text-white hover:bg-[#d85a3c]' : ''
+                        className={`px-4 py-3 cursor-pointer ${
+                          selectedWeek === i ? 'bg-[#060648] text-white hover:bg-[#060648]/80' : 'hover:bg-blue-50 '
                         }`}
                       >
                         {week.label}
@@ -365,12 +398,12 @@ const CreateWeekScheduleModal: React.FC<CreateWeekScheduleModalProps> = ({ onSch
                           onClick={() => handleDayClick(day.date)}
                           className={`
                             py-3 px-4 rounded-lg font-medium transition
-                            ${isSelected || isConfigured ? 'bg-[#ee6c4d] text-white' : 'bg-gray-100 hover:bg-gray-200'}
+                            ${isSelected || isConfigured ? 'bg-[#060648] text-white' : 'bg-gray-100 hover:bg-gray-200'}
                           `}
                         >
-                          <div className="hidden sm:block">{day.fullName}</div>
-                          <div className="sm:hidden text-xs">{day.initials}</div>
-                          <div className="text-xs mt-1 opacity-80">{format(day.date, 'MMM d')}</div>
+                          <div className="hidden sm:block">{day.initials}</div>
+                          {/* <div className="sm:hidden text-xs">{day.initials}</div> */}
+                          <div className="text-xs mt-1 opacity-80">{format(day.dateObj, 'MMM d')}</div>
                         </button>
                       );
                     })}
@@ -392,13 +425,58 @@ const CreateWeekScheduleModal: React.FC<CreateWeekScheduleModalProps> = ({ onSch
                   />
 
                   <div className="mt-5">
-                    <label className="block text-sm font-medium mb-2">Clinic (Optional)</label>
-                    <ClinicSearch
-                    //   value={selectedClinic?.name || ''}
-                      onClinicAdded={handleClinicChange}
-                    //   initialClinic={selectedClinic}
-                    //   round="rounded-lg"
-                    />
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      Availability Type
+                    </label>
+
+                    <div className="flex gap-8 mb-5">
+                      <label className="flex items-center cursor-pointer select-none">
+                        <input
+                          type="radio"
+                          name="availabilityType"
+                          checked={availabilityType === 'virtual'}
+                          onChange={() => {
+                            setAvailabilityType('virtual');
+                            setSelectedClinic(null); // Clear clinic when switching to virtual
+                          }}
+                          className="w-4 h-4 text-[#060648] focus:ring-[#060648]"
+                        />
+                        <span className="ml-2 font-medium">Virtual</span>
+                      </label>
+
+                      <label className="flex items-center cursor-pointer select-none">
+                        <input
+                          type="radio"
+                          name="availabilityType"
+                          checked={availabilityType === 'in-person'}
+                          onChange={() => setAvailabilityType('in-person')}
+                          className="w-4 h-4 text-[#060648] focus:ring-[#060648]"
+                        />
+                        <span className="ml-2 font-medium">In Person</span>
+                      </label>
+                    </div>
+
+                    {/* Only show clinic search when In Person is selected */}
+                    {availabilityType === 'in-person' && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Clinic
+                        </label>
+                        <div className='relative'>
+                          <ClinicSearchBar
+                            value={selectedClinic}
+                            onChange={handleClinicChange}
+                            round="rounded-lg"
+                          />                          
+                        </div>
+
+                        {selectedClinic === null && (
+                          <p className="text-amber-600 text-xs mt-2">
+                            No clinic selected yet
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className="mt-5">
@@ -428,16 +506,22 @@ const CreateWeekScheduleModal: React.FC<CreateWeekScheduleModalProps> = ({ onSch
                     <button
                       onClick={handleDoneAction}
                       disabled={selectedHours.length === 0}
-                      className="px-6 py-2 bg-[#ee6c4d] text-white rounded-lg hover:bg-[#d85a3c] disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-6 py-2 bg-[#060648] text-white rounded-lg hover:bg-[#060648]/90 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Done
                     </button>
                   </div>
                 </div>
               )}
+              {/* Messages - placed inside scrollable area */}
+              {saveSuccess && <p className="text-green-600 mt-4 text-center font-medium">{saveSuccess}</p>}
+              {saveError && <p className="text-red-600 mt-4 text-center">{saveError}</p>}
+            </div> 
+            {/* --- END SCROLLABLE CONTENT AREA --- */}
 
-              {/* Footer */}
-              <div className="mt-8 flex justify-end gap-4">
+            {/* --- STICKY FOOTER --- */}
+            <div className="p-4 border-t border-gray-200 bg-white sticky bottom-0 z-30"> 
+              <div className="flex justify-end gap-4">
                 <button
                   onClick={resetForm}
                   className="px-6 py-2 border rounded-lg hover:bg-gray-50"
@@ -447,16 +531,14 @@ const CreateWeekScheduleModal: React.FC<CreateWeekScheduleModalProps> = ({ onSch
                 <button
                   onClick={handleSaveSchedule}
                   disabled={isSaving || selectedWeek === null || weekDays.length === 0}
-                  className="px-8 py-3 bg-[#ee6c4d] text-white font-medium rounded-lg hover:bg-[#d85a3c] disabled:opacity-50"
+                  className="px-8 py-3 bg-[#060648] text-white font-medium rounded-lg hover:bg-[#060648]/90 disabled:opacity-50"
                 >
                   {isSaving ? 'Saving...' : 'Save Week Schedule'}
                 </button>
               </div>
-
-              {/* Messages */}
-              {saveSuccess && <p className="text-green-600 mt-4 text-center font-medium">{saveSuccess}</p>}
-              {saveError && <p className="text-red-600 mt-4 text-center">{saveError}</p>}
             </div>
+            {/* --- END STICKY FOOTER --- */}
+
           </div>
         </div>
       )}

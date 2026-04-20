@@ -8,12 +8,12 @@ import Loading from "../components/LoadingComponent";
 import dclogo from '@/assets/images/dclogo.png';
 import AppNavbar from "./components/NavBar";
 import type { Appointment } from "./components/ActiveAppointments";
-import SearchBar from "../components/SearchBar";
+import type { WeekSchedule } from "./components/WeekScheduleList";
 import ScheduleCreationModal from "./components/ScheduleCreationModal";
 import DoctorSchedule from "./components/DoctorSchedule";
 import { useLoading } from '@/app/utils/LoadingContext';
 import CreateWeekScheduleModal from "./components/CreateWeekScheduleModal";
-
+import WeekSchedulesList from "./components/WeekScheduleList";
 
 type Tab = 'appointments' | 'week' | 'schedules';
 
@@ -67,7 +67,7 @@ const Appointments = ({ appointments, isDoctor, fetchAppointments }: { appointme
           <div className="text-[#060648] text-2xl font-semibold">No appointments yet</div>
           <div className="flex items-center gap-4">
             <p className="text-[#060648]">Look up for doctors to make your appointments here!</p>
-              <SearchBar />
+              {/* <SearchBar /> */}
           </div>
         </div>
       </div>
@@ -77,10 +77,12 @@ const Appointments = ({ appointments, isDoctor, fetchAppointments }: { appointme
   )
 };
 
-const WeekSchedule = () => {
+const WeekSchedule = ({weekSchedules, onUpdate}: {weekSchedules: WeekSchedule[], onUpdate: () => void}) => {
   return( 
-    <div className="w-full max-w-4xl h-screen">Week Schedule Content
-    <CreateWeekScheduleModal onScheduleCreated={() => {}} />
+    <div className="w-full max-w-4xl h-screen">
+      <h1 className="font-bold mb-2 sm:text-3xl xs:text-2xl">Week Schedule</h1>
+      <CreateWeekScheduleModal onScheduleCreated={() => {}} onCreate={onUpdate} />
+      <WeekSchedulesList weekschedules={weekSchedules} onActionComplete={() => onUpdate()} onUpdate={onUpdate} />
     </div>
   );
 };
@@ -129,6 +131,7 @@ export default function AppointmentsPage() {
   });
 
   const [schedules, setSchedules] = useState<ScheduleType[]>([]);
+  const [weekSchedules, setWeekSchedules] = useState<WeekSchedule[]>([]);
 
   const { setIsLoading } = useLoading();
   const [refreshKey, setRefreshKey] = useState<number>(0);
@@ -179,6 +182,27 @@ export default function AppointmentsPage() {
       }
     };
 
+  const fetchWeekSchedules = async () => {
+    setError(null);
+    try {
+      const response = await apiClient.get('/auth/weekschedules/');
+      console.log('Fetched week schedules:', response.data);
+      setWeekSchedules(response.data.weekschedules);
+    } catch (err: any) {
+      console.error('Error fetching week schedules:', err);
+      if (err.response?.status === 401) {
+        setError('Unauthorized: Please log in again');
+      } else if (err.response?.status === 403) {
+        setError('Only doctors can view week schedules');
+      } else {
+        setError('Failed to load week schedules');
+      }
+      // setWeekSchedules([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   const handleCreateOrUpdate = () => {
     console.log('Refreshing schedules after create/update');
     
@@ -204,6 +228,7 @@ export default function AppointmentsPage() {
 
   useEffect(() => {
     fetchSchedules();
+    fetchWeekSchedules();
   }, [refreshKey]);
 
   useEffect(() => {
@@ -223,7 +248,7 @@ export default function AppointmentsPage() {
         {activeTab === 'appointments' ? (
           <Appointments appointments={appointments} isDoctor={isDoctor} fetchAppointments={fetchAppointments} />
         ) : activeTab === 'week' ? (
-          <WeekSchedule />
+          <WeekSchedule onUpdate={handleCreateOrUpdate} weekSchedules={weekSchedules} />
         ) : activeTab === 'schedules' ? (
           <Schedules schedules={schedules} onUpdate={handleCreateOrUpdate} />
         ) : null}

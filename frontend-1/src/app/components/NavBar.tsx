@@ -20,6 +20,18 @@ function NavbarContent() {
   const router = useRouter();
   const pathname = usePathname();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isSmall, setIsSmall] = useState<boolean>(false);
+  
+  useEffect(() => {
+    const handleResize = () => {
+      const isXs = window.innerWidth < 1024; // Match Tailwind xs breakpoint
+      setIsSmall(isXs);
+      // setShowFilters(window.innerWidth >= 1280); // Show filters on xl or larger
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -149,16 +161,26 @@ function NavbarContent() {
             </div>
           )}
         </div>
+          {isAuth && !isSmall && (
+          <div className='lg:hidden'>
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className='p-2 text-gray-800 transition-colors'
+              aria-label='Toggle menu'
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>            
+          )}
 
-        <div className='lg:hidden'>
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className='p-2 text-gray-800 transition-colors'
-            aria-label='Toggle menu'
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
+          {!isAuth && isSmall && (
+            <div className='flex items-center gap-4'>
+              <Link href='/login' className='transition-colors bg-[#060648] text-white px-6 py-2.5 rounded-md'>
+                Log in
+              </Link>
+            </div>
+          )} 
+
       </div>
 
       <div
@@ -181,7 +203,7 @@ function NavbarContent() {
             </button>
           </div>
           <div className='flex flex-col space-y-4 justify-center'>
-            {isAuth ? (
+            {isAuth && (
               <>
                 <Link
                   href='/'
@@ -210,14 +232,6 @@ function NavbarContent() {
                   Logout
                 </button>
               </>
-            ) : (
-              <Link
-                href='/login'
-                className='py-2 bg-[#060648] text-2xl hover:text-[#293241] transition-colors text-black mr-3'
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Login
-              </Link>
             )}
           </div>
         </div>

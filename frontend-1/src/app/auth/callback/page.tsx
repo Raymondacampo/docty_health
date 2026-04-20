@@ -30,7 +30,7 @@ export default function GoogleCallback() {
             router.replace(redirectUrl);
         } else {
             // Default path if no redirect URL was provided
-            router.replace('/dashboard'); 
+            router.replace('/'); 
         }
       } catch (err: any) {
         console.error('Google callback error:', err.response?.data || err.message);

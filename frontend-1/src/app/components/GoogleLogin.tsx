@@ -30,7 +30,7 @@ export default function GoogleButton({ setError, redirect }: { setError: (error:
   return (
     <button
       onClick={initiateGoogleLogin}
-      className="flex items-center justify-center rounded-3xl w-full py-2.5 px-5 cursor-pointer bg-white border-1 hover:bg-gray-100 shadow-md transition-all duration-200"
+      className="flex items-center justify-center rounded-3xl w-full py-3.5 px-5 cursor-pointer bg-white border-1 border-gray-200 hover:bg-gray-100 shadow-md transition-all duration-200"
     >
       <svg
         className="w-5 h-5 mr-2"

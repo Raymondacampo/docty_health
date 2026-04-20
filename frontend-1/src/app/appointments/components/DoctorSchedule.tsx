@@ -4,8 +4,8 @@ import { FaEllipsisV } from 'react-icons/fa';
 import { apiClient } from '@/app/utils/api';
 import ScheduleCreationModal from './ScheduleCreationModal';
 import { useAlert } from '@/app/context/AlertContext';
-import type { ScheduleType } from '../../settings/appointment-system/page';
-import { isObject } from 'framer-motion';
+// import type { ScheduleType } from '../../settings/appointment-system/page';
+import { ScheduleType } from '../page';
 
 interface DoctorScheduleProps {
   schedule: ScheduleType;
@@ -61,7 +61,7 @@ export default function DoctorSchedule({ schedule, onUpdate }: DoctorSchedulePro
 
           <div className="mt-3 flex flex-wrap gap-2">
             {schedule.hours.length > 0 ? (
-              schedule.hours.map((hour) => (
+              schedule.hours.map((hour: string) => (
                 <span
                   key={hour}
                   className="px-3 py-1 text-sm font-bold bg-[#060648]/10 text-[#060648] rounded-full"

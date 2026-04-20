@@ -1,8 +1,10 @@
 // components/ScheduleSelect.tsx
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, use } from 'react';
 import { apiClient } from '@/app/utils/api';
+// import Schedule from '@/app/availability/page';
+import { s } from 'framer-motion/client';
 
 interface Schedule {
   id: number;
@@ -14,7 +16,7 @@ interface Schedule {
 interface ScheduleSelectProps {
   value: string; // selected schedule ID as string (or empty)
   onChange: (value: string) => void;
-  schedules?: Schedule[]; // optional: pass pre-fetched schedules
+  schedules: Schedule[]; // optional: pass pre-fetched schedules
   className?: string;
   disabled?: boolean;
 }
@@ -22,11 +24,11 @@ interface ScheduleSelectProps {
 const ScheduleSelect: React.FC<ScheduleSelectProps> = ({
   value,
   onChange,
-  schedules: propSchedules = [],
+  schedules,
   className = '',
   disabled = false,
 }) => {
-  const [schedules, setSchedules] = useState<Schedule[]>(propSchedules);
+  const [scheduleList, setSchedules] = useState<Schedule[]>(schedules ?? []);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -34,8 +36,9 @@ const ScheduleSelect: React.FC<ScheduleSelectProps> = ({
 
   // Fetch schedules only if not provided via props
   useEffect(() => {
-    if (propSchedules.length > 0) {
-      setSchedules(propSchedules);
+    if (schedules && schedules.length > 0) {
+      setSchedules(schedules);
+      // console.log('Using provided schedules:', schedules);
       return;
     }
 
@@ -45,16 +48,21 @@ const ScheduleSelect: React.FC<ScheduleSelectProps> = ({
     apiClient
       .get('/auth/schedules/')
       .then((response) => {
+        // console.log('Fetched schedules:', response.data);
         setSchedules(response.data);
       })
       .catch((err) => {
-        console.error('Error fetching schedules:', err);
+        // console.error('Error fetching schedules:', err);
         setError('Failed to load schedules. Please try again.');
       })
       .finally(() => {
         setIsLoading(false);
       });
-  }, [propSchedules]);
+  }, [schedules]);
+
+  useEffect(() => {
+    // scheduleList.map(s => console.log(s.id, s.title, s));
+  }, [scheduleList]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -73,7 +81,7 @@ const ScheduleSelect: React.FC<ScheduleSelectProps> = ({
 
   const getSelectedScheduleText = (): string => {
     if (!value) return 'Select a schedule';
-    const selected = schedules.find((s) => s.id.toString() === value);
+    const selected = scheduleList.find((s) => s.id.toString() === value);
     return selected?.title || 'Select a schedule';
   };
 
@@ -94,7 +102,7 @@ const ScheduleSelect: React.FC<ScheduleSelectProps> = ({
           w-full px-4 py-3 border rounded-lg bg-white cursor-pointer
           transition-all duration-200
           ${disabled || isLoading ? 'opacity-60 cursor-not-allowed' : 'hover:border-gray-400'}
-          ${isOpen ? 'ring-2 ring-[#ee6c4d] border-[#ee6c4d]' : 'border-gray-300'}
+          ${isOpen ? 'ring-2 ring-[#060648] border-[#060648]' : 'border-gray-300'}
         `}
       >
         <span className={value ? 'text-gray-900' : 'text-gray-500'}>
@@ -109,17 +117,17 @@ const ScheduleSelect: React.FC<ScheduleSelectProps> = ({
             onClick={() => handleSelect('')}
             className={`
               px-4 py-3 cursor-pointer transition
-              ${!value ? 'bg-orange-50 font-medium text-[#ee6c4d]' : 'hover:bg-gray-50'}
+              ${!value ? 'bg-blue-50 font-medium text-black' : 'hover:bg-gray-50'}
             `}
           >
-            — No template —
+            No schedule
           </div>
 
           {/* Schedule options */}
-          {schedules.length === 0 && !isLoading ? (
+          {scheduleList.length === 0 && !isLoading ? (
             <div className="px-4 py-3 text-gray-500 italic">No schedules found</div>
           ) : (
-            schedules.map((schedule) => (
+            scheduleList.map((schedule) => (
               <div
                 key={schedule.id}
                 onClick={() => handleSelect(schedule.id.toString())}
@@ -127,7 +135,7 @@ const ScheduleSelect: React.FC<ScheduleSelectProps> = ({
                   px-4 py-3 cursor-pointer transition
                   ${value === schedule.id.toString()
                     ? 'bg-[#ee6c4d] text-white font-medium'
-                    : 'hover:bg-orange-50'
+                    : 'hover:bg-blue-50'
                   }
                 `}
               >

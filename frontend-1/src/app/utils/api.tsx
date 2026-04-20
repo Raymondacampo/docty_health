@@ -1,76 +1,89 @@
-// utils/api.js
+// utils/api.tsx
 import axios from "axios";
+import Cookies from "js-cookie"; // Asegúrate de instalarlo: npm install js-cookie @types/js-cookie
 
 const DEFAULT_API_URL = "http://localhost:8000/api";
 
-export const getApiImgUrl = () => {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:8000';
-  const mediaUrl = `${baseUrl}`; // Add /media/ prefix
-  return mediaUrl;
-};
-
 export const getApiUrl = () => {
-  const url = process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL;
-  return url;
+  return process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL;
 };
 
-export const buildApiUrl = ({endpoint}:{endpoint: string}) => {
-  const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-  const fullUrl = `${getApiUrl()}${cleanEndpoint}`;
-  return fullUrl;
+export const getApiImgUrl = () => {
+  const baseUrl = getApiUrl().replace('/api', '') || 'http://localhost:8000';
+  return baseUrl;
 };
 
-export const apiClient = axios.create({
-  baseURL: getApiUrl(),
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-export const publicApiClient = axios.create({
-  baseURL: getApiUrl(),
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// New FormData-specific client
-export const formApiClient = axios.create({
-  baseURL: getApiUrl(),
-  headers: {
-    "Accept": "application/json",
-    // Content-Type set dynamically in interceptor
-  },
-});
-
-apiClient.interceptors.request.use((config) => {
-  const accessToken = localStorage.getItem("access_token");
-  if (accessToken) {
-    config.headers.Authorization = `Bearer ${accessToken}`;
-  }
-  return config;
-});
-
-formApiClient.interceptors.request.use((config) => {
-  // Ensure Content-Type is multipart/form-data for FormData
-  if (config.data instanceof FormData) {
-    config.headers["Content-Type"] = "multipart/form-data";
-  } else {
-    config.headers["Content-Type"] = "application/json";
-  }
-
-  // Add Authorization header if token exists
-  const accessToken = localStorage.getItem("access_token");
-  if (accessToken) {
-    config.headers.Authorization = `Bearer ${accessToken}`;
-  }
-
-  console.log('formApiClient Request config:', {
-    url: config.url,
-    method: config.method,
-    headers: config.headers,
-    data: config.data instanceof FormData ? 'FormData' : config.data,
+// --- INSTANCIA BASE ---
+const createAxiosInstance = (isFormData = false) => {
+  const instance = axios.create({
+    baseURL: getApiUrl(),
+    headers: {
+      "Accept": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
+    },
   });
 
-  return config;
-});
+  // INTERCEPTOR DE PETICIÓN: Añadir el token desde Cookies
+  instance.interceptors.request.use((config) => {
+    const accessToken = Cookies.get("access_token");
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+    
+    if (isFormData && config.data instanceof FormData) {
+      config.headers["Content-Type"] = "multipart/form-data";
+    }
+    return config;
+  });
+
+  // INTERCEPTOR DE RESPUESTA: El "Silent Refresh"
+  instance.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      const originalRequest = error.config;
+
+      // Si Django devuelve 401 y no hemos reintentado ya esta petición
+      if (error.response?.status === 401 && !originalRequest._retry) {
+        originalRequest._retry = true;
+        const refreshToken = Cookies.get("refresh_token");
+
+        if (refreshToken) {
+          try {
+            // Intentamos obtener un nuevo access_token
+            const refreshRes = await axios.post(`${getApiUrl()}/token/refresh/`, {
+              refresh: refreshToken,
+            });
+
+            const newAccessToken = refreshRes.data.access;
+
+            // Actualizamos la cookie
+            Cookies.set("access_token", newAccessToken, { 
+              secure: process.env.NODE_ENV === "production",
+              sameSite: 'lax',
+              path: '/' 
+            });
+
+            // Reintentamos la petición original con el nuevo token
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            return axios(originalRequest);
+          } catch (refreshError) {
+            // Si el refresh también falla (ej. expiró el de 7 días), al login
+            Cookies.remove("access_token");
+            Cookies.remove("refresh_token");
+            if (typeof window !== "undefined") {
+              window.location.href = "/login";
+            }
+          }
+        }
+      }
+      return Promise.reject(error);
+    }
+  );
+
+  return instance;
+};
+
+// Clientes exportados
+export const apiClient = createAxiosInstance();
+export const formApiClient = createAxiosInstance(true);
+export const publicApiClient = axios.create({ baseURL: getApiUrl() });

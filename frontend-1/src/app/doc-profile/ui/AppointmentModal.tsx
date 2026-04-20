@@ -118,15 +118,31 @@ export default function AppointmentModal({ doctor, isAuth }: { doctor: Doctor; i
     }
   };
 
+  // const formatDate = (dateString: string): string => {
+  //   try {
+  //     const date = new Date(dateString);
+  //     return format(date, 'EEE, MMMM d, yyyy');
+  //   } catch (error) {
+  //     console.error('Error parsing date:', error);
+  //     return dateString;
+  //   }
+  // };
+
   const formatDate = (dateString: string): string => {
-    try {
-      const date = new Date(dateString);
-      return format(date, 'EEE, MMMM d, yyyy');
-    } catch (error) {
-      console.error('Error parsing date:', error);
-      return dateString;
-    }
-  };
+  try {
+    // 1. Dividimos la cadena '2026-03-16' en partes
+    const [year, month, day] = dateString.split('-').map(Number);
+    
+    // 2. Creamos la fecha usando el constructor de números (esto usa la hora local)
+    // Nota: Los meses en JS van de 0 a 11, por eso restamos 1 al mes
+    const date = new Date(year, month - 1, day);
+    
+    return format(date, 'EEE, MMMM d, yyyy');
+  } catch (error) {
+    console.error('Error parsing date:', error);
+    return dateString;
+  }
+};
 
   return (
     <div className="w-full">

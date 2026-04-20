@@ -58,8 +58,24 @@ export default function ScheduleCreationModal({
 
   // Sync external isOpen prop
   useEffect(() => {
-    setModalOpen(isOpen);
-  }, [isOpen]);
+      setModalOpen(isOpen);
+    }, [isOpen]);
+
+    useEffect(() => {
+    if (modalOpen) {
+      // Bloquea el scroll al abrir
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Lo restaura al cerrar
+      document.body.style.overflow = 'unset';
+    }
+
+    // "Cleanup function": Se asegura de restaurar el scroll 
+    // si el componente se desmonta inesperadamente
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [modalOpen]);
 
   // Generate 24 hours in HH:00 format
   const allHours: string[] = Array.from({ length: 24 }, (_, i) => {
@@ -191,6 +207,7 @@ export default function ScheduleCreationModal({
       onError(errorMessage);
     } finally {
       setIsLoading(false);
+      handleClose();
     }
   };
 

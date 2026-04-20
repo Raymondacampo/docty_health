@@ -63,7 +63,10 @@ function AppContent({ children }: { children: React.ReactNode }) {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang='en'>
-      <head />
+      <head>
+        {/* <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9961121545451444"
+        crossOrigin="anonymous"></script> */}
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <LoadingProvider>
           <Suspense fallback={<Loading />}>
