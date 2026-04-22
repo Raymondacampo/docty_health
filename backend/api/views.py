@@ -788,98 +788,149 @@ class DoctorSearchView(APIView):
     permission_classes = [AllowAny]
     pagination_class = DoctorPagination
 
+#     def get(self, request):
+#         queryset = Doctor.objects.all()
+#         specialty = request.query_params.get('specialty')
+#         ensurance = request.query_params.get('ensurance')
+#         location_name = request.query_params.get('location')  # e.g., "Santo Domingo, Distrito Nacional"
+#         sex = request.query_params.get('sex')
+#         takes_dates = request.query_params.get('takes_dates')
+#         appointment_type = request.query_params.get('appointment_type')
+#         experience_min = request.query_params.get('experience_min')
+#         logger.info("--- Received Query Parameters ---")
+#         logger.info(request.query_params)
+#         logger.info("---------------------------------")        # logger.info(f"Search parameters received: specialty={specialty}, ensurance={ensurance}, location={location_name}, sex={sex}, takes_dates={takes_dates}, experience_min={experience_min} ")        
+#         doctor_filters = {}
+#         if specialty:
+#             doctor_filters['specialties__name__icontains'] = specialty
+#         if ensurance and ensurance != 'any':
+#             doctor_filters['ensurances__name__icontains'] = ensurance
+#         if location_name:
+#             doctor_filters['location_name__icontains'] = location_name
+#         if experience_min and experience_min != 'any':
+#             try:
+#                 doctor_filters['experience__gte'] = int(experience_min)
+#             except ValueError:
+#                 pass
+#         if sex and sex != 'both':
+#             doctor_filters['sex__in'] = sex
+#         else:
+#             doctor_filters['sex__in'] = ['M', 'F']
+
+#         if takes_dates and takes_dates in ['true']:
+#             doctor_filters['taking_dates'] = takes_dates in ['true']
+#         if appointment_type and appointment_type in ['virtual', 'in_person']:
+#             if appointment_type == 'virtual':
+#                 doctor_filters['takes_virtual'] = True
+#             elif appointment_type == 'in_person':
+#                 doctor_filters['takes_in_person'] = True
+
+#         doctors = Doctor.objects.filter(**doctor_filters)
+#         logger.info(f"Filtered doctors based on initial parameters: {doctor_filters}")
+#         # Filter by city/state if location is provided
+#         if location_name:
+#             try:
+#                 city, state = [part.strip() for part in location_name.split(',', 1)]
+#             except ValueError:
+#                 city, state = location_name.strip(), None
+#             clinic_filter = Q()
+#             if city:
+#                 clinic_filter |= Q(city__iexact=city)
+#             if state:
+#                 clinic_filter |= Q(state__iexact=state)
+#             matching_clinics = Clinic.objects.filter(clinic_filter)
+#             queryset = queryset.filter(clinics__in=matching_clinics)
+
+#         # Existing filters
+#         if experience_min and experience_min != 'any':
+#             try:
+#                 queryset = queryset.filter(experience__gte=int(experience_min))
+#             except ValueError:
+#                 pass
+#         if specialty:
+#             queryset = queryset.filter(specialties__name=specialty)
+#         if ensurance:
+#             queryset = queryset.filter(ensurances__name=ensurance)
+#         if sex and sex != 'both':
+#             queryset = queryset.filter(sex=sex)
+#         if takes_dates:
+#             if takes_dates == 'true':
+#                 queryset = queryset.filter(taking_dates=True)
+#             elif takes_dates == 'virtual':
+#                 queryset = queryset.filter(taking_dates=True, takes_virtual=True)
+#             elif takes_dates == 'in_person':
+#                 queryset = queryset.filter(taking_dates=True, takes_in_person=True)
+
+#         queryset = queryset.distinct()
+
+#         paginator = self.pagination_class()
+#         page = paginator.paginate_queryset(doctors, request)
+#         serializer = DoctorSerializer(page, many=True)
+
+#         return paginator.get_paginated_response(serializer.data)
+
     def get(self, request):
         queryset = Doctor.objects.all()
+        
+        # 1. Obtener parámetros
         specialty = request.query_params.get('specialty')
         ensurance = request.query_params.get('ensurance')
-        location_name = request.query_params.get('location')  # e.g., "Santo Domingo, Distrito Nacional"
+        location_name = request.query_params.get('location') 
         sex = request.query_params.get('sex')
         takes_dates = request.query_params.get('takes_dates')
         appointment_type = request.query_params.get('appointment_type')
         experience_min = request.query_params.get('experience_min')
-        logger.info("--- Received Query Parameters ---")
-        logger.info(request.query_params)
-        logger.info("---------------------------------")        # logger.info(f"Search parameters received: specialty={specialty}, ensurance={ensurance}, location={location_name}, sex={sex}, takes_dates={takes_dates}, experience_min={experience_min} ")        
-        doctor_filters = {}
+
+        # 2. Filtrado por Ubicación (Ciudad y Estado)
+        if location_name:
+            try:
+                # Separamos "Santo Domingo, Distrito Nacional"
+                parts = [part.strip() for part in location_name.split(',', 1)]
+                city = parts[0]
+                state = parts[1] if len(parts) > 1 else None
+                
+                clinic_filter = Q()
+                if city:
+                    clinic_filter &= Q(city__iexact=city)
+                if state:
+                    clinic_filter &= Q(state__iexact=state)
+                
+                # Filtramos doctores que tengan al menos una clínica en esa ubicación
+                matching_clinics = Clinic.objects.filter(clinic_filter)
+                queryset = queryset.filter(clinics__in=matching_clinics)
+            except Exception as e:
+                logger.error(f"Error filtering location: {e}")
+
+        # 3. Otros Filtros Directos
         if specialty:
-            doctor_filters['specialties__name__icontains'] = specialty
+            queryset = queryset.filter(specialties__name__icontains=specialty)
+        
         if ensurance and ensurance != 'any':
-            doctor_filters['ensurances__name__icontains'] = ensurance
-        if location_name:
-            doctor_filters['location_name__icontains'] = location_name
-        if experience_min and experience_min != 'any':
-            try:
-                doctor_filters['experience__gte'] = int(experience_min)
-            except ValueError:
-                pass
+            queryset = queryset.filter(ensurances__name__icontains=ensurance)
+            
         if sex and sex != 'both':
-            doctor_filters['sex__in'] = sex
-        else:
-            doctor_filters['sex__in'] = ['M', 'F']
-
-        if takes_dates and takes_dates in ['true']:
-            doctor_filters['taking_dates'] = takes_dates in ['true']
-        if appointment_type and appointment_type in ['virtual', 'in_person']:
-            if appointment_type == 'virtual':
-                doctor_filters['takes_virtual'] = True
-            elif appointment_type == 'in_person':
-                doctor_filters['takes_in_person'] = True
-
-        doctors = Doctor.objects.filter(**doctor_filters)
-        logger.info(f"Filtered doctors based on initial parameters: {doctor_filters}")
-        # Filter by city/state if location is provided
-        if location_name:
-            try:
-                city, state = [part.strip() for part in location_name.split(',', 1)]
-            except ValueError:
-                city, state = location_name.strip(), None
-            clinic_filter = Q()
-            if city:
-                clinic_filter |= Q(city__iexact=city)
-            if state:
-                clinic_filter |= Q(state__iexact=state)
-            matching_clinics = Clinic.objects.filter(clinic_filter)
-            queryset = queryset.filter(clinics__in=matching_clinics)
-
-        # Existing filters
+            queryset = queryset.filter(sex=sex)
+            
         if experience_min and experience_min != 'any':
             try:
                 queryset = queryset.filter(experience__gte=int(experience_min))
             except ValueError:
                 pass
-        if specialty:
-            queryset = queryset.filter(specialties__name=specialty)
-        if ensurance:
-            queryset = queryset.filter(ensurances__name=ensurance)
-        if sex and sex != 'both':
-            queryset = queryset.filter(sex=sex)
-        if takes_dates:
-            if takes_dates == 'true':
-                queryset = queryset.filter(taking_dates=True)
-            elif takes_dates == 'virtual':
-                queryset = queryset.filter(taking_dates=True, takes_virtual=True)
-            elif takes_dates == 'in_person':
-                queryset = queryset.filter(taking_dates=True, takes_in_person=True)
 
-        # # Geospatial filter if lat/lon provided
-        # if latitude and longitude:
-        #     try:
-        #         lat = float(latitude)
-        #         lon = float(longitude)
-        #         radius_km = float(radius)
-        #         user_point = Point(lon, lat, srid=4326)
-        #         queryset = queryset.filter(
-        #             clinics__location__distance_lte=(user_point, D(km=radius_km))
-        #         ).annotate(
-        #             distance=Distance('clinics__location', user_point)
-        #         ).order_by('distance')
-        #     except ValueError:
-        #         return Response({"error": "Invalid latitude, longitude, or radius"}, status=status.HTTP_400_BAD_REQUEST)
+        if takes_dates == 'true':
+            queryset = queryset.filter(taking_dates=True)
 
+        if appointment_type == 'virtual':
+            queryset = queryset.filter(takes_virtual=True)
+        elif appointment_type == 'in_person':
+            queryset = queryset.filter(takes_in_person=True)
+
+        # 4. Limpieza y Paginación
         queryset = queryset.distinct()
-
+        
         paginator = self.pagination_class()
-        page = paginator.paginate_queryset(doctors, request)
+        # IMPORTANTE: Usa 'queryset', no 'doctors'
+        page = paginator.paginate_queryset(queryset, request)
         serializer = DoctorSerializer(page, many=True)
 
         return paginator.get_paginated_response(serializer.data)
@@ -1119,6 +1170,7 @@ class AllClinicsView(APIView):
     def get(self, request):
         clinics = Clinic.objects.all()
         serializer = ClinicSerializer(clinics, many=True)
+        logger.info(f"Fetched {serializer.data} clinics")
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 # View to return all ensurances

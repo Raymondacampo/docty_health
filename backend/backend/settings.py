@@ -124,7 +124,7 @@ X_FRAME_OPTIONS = 'DENY'  # Default, but we'll override for media
 CORS_ALLOWED_ORIGINS = [
     # "https://174.138.66.50",
     # "https://juanpabloduarte.com",
-    # "http://localhost:3000",  # Allow Next.js frontend
+    "http://localhost:3000",  # Allow Next.js frontend
     "https://docty-health.vercel.app"
 ]
 

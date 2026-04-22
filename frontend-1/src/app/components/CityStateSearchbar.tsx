@@ -5,7 +5,8 @@ import { FaMapMarkerAlt } from 'react-icons/fa';
 
 // Define interface for location objects
 interface Location {
-  name: string;
+  id?: number;
+  cityState: string;
 }
 
 // Define component props interface
@@ -29,17 +30,28 @@ export default function CityStateSearchBar({ value, onChange, round }: CityState
       setLoading(true);
       try {
         const response = await publicApiClient.get("/all_clinics/");
-        const clinics: { city: string; state: string }[] = response.data;
-        // Extract unique city/state combinations
-        const uniqueLocations: Location[] = [
-          ...new Set(
-            clinics
-              .filter(clinic => clinic.city && clinic.state)
-              .map(clinic => `${clinic.city}, ${clinic.state}`)
-          ),
-        ].map(loc => ({ name: loc }));
-        setLocations(uniqueLocations);
-        setFilteredLocations(uniqueLocations);
+        const clinics = response.data;
+
+        // Usamos un Map para filtrar duplicados por el string cityState
+        const uniqueMap = new Map();
+
+        clinics.forEach((item: any) => {
+          const cityStateValue = `${item.city}, ${item.state}`;
+          
+          // Solo lo agregamos si no existe ya en el Map
+          if (!uniqueMap.has(cityStateValue)) {
+            uniqueMap.set(cityStateValue, {
+              id: item.id, // Guardamos el ID de la primera clínica que encontremos
+              cityState: cityStateValue
+            });
+          }
+        });
+
+        // Convertimos el Map de vuelta a un array de objetos Location
+        const formattedLocations: Location[] = Array.from(uniqueMap.values());
+
+        setLocations(formattedLocations);
+        setFilteredLocations(formattedLocations);
       } catch (error) {
         console.error("Error fetching locations:", error);
       } finally {
@@ -53,7 +65,7 @@ export default function CityStateSearchBar({ value, onChange, round }: CityState
     const newValue = e.target.value;
     setTempValue(newValue);
     const filtered = locations.filter((loc) =>
-      loc.name.toLowerCase().includes(newValue.toLowerCase())
+      loc.cityState.toLowerCase().includes(newValue.toLowerCase())
     );
     setFilteredLocations(filtered);
     setIsOpen(true);
@@ -68,7 +80,7 @@ export default function CityStateSearchBar({ value, onChange, round }: CityState
 
   const handleBlur = () => {
     setTimeout(() => {
-      if (!locations.some((item) => item.name === tempValue)) {
+      if (!locations.some((item) => item.cityState === tempValue)) {
         setTempValue(inputValue);
       }
       setIsOpen(false);
@@ -100,10 +112,10 @@ export default function CityStateSearchBar({ value, onChange, round }: CityState
             {filteredLocations.map((loc, index) => (
               <li
                 key={index}
-                onMouseDown={() => handleOptionClick(loc.name)}
+                onMouseDown={() => handleOptionClick(loc.cityState)}
                 className="px-2 py-3 hover:bg-gray-100 cursor-pointer"
               >
-                {loc.name}
+                {loc.cityState}
               </li>
             ))}
           </motion.ul>
