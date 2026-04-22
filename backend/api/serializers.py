@@ -22,16 +22,16 @@ class SpecialtySerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 class ClinicSerializer(serializers.ModelSerializer):
-    location = serializers.SerializerMethodField()  # Custom field for lat/lon
+    # location = serializers.SerializerMethodField()  # Custom field for lat/lon
 
     class Meta:
         model = Clinic
-        fields = ['id', 'name', 'city', 'state','location', 'address']  # Add 'location'
-
-    def get_location(self, obj):
-        if obj.location:
-            return {'latitude': obj.location.y, 'longitude': obj.location.x}
-        return None
+        fields = ['id', 'name', 'city', 'state']  # Add 'location'
+        # ,'location', 'address'
+    # def get_location(self, obj):
+    #     if obj.location:
+    #         return {'latitude': obj.location.y, 'longitude': obj.location.x}
+    #     return None
 
 class EnsuranceSerializer(serializers.ModelSerializer):
     class Meta:
@@ -403,11 +403,6 @@ class WeekDaySerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return WeekDay.objects.create(**validated_data)
-    
-class ClinicSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Clinic
-        fields = ['id', 'name']
 
 class AppointmentSerializer(serializers.ModelSerializer):
     patient = PatientSerializer(read_only=True)
