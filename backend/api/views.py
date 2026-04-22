@@ -1,7 +1,6 @@
-from urllib import request
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, generics
+from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from django.contrib.auth import authenticate
 from rest_framework import status
@@ -10,10 +9,11 @@ from django.conf import settings
 from rest_framework.generics import RetrieveUpdateAPIView
 from .serializers import UserProfileSerializer, SignupSerializer, DoctorSignupSerializer, EnsuranceSerializer
 from .serializers import ClinicSerializer, SpecialtySerializer, DoctorSerializer, ReviewSerializer, WeekAvailabilitySerializer, WeekDaySerializer, ScheduleSerializer, AppointmentSerializer
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.core.management import call_command
 from rest_framework import serializers
 from google.oauth2 import id_token
 from google.auth.transport import requests
@@ -21,19 +21,15 @@ import os
 import uuid
 import re
 import logging
-from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
+from itsdangerous import URLSafeTimedSerializer
 from django.utils import timezone
 from datetime import timedelta, datetime, date
 from .models import PasswordResetToken, Specialty, Clinic, DoctorDocument, Doctor, Ensurance, Review, Schedule, WeekAvailability, WeekDay, Appointment
 from rest_framework.pagination import PageNumberPagination
-from django.contrib.gis.db.models.functions import Distance
-from django.contrib.gis.measure import D  # Distance measure
-from django.contrib.gis.geos import Point
 from django.db.models import Q, Count
 from django.db import transaction
-import json
 import requests as http_requests
-
+from django.http import JsonResponse
 
 
 logger = logging.getLogger(__name__)
@@ -1761,3 +1757,26 @@ class DoctorPatientsView(APIView):
         except Exception as e:
             logger.error(f"DoctorPatientsView error: {str(e)}")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+def trigger_add_clinic(request):
+    # 1. Validación de seguridad por Token en la URL
+    # Ejemplo: /api/setup-clinic/?token=mi_clave_secreta&query=Clinica Abreu, Santo Domingo
+    safe_token = os.environ.get('MAINTENANCE_TOKEN', 'token-por-defecto-muy-largo')
+    user_token = request.GET.get('token')
+    query = request.GET.get('query')
+
+    if user_token != safe_token:
+        return JsonResponse({"error": "No autorizado"}, status=403)
+
+    if not query:
+        return JsonResponse({"error": "Falta el parámetro 'query'"}, status=400)
+
+    try:
+        # 2. Llamar a tu comando personalizado
+        call_command('add_clinic', query)
+        return JsonResponse({
+            "status": "Proceso completado",
+            "message": f"Se intentó agregar: {query}"
+        })
+    except Exception as e:
+        return JsonResponse({"status": "Error", "message": str(e)}, status=500)

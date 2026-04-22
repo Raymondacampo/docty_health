@@ -5,7 +5,7 @@ RemoveClinicView, RemoveSpecialtyView, UploadDoctorDocumentView, DeleteDoctorDoc
 AddEnsuranceView, RemoveEnsuranceView, DoctorSearchView, AllSpecialtiesView, AllClinicsView, AllEnsurancesView, DoctorDetailView, ReviewsDetailView, CreateReviewView, UpdateReviewView, DeleteReviewView,UserReviewView, ToggleFavoriteDoctorView, IsDoctorView,
 CreateScheduleView, UpdateScheduleView, DeleteScheduleView, MySchedulesView, CreateWeekDayView, ClinicDetailView, WeekScheduleView, AvailableWeeksView,
 DoctorAvailableDaysView, WeekSchedulesView,CreateAppointmentView, DeleteWeekAvailabilityView, UserAppointmentsView, DeleteAppointmentView, DoctorPatientsView, Me,
-GoogleCallbackView, UpdateDoctorDescriptionView, DoctorInFavorite)
+GoogleCallbackView, UpdateDoctorDescriptionView, DoctorInFavorite, trigger_add_clinic)
 from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView, TokenObtainPairView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -76,5 +76,6 @@ urlpatterns = [
     path('doctor/patients/', DoctorPatientsView.as_view(), name='doctor_patients'),
     path('clinics/<int:clinic_id>/', ClinicDetailView.as_view(), name='clinic_detail'),
     path('auth/personal-data/', UserProfileView.as_view(), name='update_user_profile'),
+    path('setup-clinic/', trigger_add_clinic, name='trigger_add_clinic'),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
