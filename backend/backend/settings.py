@@ -196,24 +196,24 @@ LOGGING = {
 #         'PORT': '5432',
 #         }
 # }
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': os.getenv('DB_NAME', 'test_project_db'),
-        'USER': os.getenv('DB_USER', 'jefe'),
-        'PASSWORD': os.getenv('DB_PASSWORD', '123'),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '5432'),
-    }
-}
-
 # DATABASES = {
-#     'default': dj_database_url.config(
-#         default='postgresql://doctyhealth_db_user:gwXUc68RoK6hiJk0txecBLP6b7cCN6UI@dpg-d7j5vhnavr4c7385herg-a/doctyhealth_db',
-#         conn_max_age=600,
-#         engine='django.contrib.gis.db.backends.postgis',
-#     )
+#     'default': {
+#         'ENGINE': 'django.contrib.gis.db.backends.postgis',
+#         'NAME': os.getenv('DB_NAME', 'test_project_db'),
+#         'USER': os.getenv('DB_USER', 'jefe'),
+#         'PASSWORD': os.getenv('DB_PASSWORD', '123'),
+#         'HOST': os.getenv('DB_HOST', 'localhost'),
+#         'PORT': os.getenv('DB_PORT', '5432'),
+#     }
 # }
+
+DATABASES = {
+    'default': dj_database_url.config(
+        default='postgresql://doctyhealth_db_user:gwXUc68RoK6hiJk0txecBLP6b7cCN6UI@dpg-d7j5vhnavr4c7385herg-a/doctyhealth_db',
+        conn_max_age=600,
+        engine='django.contrib.gis.db.backends.postgis',
+    )
+}
 
 CELERY_BEAT_SCHEDULE = {
     'cleanup-expired-tokens': {
