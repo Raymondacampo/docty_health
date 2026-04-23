@@ -36,6 +36,7 @@ SESSION_COOKIE_SECURE = get_bool_env('PROD_SSL', True)
 CSRF_COOKIE_SECURE = get_bool_env('PROD_SSL', True)
 SECURE_SSL_REDIRECT = get_bool_env('PROD_SSL', True)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SAMESITE = 'None'
 
 # ALLOWED_HOSTS = ['localhost', 'juanpabloduarte.com', '127.0.0.1', '192.168.1.x']
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'docty-health-1.onrender.com']
@@ -127,6 +128,11 @@ CORS_ALLOWED_ORIGINS = [
     # "https://juanpabloduarte.com",
     "http://localhost:3000",  # Allow Next.js frontend
     "https://docty-health.vercel.app"
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://docty-health.vercel.app",
+    "https://docty-health-1.onrender.com"
 ]
 
 REST_FRAMEWORK = {
