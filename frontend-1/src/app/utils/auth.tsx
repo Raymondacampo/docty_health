@@ -26,11 +26,8 @@ export async function login(token: string, isGoogle: boolean = false, isGoogleCa
     if (isGoogle) {
       if (isGoogleCallback) {
         // Handle Google redirect callback: exchange authorization code for tokens
-        const callbackUrl = `${window.location.origin}/api/auth/google/callback`; 
-        const response = await publicApiClient.post("/auth/google/callback/", { 
-            code: token,
-            redirect_uri: callbackUrl // <--- ENVÍA ESTO AL BACKEND
-        });
+        const callbackUrl = `${window.location.origin}/api/auth/google/callback`;
+        const response = await publicApiClient.post("/auth/google/callback/", { code: token });
         const { access, refresh } = response.data;
         saveToken(access);
         localStorage.setItem("refresh_token", refresh);
