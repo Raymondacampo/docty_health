@@ -180,7 +180,6 @@ class GoogleCallbackView(APIView):
 
     def post(self, request):
         code = request.data.get('code')
-        frontend_redirect_uri = request.data.get('redirect_uri')
         if not code:
             return Response({'error': 'Authorization code is required'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -190,7 +189,7 @@ class GoogleCallbackView(APIView):
                 'code': code,
                 'client_id': os.getenv('GOOGLE_CLIENT_ID'),
                 'client_secret': os.getenv('GOOGLE_CLIENT_SECRET'),
-                'redirect_uri': frontend_redirect_uri or f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/auth/callback",
+                'redirect_uri': f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/auth/callback",
                 'grant_type': 'authorization_code'
             })
             token_data = token_response.json()

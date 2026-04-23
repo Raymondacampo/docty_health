@@ -161,7 +161,7 @@ function NavbarContent() {
             </div>
           )}
         </div>
-          {isAuth && !isSmall && (
+          {isAuth && isSmall && (
           <div className='lg:hidden'>
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
