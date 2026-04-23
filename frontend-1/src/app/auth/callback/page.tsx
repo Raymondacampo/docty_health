@@ -33,7 +33,7 @@ export default function GoogleCallback() {
             router.replace('/'); 
         }
       } catch (err: any) {
-        console.error('Google callback error:', err.response?.data || err.message);
+        console.error('Google callback error:', err.response?.data || err.message, redirectUrl);
         setError('Failed to authenticate with Google. Please try again.');
         setIsLoading(false);
       }
