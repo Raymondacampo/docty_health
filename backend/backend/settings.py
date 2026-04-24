@@ -35,8 +35,8 @@ DEBUG = get_bool_env('DEBUG', False)
 SESSION_COOKIE_SECURE = get_bool_env('PROD_SSL', True)
 CSRF_COOKIE_SECURE = get_bool_env('PROD_SSL', True)
 SECURE_SSL_REDIRECT = get_bool_env('PROD_SSL', True)
-# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-# SESSION_COOKIE_SAMESITE = 'None'
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SAMESITE = 'None'
 
 # ALLOWED_HOSTS = ['localhost', 'juanpabloduarte.com', '127.0.0.1', '192.168.1.x']
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'docty-health-1.onrender.com']
@@ -124,8 +124,6 @@ MIDDLEWARE = [
 X_FRAME_OPTIONS = 'DENY'  # Default, but we'll override for media
 
 CORS_ALLOWED_ORIGINS = [
-    # "https://174.138.66.50",
-    # "https://juanpabloduarte.com",
     "http://localhost:3000",  # Allow Next.js frontend
     "https://docty-health.vercel.app"
 ]
@@ -189,24 +187,24 @@ LOGGING = {
     },
 }
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': os.getenv('DB_NAME', 'test_project_db'),
-        'USER': os.getenv('DB_USER', 'jefe'),
-        'PASSWORD': os.getenv('DB_PASSWORD', '123'),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '5432'),
-    }
-}
-
 # DATABASES = {
-#     'default': dj_database_url.config(
-#         default='postgresql://doctyhealth_db_user:gwXUc68RoK6hiJk0txecBLP6b7cCN6UI@dpg-d7j5vhnavr4c7385herg-a/doctyhealth_db',
-#         conn_max_age=600,
-#         engine='django.contrib.gis.db.backends.postgis',
-#     )
+#     'default': {
+#         'ENGINE': 'django.contrib.gis.db.backends.postgis',
+#         'NAME': os.getenv('DB_NAME', 'test_project_db'),
+#         'USER': os.getenv('DB_USER', 'jefe'),
+#         'PASSWORD': os.getenv('DB_PASSWORD', '123'),
+#         'HOST': os.getenv('DB_HOST', 'localhost'),
+#         'PORT': os.getenv('DB_PORT', '5432'),
+#     }
 # }
+
+DATABASES = {
+    'default': dj_database_url.config(
+        default='postgresql://doctyhealth_db_user:gwXUc68RoK6hiJk0txecBLP6b7cCN6UI@dpg-d7j5vhnavr4c7385herg-a/doctyhealth_db',
+        conn_max_age=600,
+        engine='django.contrib.gis.db.backends.postgis',
+    )
+}
 
 CELERY_BEAT_SCHEDULE = {
     'cleanup-expired-tokens': {
