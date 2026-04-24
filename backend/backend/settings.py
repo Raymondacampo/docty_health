@@ -57,6 +57,9 @@ INSTALLED_APPS = [
     'allauth.account',
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",  # ✅ Google OAuth
+    
+    'cloudinary_storage',
+    'cloudinary',
 
     "django.contrib.sites",  # Required for Allauth
     'django.contrib.admin',
@@ -76,8 +79,6 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",  # ✅ Required for social login
 ]
 
-# SOCIALACCOUNT_LOGIN_REDIRECT_URL = "http://localhost:3000/auth/callback/"  # ✅ Redirect to Next.js >ACCOUNT_SIGNUP_REDIRECT_URL = "http://localhost:3000/auth/callback/"  # ✅ Redirect new users to pas>ACCOUNT_LOGOUT_REDIRECT_URL = "http://localhost:3000/login/"  # ✅ Redirect after logout
-# LOGIN_REDIRECT_URL = 'http://localhost:3000/auth/callback'  # Frontend callback URL
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 
@@ -90,7 +91,6 @@ EMAIL_HOST_USER = 'raymondacamposandoval@gmail.com'
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
 DEFAULT_FROM_EMAIL = 'raymondacamposandoval@gmail.com'
-
 
 ACCOUNT_LOGIN_METHODS = {"email"}  # ✅ Use this instead
 SOCIALACCOUNT_PROVIDERS = {
@@ -105,6 +105,13 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET')
+}
 
 MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
