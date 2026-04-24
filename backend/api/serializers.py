@@ -36,7 +36,7 @@ class ClinicSerializer(serializers.ModelSerializer):
 class EnsuranceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ensurance
-        fields = ['id', 'name', 'logo']  # You can add 'logo' if needed
+        fields = '__all__'  # You can add 'logo' if needed
 
 class DoctorSerializer(serializers.ModelSerializer):
     specialties = SpecialtySerializer(many=True)
