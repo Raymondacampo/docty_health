@@ -234,27 +234,30 @@ class DoctorSignupSerializer(serializers.Serializer):
         return attrs
 
     def create(self, validated_data):
-        # Remove confirm_password
+        # 1. Extraer datos
         validated_data.pop('confirm_password', None)
-
-        # Extract m2m instances
         specialties = validated_data.pop('specialties', [])
         clinics = validated_data.pop('clinics', [])
         ensurances = validated_data.pop('ensurances', [])
+        
         born_date = validated_data.pop('born_date', None)
-
         exequatur = validated_data.pop('exequatur')
         experience = validated_data.pop('experience')
         sex = validated_data.pop('sex')
-
-        # other user fields
+        
         first_name = validated_data.pop('first_name')
         last_name = validated_data.pop('last_name')
         email = validated_data.pop('email')
         password = validated_data.pop('password')
 
-        # Atomic creation so partial objects aren't left on failure
+        # 2. Lógica para calcular la edad (age)
+        calculated_age = None
+        if born_date:
+            today = date.today()
+            calculated_age = today.year - born_date.year - ((today.month, today.day) < (born_date.month, born_date.day))
+
         with transaction.atomic():
+            # 3. Crear el Usuario
             user = User.objects.create_user(
                 username=f"user_{uuid.uuid4().hex[:10]}",
                 first_name=first_name,
@@ -264,20 +267,26 @@ class DoctorSignupSerializer(serializers.Serializer):
                 born_date=born_date
             )
 
+            # 4. Crear el Doctor con sus nuevos campos
+            # Aquí asignamos los valores de first_name, last_name y la edad calculada
             doctor = Doctor.objects.create(
                 user=user,
+                first_name=first_name,  # Mismo valor que User
+                last_name=last_name,    # Mismo valor que User
+                age=calculated_age,     # Edad calculada
                 exequatur=exequatur,
                 experience=experience,
                 sex=sex
             )
 
-            # specialties/clinics/ensurances are lists of model instances (PrimaryKeyRelatedField)
+            # 5. Guardar relaciones ManyToMany
             doctor.specialties.set(specialties)
             doctor.clinics.set(clinics)
             if ensurances:
                 doctor.ensurances.set(ensurances)
 
         return user
+
 class MinimalUserSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True)  # Extra field for password confirmation
 

@@ -131,13 +131,16 @@ class Doctor(models.Model):
     exequatur = models.CharField(max_length=20, unique=True)  # Unique doctor registration number
     experience = models.PositiveIntegerField(help_text="Years of Experience")
 
+    first_name = models.CharField(max_length=30, help_text="Doctor's first name", null=False, blank=False)  # New field
+    last_name = models.CharField(max_length=30, help_text="Doctor's last name", null=False, blank=False)  # New field
+    age = models.PositiveIntegerField(help_text="Doctor's age", null=True, blank=True)  # New field
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    sex = models.CharField(max_length=1, choices=SEX_CHOICES,null=True, blank=True, help_text="Doctor's sex (Male or Female)")  # New field
     specialties = models.ManyToManyField("Specialty", related_name="doctors")  # Many doctors can have many specialties
     taking_dates = models.BooleanField(default=False)
     takes_virtual = models.BooleanField(default=False, help_text="Doctor takes virtual appointments")
     takes_in_person = models.BooleanField(default=False, help_text="Doctor takes in-person appointments")
-    sex = models.CharField(max_length=1, choices=SEX_CHOICES,null=True, blank=True, help_text="Doctor's sex (Male or Female)")  # New field
+    user = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="doctor", help_text="Associated user account for the doctor")
     
     def __str__(self):
         return f"Dr. {self.user.first_name} {self.user.last_name} - {self.exequatur}"
