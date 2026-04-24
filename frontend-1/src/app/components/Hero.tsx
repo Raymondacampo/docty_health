@@ -12,9 +12,9 @@ import Link from "next/link";
 export default function Hero() {
   const links = [
     { title: "Cardiologist", specialty: "Especialistas en salud del corazón", icon: <HeartIcon className="w-8 h-8" /> },
-    { title: "Neurologist", specialty: "Expertos en el sistema nervioso", icon: <PuzzlePieceIcon className="w-8 h-8" /> },
-    { title: "Pediatrician", specialty: "Cuidado integral para niños", icon: <UserGroupIcon className="w-8 h-8" /> },
-    { title: "Dermatologist", specialty: "Tratamiento de enfermedades de la piel", icon: <CloudIcon className="w-8 h-8" /> },
+    { title: "Neurology", specialty: "Expertos en el sistema nervioso", icon: <PuzzlePieceIcon className="w-8 h-8" /> },
+    { title: "Pediatrics", specialty: "Cuidado integral para niños", icon: <UserGroupIcon className="w-8 h-8" /> },
+    { title: "Dermatology", specialty: "Tratamiento de enfermedades de la piel", icon: <CloudIcon className="w-8 h-8" /> },
   ];
   return (
     <div className="relative h-auto lg:h-[70dvh] px-2">
