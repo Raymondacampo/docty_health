@@ -38,6 +38,13 @@ class EnsuranceSerializer(serializers.ModelSerializer):
         model = Ensurance
         fields = '__all__'  # You can add 'logo' if needed
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if instance.logo:
+            # .url es proporcionado por CloudinaryField para dar la dirección completa
+            representation['logo'] = instance.logo.url
+        return representation
+
 class DoctorSerializer(serializers.ModelSerializer):
     specialties = SpecialtySerializer(many=True)
     clinics = ClinicSerializer(many=True)
