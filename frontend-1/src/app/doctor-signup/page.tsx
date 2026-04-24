@@ -153,8 +153,6 @@ export default function DoctorSignupPage() {
       console.error('Doctor signup error:', err);
       const errData = err.response?.data;
       setErrors(errData || { non_field_errors: ['Something went wrong. Please try again.'] });
-    } finally {
-      setIsLoading(false);
     }
   };
 

@@ -1,3 +1,5 @@
+import traceback
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -97,11 +99,13 @@ class DoctorSignupView(APIView):
                     'email': user.email,
                     'is_doctor': True,
                     # Optional: include doctor-specific info
-                    'doctor_id': user.doctor_profile.id if hasattr(user, 'doctor_profile') else None,
+                    'doctor_id': user.doctor.id if hasattr(user, 'doctor') else None,
                 }
             }, status=status.HTTP_201_CREATED)
 
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             return Response({
                 'error': 'Signup failed',
                 'detail': str(e)

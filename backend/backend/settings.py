@@ -76,8 +76,8 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",  # ✅ Required for social login
 ]
 
-SOCIALACCOUNT_LOGIN_REDIRECT_URL = "http://localhost:3000/auth/callback/"  # ✅ Redirect to Next.js >ACCOUNT_SIGNUP_REDIRECT_URL = "http://localhost:3000/auth/callback/"  # ✅ Redirect new users to pas>ACCOUNT_LOGOUT_REDIRECT_URL = "http://localhost:3000/login/"  # ✅ Redirect after logout
-LOGIN_REDIRECT_URL = 'http://localhost:3000/auth/callback'  # Frontend callback URL
+# SOCIALACCOUNT_LOGIN_REDIRECT_URL = "http://localhost:3000/auth/callback/"  # ✅ Redirect to Next.js >ACCOUNT_SIGNUP_REDIRECT_URL = "http://localhost:3000/auth/callback/"  # ✅ Redirect new users to pas>ACCOUNT_LOGOUT_REDIRECT_URL = "http://localhost:3000/login/"  # ✅ Redirect after logout
+# LOGIN_REDIRECT_URL = 'http://localhost:3000/auth/callback'  # Frontend callback URL
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 
@@ -124,8 +124,6 @@ MIDDLEWARE = [
 X_FRAME_OPTIONS = 'DENY'  # Default, but we'll override for media
 
 CORS_ALLOWED_ORIGINS = [
-    # "https://174.138.66.50",
-    # "https://juanpabloduarte.com",
     "http://localhost:3000",  # Allow Next.js frontend
     "https://docty-health.vercel.app"
 ]
@@ -189,20 +187,6 @@ LOGGING = {
     },
 }
 
-
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'test_project_db',
-#         'USER': 'jefe',
-#         'PASSWORD': 'rabomonito',
-#         'HOST': 'localhost',
-#         'PORT': '5432',
-#         }
-# }
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.contrib.gis.db.backends.postgis',
