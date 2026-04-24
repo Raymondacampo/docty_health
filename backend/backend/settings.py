@@ -45,6 +45,7 @@ APPEND_SLASH = True
 # Application definition
 
 INSTALLED_APPS = [
+    'cloudinary_storage',
     'rest_framework',
     "rest_framework_simplejwt",
     'rest_framework.authtoken',
@@ -58,7 +59,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",  # ✅ Google OAuth
     
-    'cloudinary_storage',
+    
     'cloudinary',
 
     "django.contrib.sites",  # Required for Allauth
@@ -105,7 +106,6 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
@@ -114,12 +114,12 @@ CLOUDINARY_STORAGE = {
 }
 
 MIDDLEWARE = [
-    'allauth.account.middleware.AccountMiddleware',
+    'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware', # <--- AQUÍ
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'api.middleware.CustomXFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',  # Allows frontend to access API
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -259,7 +259,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = "/media/"  # URL to access media files
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")  # Directory to store uploaded files
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+# MEDIA_ROOT = os.path.join(BASE_DIR, "media")  # Directory to store uploaded files
 
 
 # Default primary key field type
