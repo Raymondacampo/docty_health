@@ -13,8 +13,7 @@ import logging
 import os
 from django.core.files.base import ContentFile
 import io
-from django.contrib.postgres.fields import ArrayField
-
+from cloudinary.models import CloudinaryField
 
 logger = logging.getLogger(__name__)
 
@@ -151,7 +150,7 @@ def doctor_document_upload_path(instance, filename):
 
 class DoctorDocument(models.Model):
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name="documents")
-    file = models.FileField(upload_to="doctor_documents/")
+    file = CloudinaryField('file', folder='doctor_documents')
     uploaded_at = models.DateTimeField(auto_now_add=True)
     description = models.CharField(max_length=255, blank=True, null=True)
 
@@ -217,8 +216,7 @@ class Clinic(models.Model):
     
 class Ensurance(models.Model):
     name = models.CharField(max_length=150, unique=True)
-    logo = models.ImageField(upload_to="ensurance_logos/", blank=True, null=True)  # Logo image field
-
+    logo = CloudinaryField('image', folder='ensurance_logos', blank=True, null=True)
     def __str__(self):
         return self.name
     
