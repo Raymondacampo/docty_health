@@ -32,12 +32,7 @@ export type Appointment = {
     last_name: string;
     profile_picture: string | null;
   };
-  doctor?: {
-    id: number;
-    first_name: string;
-    last_name: string;
-    profile_picture: string | null;
-  };
+  doctor_name: string
 };
 
 const Appointment = ({
@@ -53,8 +48,8 @@ const Appointment = ({
   darker?: boolean;
   isCancel?: boolean;
 }) => {
-  const doctorName = appointment.doctor
-    ? `Dr. ${appointment.doctor.first_name} ${appointment.doctor.last_name}`
+  const doctorName = appointment.doctor_name
+    ? `Dr. ${appointment.doctor_name}`
     : "Unknown Doctor";
   const patientName = appointment.patient
     ? `${appointment.patient.first_name} ${appointment.patient.last_name}`

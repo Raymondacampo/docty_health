@@ -33,22 +33,7 @@ export type ScheduleType = {
   [key: string]: any;
 }
 
-const Appointments = ({ appointments, isDoctor, fetchAppointments }: { appointments: { active_appointments: Appointment[]; inactive_appointments: Appointment[] }; isDoctor: boolean; fetchAppointments: () => void }) => {
-  // const cancelAppointment = async (appointmentId: number) => {
-  //   try {
-  //     await apiClient.delete(`appointments/${appointmentId}/`);
-  //     // setAlert({ message: "Appointment cancelled successfully", status: "success" });
-  //     setTimeout(() => setAlert({ message: null, status: null }), 3000);
-  //     fetchAppointments(); // Refresh appointments
-  //   } catch (err: any) {
-  //     const errorMessage = err.response?.data?.error || "Failed to cancel appointment";
-  //     // setAlert({ message: errorMessage, status: "error" });
-  //     setTimeout(() => setAlert({ message: null, status: null }), 3000);
-  //     console.error("Cancel error:", err);
-  //   }
-  // };
-
-  
+const Appointments = ({ appointments, isDoctor, fetchAppointments }: { appointments: { active_appointments: Appointment[]; inactive_appointments: Appointment[] }; isDoctor: boolean; fetchAppointments: () => void }) => {  
   return(
     <div className="w-full max-w-4xl h-screen flex flex-col justify-start items-start gap-10">
     {appointments.active_appointments.length > 0 || appointments.inactive_appointments.length > 0 ? (
@@ -225,9 +210,11 @@ export default function AppointmentsPage() {
   }, [userAuthenticated]);
 
   useEffect(() => {
-    fetchSchedules();
-    fetchWeekSchedules();
-  }, [refreshKey]);
+    if (isDoctor) {
+      fetchSchedules();
+      fetchWeekSchedules();
+    }
+  }, [refreshKey, isDoctor]); // Refetch when refreshKey changes or when user role is confirmed
 
   useEffect(() => {
   }, [activeTab]);
