@@ -9,8 +9,8 @@ interface DateProps {
 
 const AppointmentComponent: React.FC<DateProps> = ({ appointment, is_doctor }: DateProps) => {
 
-    const doctorName = appointment.week_availability?.doctor && appointment.doctor
-        ? `Dr. ${appointment.doctor.first_name} ${appointment.doctor.last_name}`
+    const doctorName = appointment.week_availability?.doctor && appointment.doctor_name
+        ? `Dr. ${appointment.doctor_name}`
         : "Unknown Doctor";
     const patientName = appointment.patient
         ? `${appointment.patient.first_name} ${appointment.patient.last_name}`
