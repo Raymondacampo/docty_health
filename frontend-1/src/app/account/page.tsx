@@ -68,6 +68,7 @@ export default function AccountPage() {
 
         checkAuthAndFetch();
     }, []);
+    
 
     if (loading) {
         return <Loading />;
@@ -97,7 +98,8 @@ export default function AccountPage() {
                             appointments={active_appointments}
                             is_doctor={isDoctor}
                             darker={true}
-                            // setAlert={setAlert}
+                            onCancel={() => {console.log("Refresh appointments");}}
+                            isCancel={false}
                         />                       
                     </div>
                     <ThreeFavDocs docs={favoriteDoctors}/>             

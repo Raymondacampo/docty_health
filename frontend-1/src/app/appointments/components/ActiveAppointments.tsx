@@ -44,12 +44,14 @@ const Appointment = ({
   appointment,
   onCancel,
   is_doctor,
-  darker
+  darker,
+  isCancel
 }: {
   appointment: Appointment;
   onCancel: (appointmentId: number) => void;
   is_doctor: boolean;
   darker?: boolean;
+  isCancel?: boolean;
 }) => {
   const doctorName = appointment.doctor
     ? `Dr. ${appointment.doctor.first_name} ${appointment.doctor.last_name}`
@@ -83,12 +85,15 @@ const Appointment = ({
           </div>
         </div>
       </div>
+      {isCancel && (
+
       <button
         className="px-4 py-1.5 bg-[#060648] rounded-md flex justify-center items-center gap-2.5"
         onClick={() => onCancel(appointment.id)}
       >
         <div className="text-white font-bold tracking-wide whitespace-nowrap sm:text-base xs:text-sm">Cancel appoinment</div>
       </button>
+      )}
     </div>
   );
 };
@@ -96,12 +101,12 @@ const Appointment = ({
 type ActiveAppointmentsProps = {
   appointments: Appointment[];
   is_doctor: boolean;
-  onCancel: () => void;
-  setAlert?: (alert: { message: string | null; status: string | null }) => void;
+  onCancel?: () => void;
   darker?: boolean;
+  isCancel?: boolean;
 };
 
-export default function ActiveAppointments({ appointments, is_doctor, onCancel, setAlert, darker }: ActiveAppointmentsProps) {
+export default function ActiveAppointments({ appointments, is_doctor, onCancel, darker, isCancel }: ActiveAppointmentsProps) {
   const { showAlert } = useAlert();
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [appointmentToCancel, setAppointmentToCancel] = useState<number | null>(null);
@@ -115,7 +120,7 @@ export default function ActiveAppointments({ appointments, is_doctor, onCancel, 
     try {
       await apiClient.delete(`appointments/${appointmentToCancel}/`);
       showAlert("Appointment cancelled successfully", "success");
-      onCancel(); // Refresh appointments
+      onCancel?.(); // Refresh appointments
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || "Failed to cancel appointment";
       showAlert(errorMessage, "error");
@@ -143,6 +148,7 @@ export default function ActiveAppointments({ appointments, is_doctor, onCancel, 
               onCancel={handleCancel}
               is_doctor={is_doctor}
               darker={darker}
+              isCancel={isCancel}
             />
           ))
         ) : (
@@ -150,7 +156,7 @@ export default function ActiveAppointments({ appointments, is_doctor, onCancel, 
         )}
       </div>
       {isConfirmModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="absolute inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="relative w-[95%] bg-white shadow-xl p-6 max-w-md rounded-lg sm:mx-4">
             <button
               onClick={cancelCancel}

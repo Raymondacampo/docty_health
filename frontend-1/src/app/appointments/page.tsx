@@ -57,6 +57,7 @@ const Appointments = ({ appointments, isDoctor, fetchAppointments }: { appointme
           appointments={appointments.active_appointments}
           is_doctor={isDoctor}
           onCancel={fetchAppointments}
+          isCancel={true}
         />
         <UnactiveAppointments appointments={appointments.inactive_appointments} is_doctor={isDoctor} />
       </>
