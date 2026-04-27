@@ -154,6 +154,7 @@ export default function AppointmentsPage() {
     try {
       const response = await apiClient.get("appointments/");
       setAppointments(response.data);
+      console.log("Fetched appointments:", response.data);
     } catch (err: any) {
       setError(err.response?.data?.error || err.message || "Failed to fetch appointments");
     } finally {
@@ -225,9 +226,11 @@ export default function AppointmentsPage() {
   }, [userAuthenticated]);
 
   useEffect(() => {
-    fetchSchedules();
-    fetchWeekSchedules();
-  }, [refreshKey]);
+    if (isDoctor) {
+      fetchSchedules();
+      fetchWeekSchedules();
+    }
+  }, [refreshKey, isDoctor]); // Refetch when refreshKey changes or when user role is confirmed
 
   useEffect(() => {
   }, [activeTab]);

@@ -53,9 +53,6 @@ const Appointment = ({
   darker?: boolean;
   isCancel?: boolean;
 }) => {
-  const doctorName = appointment.doctor
-    ? `Dr. ${appointment.doctor.first_name} ${appointment.doctor.last_name}`
-    : "Unknown Doctor";
   const patientName = appointment.patient
     ? `${appointment.patient.first_name} ${appointment.patient.last_name}`
     : "Unknown Patient";
@@ -64,11 +61,7 @@ const Appointment = ({
     <div className={`self-stretch shadow-md border border-gray-400 rounded-md flex flex-col sm:flex-row justify-between sm:items-center flex-wrap px-4 py-2 xs:items-center ${darker ? "bg-gray-50" : "bg-white"}`}>
       <div className="flex justify-start items-center gap-4">
         <div className="flex flex-col justify-start py-5 items-start gap-1">
-          {is_doctor ? (
-            <div className="self-stretch text-[#3d5a80] text-lg tracking-wide">{patientName}</div>   
-          ) : (
-            <div className="self-stretch text-[#3d5a80] text-lg font-bold tracking-wide">{doctorName}</div>
-          )}
+          <div className="self-stretch text-[#3d5a80] text-lg tracking-wide">{patientName}</div>   
           <div className="self-stretch flex flex-wrap items-center gap-x-2.5">
             <div>
               <span className="text-[#293241] text-xs font-normal tracking-wide">Date:</span>
