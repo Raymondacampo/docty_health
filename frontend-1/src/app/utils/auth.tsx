@@ -34,11 +34,9 @@ export async function login(token: string, isGoogle: boolean = false, isGoogleCa
         window.location.href = redirectUri || '/account';      
       } else {
         // Send Google ID token to backend (for popup flow, kept for compatibility)
-        console.log("Sending Google token to backend:", token);
         const response = await publicApiClient.post("/auth/google/", {
           token
         });
-        console.log("Google login response:", response.data);
         const { access, refresh } = response.data;
         saveToken(access);
         localStorage.setItem("refresh_token", refresh);
@@ -57,7 +55,6 @@ export async function logoutUser(): Promise<void> {
   const refreshToken = localStorage.getItem("refresh_token");
 
   if (!refreshToken) {
-    console.log("No refresh token found, user already logged out.");
     return;
   }
 
@@ -67,7 +64,6 @@ export async function logoutUser(): Promise<void> {
     document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
   }
 
-  console.log("User logged out successfully.");
 }
 
 function isTokenExpired(token: string): boolean {
@@ -88,12 +84,10 @@ function saveToken(token: string) {
 
 export async function isAuthenticated(): Promise<boolean> {
   if (typeof window === "undefined" || !window.localStorage) {
-    console.log("Not in a browser environment");
     return false;
   }
 
   const token = getValidToken();
-  console.log("Token found in localStorage:", token);
 
   if (!token) {
     return false;
@@ -103,7 +97,6 @@ export async function isAuthenticated(): Promise<boolean> {
     const decoded = jwtDecode<JWTPayload>(token);
     const currentTime = Math.floor(Date.now() / 1000);
     if (decoded.exp < currentTime) {
-      console.log("Access token expired");
       const refreshed = await refreshToken();
       if (!refreshed) {
         localStorage.removeItem("access_token");
@@ -117,7 +110,6 @@ export async function isAuthenticated(): Promise<boolean> {
     if (response.status === 200) {
       return true;
     } else {
-      console.log("Token is invalid");
       const refreshed = await refreshToken();
       if (!refreshed) {
         localStorage.removeItem("access_token");
@@ -138,7 +130,6 @@ async function refreshToken(): Promise<boolean> {
   const refreshToken = localStorage.getItem("refresh_token");
 
   if (!refreshToken) {
-    console.log("No refresh token available");
     return false;
   }
 
@@ -146,7 +137,6 @@ async function refreshToken(): Promise<boolean> {
     const decoded = jwtDecode<JWTPayload>(refreshToken);
     const currentTime = Math.floor(Date.now() / 1000);
     if (decoded.exp < currentTime) {
-      console.log("Refresh token expired");
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
       return false;
@@ -158,10 +148,8 @@ async function refreshToken(): Promise<boolean> {
 
     if (response.status === 200) {
       localStorage.setItem("access_token", response.data.access);
-      console.log("Token refreshed successfully");
       return true;
     } else {
-      console.log("Failed to refresh token");
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
       return false;
@@ -180,7 +168,6 @@ function getValidToken(): string | null {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-    console.log('removed token');
     return null;
   }
   return token;

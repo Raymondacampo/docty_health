@@ -89,7 +89,6 @@ export default function Search() {
   }, [searchParams]);
 
   const applyFilters = () => {
-    console.log("Applying filters:", tempFilters);
     setSpecialty(tempFilters.specialty);
     setEnsurance(tempFilters.ensurance);
     setLocation(tempFilters.location);

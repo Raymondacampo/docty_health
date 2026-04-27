@@ -165,7 +165,6 @@ export default function AppointmentsPage() {
       setError(null);
       try {
         const response = await apiClient.get<ScheduleType[]>('/auth/my_schedules/');
-        console.log('Fetched schedules:', response.data);
         setSchedules(response.data);
       } catch (err: any) {
         console.error('Error fetching schedules:', err);
@@ -186,7 +185,6 @@ export default function AppointmentsPage() {
     setError(null);
     try {
       const response = await apiClient.get('/auth/weekschedules/');
-      console.log('Fetched week schedules:', response.data);
       setWeekSchedules(response.data.weekschedules);
     } catch (err: any) {
       console.error('Error fetching week schedules:', err);
@@ -204,7 +202,6 @@ export default function AppointmentsPage() {
   }
 
   const handleCreateOrUpdate = () => {
-    console.log('Refreshing schedules after create/update');
     
     setRefreshKey((prev) => prev + 1);
   };
@@ -232,7 +229,6 @@ export default function AppointmentsPage() {
   }, [refreshKey]);
 
   useEffect(() => {
-    console.log(activeTab);
   }, [activeTab]);
 
   if (loading) {

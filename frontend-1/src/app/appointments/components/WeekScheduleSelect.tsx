@@ -38,7 +38,6 @@ const ScheduleSelect: React.FC<ScheduleSelectProps> = ({
   useEffect(() => {
     if (schedules && schedules.length > 0) {
       setSchedules(schedules);
-      // console.log('Using provided schedules:', schedules);
       return;
     }
 
@@ -48,7 +47,6 @@ const ScheduleSelect: React.FC<ScheduleSelectProps> = ({
     apiClient
       .get('/auth/schedules/')
       .then((response) => {
-        // console.log('Fetched schedules:', response.data);
         setSchedules(response.data);
       })
       .catch((err) => {
@@ -61,7 +59,6 @@ const ScheduleSelect: React.FC<ScheduleSelectProps> = ({
   }, [schedules]);
 
   useEffect(() => {
-    // scheduleList.map(s => console.log(s.id, s.title, s));
   }, [scheduleList]);
 
   // Close dropdown when clicking outside

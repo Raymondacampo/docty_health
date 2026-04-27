@@ -114,7 +114,6 @@ export default function ActiveAppointments({ appointments, is_doctor, onCancel, 
   const confirmCancel = async () => {
     try {
       await apiClient.delete(`appointments/${appointmentToCancel}/`);
-      console.log("Appointment cancelled:", appointmentToCancel);
       showAlert("Appointment cancelled successfully", "success");
       onCancel(); // Refresh appointments
     } catch (err: any) {

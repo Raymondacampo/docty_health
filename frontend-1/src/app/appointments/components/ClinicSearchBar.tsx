@@ -85,7 +85,7 @@ export default function ClinicSearchBar({ value, onChange, round }: ClinicSearch
         <input
           ref={inputRef}
           type="text"
-          placeholder="Search for a city or state"
+          placeholder="Search for a clinic location"
           value={tempValue}
           onChange={handleInputChange}
           onFocus={isLg ? () => setIsOpen(true) : openSearch}
@@ -143,7 +143,7 @@ export default function ClinicSearchBar({ value, onChange, round }: ClinicSearch
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search for a city or state"
+                placeholder="Search for a clinic location"
                 value={tempValue}
                 onChange={handleInputChange}
                 autoFocus

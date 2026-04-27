@@ -1,14 +1,13 @@
 'use client';
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { apiClient } from "../utils/api";
-// import { useRouter } from "next/router";
-// import LoadingComponent from "@/components/LoadingComponent";
-// import CustomAlert from "@/components/CustomAlert";
-// import useAlert from "@/hooks/useAlert";
 import { FaSearch } from 'react-icons/fa';
-// import AbsoluteSearchOverlay from "@/components/AbsoluteSearchOverlay";
 import Doctor from "./components/Doctor";
 import Loading from "../components/LoadingComponent";
+import Link from "next/dist/client/link";
+import dclogo from '@/assets/images/dclogo.png';
+
 
 type DoctorProps = {
   doctor: {
@@ -34,89 +33,12 @@ export default function FavoriteDoctors() {
 
 //   const router = useRouter();
 
-
-// const favorite_doctors = [
-//         {
-//             "id": 1,
-//             "user": {
-//                 "id": 8,
-//                 "first_name": "pepe",
-//                 "last_name": "gonzales marquinez",
-//                 "email": "elpepesito@gmail.com",
-//                 "profile_picture": null
-//             },
-//             "exequatur": "967897",
-//             "experience": 19,
-//             "sex": "M",
-//             "taking_dates": false,
-//             "takes_virtual": false,
-//             "takes_in_person": false,
-//             "description": null,
-//             "specialties": [
-//                 {
-//                     "id": 1,
-//                     "name": "Cardiologist"
-//                 }
-//             ],
-//             "clinics": [],
-//             "ensurances": [
-//                 {
-//                     "id": 1,
-//                     "name": "senasa",
-//                     "logo": "https://juanpabloduarte.com/media/ensurance_logos/senasa.jpg"
-//                 }
-//             ],
-//             "average_rating": 5.0,
-//             "review_count": 1,
-//             "has_availability": false,
-//             "is_favorited": true,
-//             "cities": []
-//         },
-//                 {
-//             "id": 4,
-//             "user": {
-//                 "id": 8,
-//                 "first_name": "pepe",
-//                 "last_name": "gonzales marquinez",
-//                 "email": "elpepesito@gmail.com",
-//                 "profile_picture": null
-//             },
-//             "exequatur": "967897",
-//             "experience": 19,
-//             "sex": "M",
-//             "taking_dates": false,
-//             "takes_virtual": false,
-//             "takes_in_person": false,
-//             "description": null,
-//             "specialties": [
-//                 {
-//                     "id": 1,
-//                     "name": "Cardiologist"
-//                 }
-//             ],
-//             "clinics": [],
-//             "ensurances": [
-//                 {
-//                     "id": 1,
-//                     "name": "senasa",
-//                     "logo": "https://juanpabloduarte.com/media/ensurance_logos/senasa.jpg"
-//                 }
-//             ],
-//             "average_rating": 5.0,
-//             "review_count": 1,
-//             "has_availability": false,
-//             "is_favorited": true,
-//             "cities": []
-//         }
-//     ]
-
   useEffect(() => {
       const fetchFavoriteDoctors = async () => {
         setError(null);
         // const redirectUrl = router.query.redirect || '/';
         try {
           const response = await apiClient.get("/auth/personal-data/");
-          console.log("Favorite doctors fetched:", response.data);
           setDoctors(response.data.favorite_doctors || []);
         } catch (err) {
           // router.push(redirectUrl);
@@ -140,7 +62,6 @@ export default function FavoriteDoctors() {
         setError("Failed to remove doctor");
       }
     }finally{
-      console.log("Doctor removed from favorites", "success"); 
     }
   };
 
@@ -158,7 +79,7 @@ export default function FavoriteDoctors() {
           {doctors.length === 0 ? (
           <div className="w-full h-80 flex justify-center items-center">
             <div className="flex flex-col justify-center items-center gap-4">
-              <img src="/images/dclogo.png" alt="No results" className="h-[75px] w-[75px] mt-4" />
+              <Image src={dclogo} alt="No results" className="h-[75px] w-[75px] mt-4" width={75} height={75} />
               <div className="text-[#060648] text-2xl font-semibold">No doctors found</div>
               <div className="flex items-center gap-4">
                 <p className="text-[#060648]">Look up for doctors here!</p>
@@ -170,7 +91,7 @@ export default function FavoriteDoctors() {
                   />                  
                 )} */}
 
-                <button onClick={() => setShow(true)} className="text-white bg-black px-3.5 py-1.5 rounded-sm flex items-center gap-2">Search <FaSearch/></button>                
+                <Link href="/search" className="text-white bg-black px-3.5 py-1.5 rounded-sm flex items-center gap-2">Search <FaSearch/></Link>                
               </div>
 
             </div>

@@ -306,7 +306,7 @@ export default function DoctorSignupPage() {
                 const val = e.target.value.replace(/\D/g, '').slice(0, 2);
                 handleInputChange({ target: { name: 'experience', value: val } } as any);
               }}
-              className="mt-1 w-full max-w-xs px-4 py-3 rounded-lg border-2 border-gray-400/40"
+              className="mt-1 w-[100px] px-4 py-3 rounded-lg border-2 border-gray-400/40"
             />
             {errors.experience && <p className="text-red-500 text-sm mt-1">{errors.experience}</p>}
           </div>

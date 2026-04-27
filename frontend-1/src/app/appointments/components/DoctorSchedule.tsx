@@ -18,7 +18,6 @@ export default function DoctorSchedule({ schedule, onUpdate }: DoctorSchedulePro
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const handleEdit = () => {
-    console.log(schedule);
     setIsEditModalOpen(true);
     setIsMenuOpen(false);
   };
@@ -77,7 +76,6 @@ export default function DoctorSchedule({ schedule, onUpdate }: DoctorSchedulePro
 
         {/* Three Dots Button */}
         <button
-          onClick={() => [setIsMenuOpen(!isMenuOpen), console.log(schedule)]}
           className="p-3 hover:bg-gray-100 rounded-full transition-colors"
         >
           <FaEllipsisV className="w-5 h-5 text-gray-500" />

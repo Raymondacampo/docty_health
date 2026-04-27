@@ -96,9 +96,7 @@ export default function DoctorsResults({
         if (experienceValue !== "any") paramsObj.experience_min = experienceValue;
         paramsObj.page = currentPage.toString();
         const params = new URLSearchParams(paramsObj);
-        console.log("Fetching doctors with params:", params.toString());
         const response = await publicApiClient.get(`/doctors/search/?${params.toString()}`);
-        console.log("API Response:", response.data);
         let results = response.data.results;
 
         if (sortBy === "relevance") {

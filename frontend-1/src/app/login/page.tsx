@@ -37,7 +37,6 @@ export default function LoginPage() {
     setError('');
     try {
       const { data } = await publicApiClient.post('/auth/login/', credentials);
-      console.log('Login successful:', data);
       localStorage.setItem('refresh_token', data.refresh);
       await login(data.access);
       if (redirect) {
@@ -60,7 +59,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className='flex flex-col w-full sm:mt-[14dvh] mt-[19dvh] h-[47dvh] mb-[14dvh] px-2 justify-center items-center'>
+    <div className='flex flex-col w-full sm:mt-[14dvh] mt-[19dvh] h-[47dvh] mb-[14dvh] px-4 justify-center items-center'>
       <div className='self-stretch text-center text-[#293241] font-bold text-3xl sm:text-4xl mb-8 tracking-wide'>Login to your account!</div>
       <form onSubmit={handleSubmit} className='w-full max-w-sm flex-col justify-start items-start gap-4 flex'>
         <div className='self-stretch flex-col justify-start items-start gap-4 flex'>
@@ -111,14 +110,12 @@ export default function LoginPage() {
         <div>
           <span className='text-[#293241] text-xs font-semibold tracking-wide'>Not a member?</span>
           <span className='text-[#4285f4] text-sm font-semibold tracking-wide'> </span>
-          <a href='/doctor_signup' className='text-blue-500 text-sm font-semibold tracking-wide'>Create account</a>
+          <a href='/signup' className='text-blue-500 text-sm font-semibold tracking-wide'>Create account</a>
         </div>
         <div>
           <span className='text-[#293241] text-xs font-semibold tracking-wide'>Are you a doctor?</span>
           <span className='text-[#4285f4] text-sm font-semibold tracking-wide'> </span>
           <a href='/doctor-signup' className='text-blue-500 text-sm font-semibold tracking-wide'>Sign up as a doctor</a>
-          <span className='text-[#293241] text-xs font-semibold tracking-wide'> or </span>
-          <a href='/doctor-signup' className='text-blue-500 text-sm font-semibold tracking-wide'>Claim profile</a>
         </div>
       </div>
     </div>
