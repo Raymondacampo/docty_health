@@ -54,7 +54,6 @@ export default function About({
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-    console.log(isUserAuthenticated)
   }, []);
 
   return (

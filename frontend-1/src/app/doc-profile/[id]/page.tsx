@@ -2,7 +2,6 @@
 'use client';
 import About from "./components/About";
 import Insurances from "./components/Insurances";
-import Description from "./components/Description";
 import Locations from "./components/Locations";
 import Reviews from "./components/Reviews";
 import doctors_bg from "@/assets/images/doctors_bg.png";
@@ -108,7 +107,6 @@ export default function ProfilePage({
       const { id } = await params;
       try{
         const response = await apiClient.get(`/doctors/${id}/`);
-        console.log('Doctor data:', response.data);
         setDoctor(response.data);
       } catch (error) {
         console.error('Failed to fetch doctor data:', error);
@@ -121,7 +119,6 @@ export default function ProfilePage({
         const response = await publicApiClient.get(`/reviews/${id}/`, {
           params: { page },
         });
-        console.log('Reviews data:', response.data);
         setReviewsData({
           reviews: response.data.reviews || [],
           total_reviews: response.data.total_reviews || 0,
@@ -175,13 +172,18 @@ export default function ProfilePage({
               name={`${doctor.user?.first_name || ""} ${doctor.user?.last_name || ""}`}
             />          
           )}  
-          {doctor?.description && (
-            <Description
-              name={`${doctor.user?.first_name} ${doctor.user?.last_name}`}
-              experience={doctor.experience}
-              age={doctor.user.age}
-            />
-          )}
+          <div className="mt-12 rounded-lg flex-col justify-start items-start gap-8 flex">
+            <div className="flex gap-4 items-center text-black">
+                <p className="py-2 px-4 shadow-lg rounded-lg font-semibold">{doctor.experience} años de experiencia</p>
+                <p className="text-lg font-semibold">{doctor.user.age} años de edad</p>
+            </div>
+            {doctor?.description && (
+              <p className="text-gray-600">
+                  {doctor.description}
+              </p>
+            )}            
+          </div>
+
           {doctor?.clinics && (
             <Locations clinics={doctor.clinics || []} />
           )}
@@ -203,7 +205,6 @@ export default function ProfilePage({
           totalReviews={reviewsData.total_reviews}
           currentPage={reviewsData.current_page}
           totalPages={reviewsData.total_pages}
-          loadMoreReviews={() => console.log('hola')}
           averageRating={doctor.average_rating || 0}
           reviewCount={doctor.review_count || 0}
           ratingDistribution={reviewsData.rating_distribution}

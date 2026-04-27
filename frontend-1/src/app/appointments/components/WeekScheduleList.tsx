@@ -172,11 +172,9 @@ const isDayAvailable = (dayDate: Date, weekdays: Weekday[]): boolean => {
 };
 
 useEffect(() => {
-  console.log('Schedules updated:', selectedSchedule);
 }, [selectedSchedule]);
 
 useEffect(() => {
-  console.log('Week schedules :', weekschedules, weekschedules.length);
 }, [weekschedules]);
 
   return (

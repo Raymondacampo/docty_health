@@ -62,8 +62,6 @@ export async function middleware(req: NextRequest) {
 
       if (refreshResponse.ok) {
         const data = await refreshResponse.json();
-        console.log('Token renovado exitosamente');
-
         const response = NextResponse.next();
         // Seteamos el nuevo access_token en las cookies para que el navegador lo guarde
         response.cookies.set("access_token", data.access, {

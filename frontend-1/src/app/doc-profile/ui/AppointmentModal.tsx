@@ -51,14 +51,12 @@ export default function AppointmentModal({ doctor, isAuth }: { doctor: Doctor; i
   const [submitting, setSubmitting] = useState<boolean>(false);
 
   const fetchAvailableDays = async () => {
-    console.log('Fetching available days for doctor ID:', doctor.id);
     setLoading(true);
     setError(null);
     try {
       const response = await publicApiClient.get(
         `/doctors/${doctor.id}/available_days/`
       );
-      console.log('Available days response:', response.data);
       setAvailableDays(response.data.available_days);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to fetch available days');
@@ -145,17 +143,17 @@ export default function AppointmentModal({ doctor, isAuth }: { doctor: Doctor; i
 };
 
   return (
-    <div className="w-full">
+    <div className="w-full flex justify-center items-center">
       <button
         onClick={openModal}
-        className="w-full bg-white border border-blue-700 text-blue-700 px-4 hover:bg-gray-100 py-2 rounded-md transition"
+        className="md:w-full mx-auto w-[220px] bg-blue-900 border border-blue-900 text-white px-4 hover:bg-blue-800 py-2 rounded-md transition"
       >
         Make Appointment
       </button>
 
       {isModalOpen && createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white shadow-lg p-6 w-full relative sm:max-w-xl sm:h-auto sm:rounded-lg xs:h-screen">
+        <div className="fixed inset-0 px-4 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white shadow-lg p-6 w-full relative sm:max-w-xl sm:h-auto rounded-lg xs:h-screen">
             <button
               onClick={closeModal}
               className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
@@ -242,7 +240,7 @@ export default function AppointmentModal({ doctor, isAuth }: { doctor: Doctor; i
                 <button
                   onClick={handleDoneClick}
                   disabled={submitting}
-                  className={`bg-[#ee6c4d] text-white px-4 py-2 rounded-md transition ${
+                  className={`bg-blue-900 text-white px-4 py-2 rounded-md transition ${
                     submitting
                       ? 'opacity-50 cursor-not-allowed'
                       : 'hover:opacity-90'
@@ -253,7 +251,7 @@ export default function AppointmentModal({ doctor, isAuth }: { doctor: Doctor; i
               ) : (
                 <a
                   href="/login"
-                  className="bg-[#ee6c4d] text-white px-4 py-2 rounded-md transition hover:opacity-90 inline-block text-center"
+                  className="bg-blue-900 text-white px-4 py-2 rounded-md transition hover:opacity-90 inline-block text-center"
                 >
                   Make appointment
                 </a>

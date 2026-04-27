@@ -36,6 +36,7 @@ interface Item {
 }
 
 interface DoctorData {
+  id: number;
   exequatur: string;
   experience: number;
   description: string;
@@ -256,6 +257,18 @@ export default function DoctorSettingsPage() {
           onSaveDescription={handleSaveDescription}
           onReload={onReload}
         />
+        <Link
+          href={`/doc-profile/${user?.id}`}
+          className={`
+            flex items-center justify-center px-4 py-3 rounded-sm text-sm  transition-colors duration-200 bg-blue-900 text-white w-[100px]
+            ${modifyingField === "appointment-system" 
+              ? 'bg-[#293241] font-bold text-white' 
+              : 'text-gray-700 hover:bg-blue-800 font-medium'
+            }
+          `}
+        >
+          <span>My Profile</span>
+        </Link>
       </div>
     </div>
   );

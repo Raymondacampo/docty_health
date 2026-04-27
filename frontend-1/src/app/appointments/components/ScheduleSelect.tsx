@@ -37,7 +37,6 @@ const ScheduleSelect: React.FC<ScheduleSelectProps> = ({
   //     apiClient
   //       .get('/auth/schedules/')
   //       .then((response) => {
-  //         console.log('Fetched schedules:', response.data);
   //         setSchedules(response.data.data || response.data);
   //       })
   //       .catch((err: any) => {

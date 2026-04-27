@@ -76,19 +76,13 @@ const SimpleSideNavbar: React.FC = () => {
       label: 'Security',
       href: '/settings/security',
       doc: false
-    },
-    // {
-    //   id: 'doctor-settings',
-    //   label: 'Doctor Settings',
-    //   href: '/settings/doctor-settings',
-    //   doc: true
-    // }
+    }
   ];
 
 
   return (
     <nav 
-      className="lg:block flex left-8 mt-[10vh] h-[90vh] w-76 bg-white z-40"
+      className="hidden lg:block left-8 mt-[10vh] h-[90vh] w-76 bg-white z-40"
       style={{ top: '10vh' }}
     >
       <div className="p-6 h-full flex flex-col">
@@ -124,8 +118,8 @@ const SimpleSideNavbar: React.FC = () => {
               >
                 <span>Doctor settings</span>
             </Link>     
-                        <Link
-                href={"/settings/appointment-system"}
+              <Link
+                href={"/appointments"}
                 className={`
                   flex items-center px-4 py-3 rounded-sm text-sm  transition-colors duration-200 w-full border-b border-gray-200
                   ${activePage === "appointment-system" 

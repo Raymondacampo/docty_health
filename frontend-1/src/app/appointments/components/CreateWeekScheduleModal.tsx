@@ -106,7 +106,6 @@ const CreateWeekScheduleModal: React.FC<CreateWeekScheduleModalProps> = ({ onSch
     apiClient.get('/auth/schedules/')
       .then(res => {
         // Map 'name' to 'title' for compatibility
-        console.log('Fetched schedules:', res.data);
         const mappedSchedules = res.data.map((s: any) => ({
           ...s        }));
         setSchedules(mappedSchedules);
@@ -121,7 +120,6 @@ const CreateWeekScheduleModal: React.FC<CreateWeekScheduleModalProps> = ({ onSch
     setIsLoadingWeeks(true);
     apiClient.get('/auth/available-weeks/')
       .then(res => {
-        console.log('Fetched available weeks:', res.data);
         const weeks: WeekOption[] = res.data.available_weeks.map((weekStr: string) => {
           // const [year, month, day] = weekStr.split('-').map(Number);
           // const date = new Date(Date.UTC(year, month - 1, day));
@@ -338,10 +336,10 @@ return (
 
       {/* Modal backdrop & content */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed overflow-y-scroll md:overflow-hidden inset-0 z-50 flex items-start md:items-center justify-center bg-black/50">
           <div
             // Updated class names for flex layout to separate content and footer
-            className="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl h-[80dvh] max-h-[90vh] mx-4 flex flex-col"
+            className="relative bg-white rounded-xl shadow-2xl w-full md:max-w-2xl h-[100dvh] md:h-[90dvh] py-4 flex flex-col"
             onClick={e => e.stopPropagation()}
           >
             {/* Close button */}
@@ -353,7 +351,7 @@ return (
             </button>
 
             {/* --- SCROLLABLE CONTENT AREA --- */}
-            <div className="flex-grow overflow-y-auto p-8 pb-4"> 
+            <div className="flex-grow overflow-y-auto py-8 px-4 pb-4"> 
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Create Week Schedule</h2>
 
               {/* Week Selector */}
@@ -387,7 +385,7 @@ return (
               {selectedWeek !== null && (
                 <div className="mt-8">
                   <h3 className="text-lg font-semibold mb-4">Configure Days</h3>
-                  <div className="grid grid-cols-7 gap-3">
+                  <div className="flex flex-wrap md:grid md:grid-cols-7 gap-3">
                     {getDaysForWeek(availableWeeks[selectedWeek].start).map(day => {
                       const isConfigured = weekDays.some(wd => wd.day === day.date);
                       const isSelected = selectedDay === day.date;
@@ -479,7 +477,7 @@ return (
                     )}
                   </div>
 
-                  <div className="mt-5">
+                  {/* <div className="mt-5">
                     <label className="block text-sm font-medium mb-3">Available Hours</label>
                     <div className="grid grid-cols-6 gap-3 max-h-64 overflow-y-auto p-4 bg-white rounded-lg border">
                       {hoursOfDay.map(hour => (
@@ -494,13 +492,50 @@ return (
                         </label>
                       ))}
                     </div>
-                  </div>
+                  </div> */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Available Hours
+                    </label>
+                    <div className="grid grid-cols-4 gap-3 max-h-48 overflow-y-auto border border-gray-300 rounded-lg p-4 bg-gray-50/70 scrollbar-thin scrollbar-thumb-gray-400">
+                      {hoursOfDay.map((hour) => {
+                        const isSelected = selectedHours.includes(hour);
 
+                        return (
+                          <label
+                            key={hour}
+                            className="group cursor-pointer select-none"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => handleHourToggle(hour)}
+                              className="sr-only" // Tailwind's "screen reader only" – perfect accessibility
+                            />
+
+                            <div
+                              className={`
+                                px-4 py-2.5 rounded-full text-center text-sm font-medium
+                                transition-all duration-200 ease-out
+                                shadow-sm group-hover:shadow-md
+                                ${isSelected
+                                  ? 'bg-[#2b2774] text-white shadow-purple-500/20'
+                                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-[#2b2774]/5 hover:border-[#2b2774]/40'
+                                }
+                              `}
+                            >
+                              {hour}
+                            </div>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>  
                   <div className="flex justify-end gap-3 mt-6">
                     <button onClick={() => setShowActionButtons(false)} className="px-5 py-2 border rounded-lg hover:bg-gray-100">
                       Cancel
                     </button>
-                    <button onClick={handleRemoveAction} className="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                    <button onClick={handleRemoveAction} className="px-5 py-2 text-xs md:text-base bg-red-600 text-white rounded-lg hover:bg-red-700">
                       Remove Day
                     </button>
                     <button

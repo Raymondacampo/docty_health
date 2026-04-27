@@ -176,7 +176,6 @@ const EditbornDateField = ({
       return;
     }
     setError('');
-    console.log('Saving date of birth:', dateStr);
     onSave(dateStr);
   };
 
@@ -339,7 +338,6 @@ export default function PersonalDataPage() {
 
   const toggleEdit = (field: keyof typeof editStates) => {
     setEditStates((prev) => {
-      console.log(`Toggling edit state for ${field}: ${!prev[field]}`);
       return { ...prev, [field]: !prev[field] };
     });
     setError(null);

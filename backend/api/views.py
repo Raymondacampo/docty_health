@@ -151,7 +151,9 @@ class GoogleLogin(APIView):
             return Response({'error': 'Token is required'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            id_info = id_token.verify_oauth2_token(token, requests.Request(), os.getenv('GOOGLE_CLIENT_ID'))
+            from google.auth.transport import requests as google_requests
+            request_adapter = google_requests.Request()
+            id_info = id_token.verify_oauth2_token(token, request_adapter, os.getenv('GOOGLE_CLIENT_ID'), clock_skew_in_seconds=10)
             
             user, created = User.objects.get_or_create(
                 email=id_info['email'],
@@ -205,7 +207,10 @@ class GoogleCallbackView(APIView):
                 return Response({'error': 'No ID token received'}, status=status.HTTP_400_BAD_REQUEST)
 
             # Verify the ID token
-            id_info = id_token.verify_oauth2_token(id_token_str, requests.Request(), os.getenv('GOOGLE_CLIENT_ID'))
+            from google.auth.transport import requests as google_requests
+            request_adapter = google_requests.Request()
+
+            id_info = id_token.verify_oauth2_token(id_token_str, request_adapter, os.getenv('GOOGLE_CLIENT_ID'), clock_skew_in_seconds=10)
             
             user, created = User.objects.get_or_create(
                 email=id_info['email'],

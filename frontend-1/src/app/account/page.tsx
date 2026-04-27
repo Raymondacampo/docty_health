@@ -33,7 +33,6 @@ export default function AccountPage() {
         const fetchPersonalData = async () => {
             try {
                 const response = await apiClient.get('/auth/personal-data/');
-                console.log(response.data);
                 setFavoriteDoctors(response.data.favorite_doctors || []);
                 // Process personal details as needed
             } catch (error) {
@@ -46,7 +45,6 @@ export default function AccountPage() {
             try {
                 const activeAppointments = await fetchActiveAppointments();
                 setActiveAppointments(activeAppointments.active_appointments || []);
-                console.log('Active:', activeAppointments);
 
             } catch (error) {
                 console.error('Error loading appointments:', error);
@@ -56,11 +54,9 @@ export default function AccountPage() {
         const checkAuthAndFetch = async () => {
             const auth = await isAuthenticated();
             if (!auth) {
-            console.log("User is not authenticated");
             router.push('/login');
             } else {
                 try{
-                    console.log("User is authenticated");
                     fetchUserRole();
                     fetchPersonalData();
                     loadAppointments();                    
@@ -72,6 +68,7 @@ export default function AccountPage() {
 
         checkAuthAndFetch();
     }, []);
+    
 
     if (loading) {
         return <Loading />;
@@ -100,9 +97,9 @@ export default function AccountPage() {
                         <ActiveAppointments
                             appointments={active_appointments}
                             is_doctor={isDoctor}
-                            onCancel={() => {console.log("Refresh appointments");}}
                             darker={true}
-                            // setAlert={setAlert}
+                            onCancel={() => {console.log("Refresh appointments");}}
+                            isCancel={false}
                         />                       
                     </div>
                     <ThreeFavDocs docs={favoriteDoctors}/>             

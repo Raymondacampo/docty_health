@@ -118,7 +118,6 @@ export default function ProfilePage() {
           totalReviews={reviewsData.total_reviews}
           currentPage={reviewsData.current_page}
           totalPages={reviewsData.total_pages}
-          loadMoreReviews={() => console.log('hola')}
           averageRating={doctor.average_rating || 0}
           reviewCount={doctor.review_count || 0}
           ratingDistribution={reviewsData.rating_distribution}

@@ -52,7 +52,6 @@ function NavbarContent() {
       try {
         const response = await apiClient.get('/auth/me/');
         setUserData(response.data);
-        // console.log('User data:', response.data);
       } catch (error) {
         console.error('Failed to fetch user data:', error);
       } finally {
@@ -224,6 +223,38 @@ function NavbarContent() {
                     {link.label}
                   </Link>
                 ))}
+                <div className='flex flex-col'>
+                  <button
+                    className='flex items-center py-2 text-2xl hover:text-[#293241] transition-colors text-black text-left'
+                  >
+                    <SettingsIcon className='inline-block mr-2' size={20} />
+                    Settings
+                  </button>
+                  <Link
+                    href='/settings/personal-data'
+                    className='flex items-center py-2 ml-6 hover:text-[#293241] transition-colors font-bold text-gray-600'
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    personal data
+                  </Link>         
+                  <Link
+                    href='/settings/security'
+                    className='flex items-center py-2 ml-6 hover:text-[#293241] transition-colors font-bold text-gray-600'
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    security
+                  </Link>           
+                  {userData?.is_doctor && (
+                    <Link
+                      href='/settings/doctor-settings'
+                      className='flex items-center py-2 ml-6 hover:text-[#293241] transition-colors font-bold text-gray-600'
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      doctor settings
+                    </Link>      
+                  )}
+                </div>
+
                 <button
                   onClick={handleLogout}
                   className='flex items-center py-2 text-2xl hover:text-[#293241] transition-colors text-black text-left'

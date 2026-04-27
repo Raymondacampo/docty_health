@@ -102,7 +102,6 @@ export default function EditWeekScheduleModal({
         place: wd.place ? { id: wd.place, name: scheduleData.clinics[wd.place] || 'Unknown Clinic' } : null,
       }));
       scheduleData.weekdays.map(wd => {
-        console.log('Processing weekday for state:', wd);
       });
       setWeekDays(formattedWeekDays);
     }

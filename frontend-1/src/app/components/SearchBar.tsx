@@ -29,7 +29,6 @@ export default function SearchBar({small}: {small?: boolean}) {
     };
 
     const handleSpecialtyChange = (newSpecialty: string) => {
-        console.log("Selected specialty:", newSpecialty);
         setSpecialty(newSpecialty);
         if (newSpecialty) {
         // setError(false);
