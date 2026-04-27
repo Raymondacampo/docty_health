@@ -1714,11 +1714,6 @@ class UserAppointmentsView(APIView):
                 'appointment', 'appointment__week_availability', 'appointment__place'
             ).order_by('appointment__day', 'time')
         logger.info(f"{appointments}")
-        # Filter by status if provided
-        # if status_filter == 'active':
-        #     appointments = appointments.filter(active=True)
-        # elif status_filter == 'inactive':
-        #     appointments = appointments.filter(active=False)
 
         # Serialize appointments
         serializer = self.serializer_class(
@@ -1735,16 +1730,7 @@ class UserAppointmentsView(APIView):
         # if status_filter is None or status_filter not in ['active', 'inactive']:
         active_appointments = [appt for appt in serialized_data if appt['active']]
         inactive_appointments = [appt for appt in serialized_data if not appt['active']]
-        # elif status_filter == 'active':
-        #     active_appointments = serialized_data
-        # elif status_filter == 'inactive':
-        #     inactive_appointments = serialized_data
 
-        # Return response based on status filter
-        # if status_filter == 'active':
-        #     return Response({'active_appointments': active_appointments}, status=status.HTTP_200_OK)
-        # elif status_filter == 'inactive':
-        #     return Response({'inactive_appointments': inactive_appointments}, status=status.HTTP_200_OK)
         return Response({
             'active_appointments': active_appointments,
             'inactive_appointments': inactive_appointments

@@ -430,6 +430,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
         queryset=WeekDay.objects.all(), source='appointment', write_only=True
     )
     week_availability = serializers.SerializerMethodField(read_only=True)
+    doctor_name = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Appointment
@@ -440,13 +441,22 @@ class AppointmentSerializer(serializers.ModelSerializer):
             'appointment', 
             'appointment_id', 
             'week_availability', 
+            'doctor_name',
             'time', 
             'active'
         ]
-        read_only_fields = ['id', 'patient', 'appointment', 'week_availability']
+        read_only_fields = ['id', 'patient', 'appointment', 'week_availability', 'doctor_name']
 
     def get_week_availability(self, obj):
         return WeekAvailabilitySerializer(obj.appointment.week_availability).data
+
+    def get_doctor_name(self, obj):
+        # Accedemos a la relación: Appointment -> WeekDay -> WeekAvailability -> Doctor (User)
+        try:
+            doctor = obj.appointment.week_availability.doctor
+            return f"{doctor.first_name} {doctor.last_name}".strip()
+        except AttributeError:
+            return "Doctor no asignado"
 
     def validate(self, attrs):
         appointment_id = attrs.get('appointment_id')
