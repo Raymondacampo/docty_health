@@ -26,12 +26,6 @@ export default function GoogleCallback() {
 
       try {
         await login(code, true, true, redirectUrl); // isGoogle=true, isGoogleCallback=true
-        if (redirectUrl) {
-            router.replace(redirectUrl);
-        } else {
-            // Default path if no redirect URL was provided
-            router.replace('/'); 
-        }
       } catch (err: any) {
         console.error('Google callback error:', err.response?.data || err.message, redirectUrl);
         setError('Failed to authenticate with Google. Please try again.');

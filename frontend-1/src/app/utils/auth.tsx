@@ -30,6 +30,9 @@ export async function login(token: string, isGoogle: boolean = false, isGoogleCa
         const { access, refresh } = response.data;
         saveToken(access);
         localStorage.setItem("refresh_token", refresh);
+        const cookieBase = `access_token=${access}; path=/; SameSite=Lax;`;
+        const secure = window.location.protocol === 'https:' ? 'Secure;' : '';
+        document.cookie = `${cookieBase} ${secure}`;
         document.cookie = `access_token=${access}; path=/;`;
         window.location.href = redirectUri || '/account';      
       } else {
@@ -40,13 +43,17 @@ export async function login(token: string, isGoogle: boolean = false, isGoogleCa
         const { access, refresh } = response.data;
         saveToken(access);
         localStorage.setItem("refresh_token", refresh);
-        document.cookie = `access_token=${access}; path=/;`;
+        const cookieBase = `access_token=${access}; path=/; SameSite=Lax;`;
+        const secure = window.location.protocol === 'https:' ? 'Secure;' : '';
+        document.cookie = `${cookieBase} ${secure}`;
         window.location.href = redirectUri || '/account';
       }
     } else {
       // Standard login: store access token directly
       saveToken(token);
-      document.cookie = `access_token=${token}; path=/;`;
+      const cookieBase = `access_token=${token}; path=/; SameSite=Lax;`;
+      const secure = window.location.protocol === 'https:' ? 'Secure;' : '';
+      document.cookie = `${cookieBase} ${secure}`;
     }
   }
 }
