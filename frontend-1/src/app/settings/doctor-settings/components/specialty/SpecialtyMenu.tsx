@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { apiClient } from '@/app/utils/api';
+import { apiClient } from '@/utils/api';
 
 interface Specialty {
   id: number;
@@ -41,7 +41,7 @@ export const SpecialtyMenu: React.FC<SpecialtyMenuProps> = ({ specialty, onDelet
 
   const handleDelete = async () => {
     try {
-      await apiClient.delete(`/auth/remove_specialty/${specialty.id}/`);
+      await apiClient.delete(`/doctors/remove_specialty/${specialty.id}/`);
       onDelete({ msg: `Specialty ${specialty.name} deleted successfully`, status: 'success' });
       setIsMenuOpen(false);
     } catch (error) {

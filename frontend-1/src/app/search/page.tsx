@@ -6,7 +6,7 @@ import SearchHead from "./components/Head";
 import SearchFilters from "./components/Filters";
 import DoctorsResults from "./components/Results";
 import SearchAdds from "./components/Ads";
-import Loading from "../components/LoadingComponent";
+import Loading from "../../components/LoadingComponent";
 
 interface TempFilters {
   specialty: string;
@@ -147,7 +147,7 @@ export default function Search() {
                 : setTakesDates(value)
             }
             appointmentType={isXsScreen ? tempFilters.appointmentType : appointmentType}
-            onAppointment={(value: string) =>
+            onAppointment={(value: string | null) =>
               isXsScreen
                 ? updateTempFilters({ appointmentType: value })
                 : setAppointmentType(value)

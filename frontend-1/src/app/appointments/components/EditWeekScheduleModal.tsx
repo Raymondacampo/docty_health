@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { addDays, format } from 'date-fns';
-import { apiClient } from '@/app/utils/api';
+import { apiClient } from '@/utils/api';
 import ClinicSearchBar from './ClinicSearchBar';
 import ScheduleSelect from './WeekScheduleSelect';
 import type { Clinic } from './ScheduleCreationModal';
@@ -85,7 +85,7 @@ export default function EditWeekScheduleModal({
   useEffect(() => {
     if (isOpen && scheduleData) {
       setIsLoadingSchedules(true);
-      apiClient.get('/auth/schedules/')
+      apiClient.get('/appointments/schedules/')
         .then((response) => {
           setSchedules(response.data);
           setIsLoadingSchedules(false);
@@ -163,7 +163,7 @@ export default function EditWeekScheduleModal({
     setSelectedHours(schedule.hours);
     if (schedule.place) {
       try {
-        const response = await apiClient.get(`/clinics/${schedule.place}/`);
+        const response = await apiClient.get(`search/clinic/${schedule.place}/`);
         setSelectedClinic({ id: response.data.id, name: response.data.name });
       } catch (error) {
         console.error('Error fetching clinic:', error);

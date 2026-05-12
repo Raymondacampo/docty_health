@@ -1,15 +1,15 @@
 'use client';
 import doctors_bg from "@/assets/images/doctors_bg.png";
 import Image from "next/image";
-import SearchBar from "@/app/components/SearchBar";
+import SearchBar from "@/components/SearchBar";
 import ActiveAppointments from "../appointments/components/ActiveAppointments";
 import { useState, useEffect } from "react";
 import ThreeFavDocs from "./components/ThreeFavDocs";
-import { apiClient } from "../utils/api";
+import { apiClient } from "../../utils/api";
 import { useRouter } from "next/navigation";
-import { isAuthenticated } from "../utils/auth";
-import { fetchActiveAppointments } from "../lib/appointments";
-import Loading from "../components/LoadingComponent";
+import { isAuthenticated } from "../../utils/auth";
+import { fetchActiveAppointments } from "@/components/fetchActiveAppointments";
+import Loading from "../../components/LoadingComponent";
 
 export default function AccountPage() {
     const [isDoctor, setIsDoctor] = useState(false);
@@ -22,7 +22,7 @@ export default function AccountPage() {
         // Fetch user role from API or context
         const fetchUserRole = async () => {
             try {
-                const response = await apiClient.get('/auth/me/');
+                const response = await apiClient.get('/users/me/');
                 setIsDoctor(response.data.is_doctor); // Adjust based on actual API response
             } catch (error) {
                 console.error('Error fetching user role:', error);
@@ -32,7 +32,7 @@ export default function AccountPage() {
 
         const fetchPersonalData = async () => {
             try {
-                const response = await apiClient.get('/auth/personal-data/');
+                const response = await apiClient.get('/users/personal-data/');
                 setFavoriteDoctors(response.data.favorite_doctors || []);
                 // Process personal details as needed
             } catch (error) {

@@ -1,81 +1,10 @@
 from django.urls import path
-from .views import (get_data, LoginView, UserProfileView, SignupView, LogoutView, GoogleLogin, DoctorSignupView, PasswordResetRequestView,
-PasswordChangeView, ValidateTokenView,AvailableSpecialtiesView, AddSpecialtyView, AddClinicView, AvailableClinicsView,
-RemoveClinicView, RemoveSpecialtyView, UploadDoctorDocumentView, DeleteDoctorDocumentView, AvailableEnsurancesView, 
-AddEnsuranceView, RemoveEnsuranceView, DoctorSearchView, AllSpecialtiesView, AllClinicsView, AllEnsurancesView, DoctorDetailView, ReviewsDetailView, CreateReviewView, UpdateReviewView, DeleteReviewView,UserReviewView, ToggleFavoriteDoctorView, IsDoctorView,
-CreateScheduleView, UpdateScheduleView, DeleteScheduleView, MySchedulesView, CreateWeekDayView, ClinicDetailView, WeekScheduleView, AvailableWeeksView,
-DoctorAvailableDaysView, WeekSchedulesView,CreateAppointmentView, DeleteWeekAvailabilityView, UserAppointmentsView, DeleteAppointmentView, DoctorPatientsView, Me,
-GoogleCallbackView, UpdateDoctorDescriptionView, DoctorInFavorite, trigger_add_clinic)
-from rest_framework_simplejwt.views import TokenVerifyView, TokenRefreshView, TokenObtainPairView
+from .views import (get_data
+)
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('data/', get_data),
-
-    path("auth/login/", LoginView.as_view(), name="login"),
-    path("auth/signup/", SignupView.as_view(), name="signup"),
-    path('auth/doctor_signup/', DoctorSignupView.as_view(), name='doctor_signup'),
-    path("auth/logout/", LogoutView.as_view(), name="logout"),
-    path("auth/personal-data/", UserProfileView.as_view(), name="user_profile"),
-    path("auth/me/", Me.as_view(), name="user_profile"),
-    path('auth/google/', GoogleLogin.as_view(), name='google-login'),
-    path('auth/google/callback/', GoogleCallbackView.as_view(), name='google-callback'),
-    path('auth/password_reset/', PasswordResetRequestView.as_view(), name='password_reset_request'),
-    path('auth/password_change/', PasswordChangeView.as_view(), name='password_change'),
-    path('auth/validate_token/', ValidateTokenView.as_view(), name='validate_token'),
-    path('auth/is_doctor/', IsDoctorView.as_view(), name='is_doctor'),
-    path('auth/available_specialties/', AvailableSpecialtiesView.as_view(), name='available_specialties'),
-    path('auth/add_specialty/', AddSpecialtyView.as_view(), name='add_specialty'),
-    path('auth/available_clinics/', AvailableClinicsView.as_view(), name='available_clinics'),
-    path('auth/add_clinic/', AddClinicView.as_view(), name='add_clinic'),
-    path('auth/remove_specialty/<int:specialty_id>/', RemoveSpecialtyView.as_view(), name='remove_specialty'),
-    path('auth/remove_clinic/<int:clinic_id>/', RemoveClinicView.as_view(), name='remove_clinic'),
-    path('auth/available_insurances/', AvailableEnsurancesView.as_view(), name='available_ensurances'),
-    path('auth/add_insurance/', AddEnsuranceView.as_view(), name='add_ensurance'),
-    path('auth/remove_insurance/<int:ensurance_id>/', RemoveEnsuranceView.as_view(), name='remove_ensurance'),
-    path('auth/update_description/', UpdateDoctorDescriptionView.as_view(), name='update_doctor_description'),
-
-    path('auth/upload_document/', UploadDoctorDocumentView.as_view(), name='upload_doctor_document'),
-    path('auth/delete_document/<int:document_id>/', DeleteDoctorDocumentView.as_view(), name='delete_doctor_document'),
-    path('auth/toggle_favorite/<int:doctor_id>/', ToggleFavoriteDoctorView.as_view(), name='toggle_favorite_doctor'),
-
-    path('doctors/search/', DoctorSearchView.as_view(), name='doctor_search'),
-    path('all_specialties/', AllSpecialtiesView.as_view(), name='all_specialties'),
-    path('all_clinics/', AllClinicsView.as_view(), name='all_clinics'),
-    path('all_ensurances/', AllEnsurancesView.as_view(), name='all_ensurances'),
-
-    path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-    path("token/verify/", TokenVerifyView.as_view(), name="token_verify"),
-
-    path('reviews/<int:doctor_id>/', ReviewsDetailView.as_view(), name='reviews_detail'),
-    path('reviews/create/<int:doctor_id>/', CreateReviewView.as_view(), name='create_review'),
-    path('reviews/update/<int:review_id>/', UpdateReviewView.as_view(), name='update-review'),
-    path('reviews/delete/<int:review_id>/', DeleteReviewView.as_view(), name='delete-review'),
-    path('reviews/user_review/<int:doctor_id>/', UserReviewView.as_view(), name='user-review'),
-
-    path('auth/create_schedule/', CreateScheduleView.as_view(), name='create_schedule'),
-    path('auth/update_schedule/<int:schedule_id>/', UpdateScheduleView.as_view(), name='update_schedule'),
-    path('auth/delete_schedule/<int:schedule_id>/', DeleteScheduleView.as_view(), name='delete_schedule'),
-    path('auth/my_schedules/', MySchedulesView.as_view(), name='my_schedules'),
-    path('auth/create_appointment/', CreateAppointmentView.as_view(), name='create_appointment'),
-
-    path('doctors/<int:doctor_id>/', DoctorDetailView.as_view(), name='doctor_detail'),
-    path('doctor_in_favorite/<int:doctor_id>/', DoctorInFavorite.as_view(), name='doctor_in_favorite'),
-    path('auth/schedules/', MySchedulesView.as_view(), name='schedules'),  # Reuse MySchedulesView
-    path('auth/create_weekday/', CreateWeekDayView.as_view(), name='create_week_day'),
-    path('auth/weekschedule/', WeekScheduleView.as_view(), name='week_schedule'),  # New endpoint
-    path('auth/available-weeks/', AvailableWeeksView.as_view(), name='available-weeks'),
-    path('doctors/<int:doctor_id>/available_days/', DoctorAvailableDaysView.as_view(), name='doctor_available_days'),
-    path('auth/weekschedules/', WeekSchedulesView.as_view(), name='week_schedules'),
-    path('auth/delete_weekavailability/<int:week_availability_id>/', DeleteWeekAvailabilityView.as_view(), name='delete_week_availability'),
-    path('appointments/', UserAppointmentsView.as_view(), name='user_appointments'),
-    path('appointments/<int:appointment_id>/', DeleteAppointmentView.as_view(), name='delete_appointment'),
-
-    path('doctor/patients/', DoctorPatientsView.as_view(), name='doctor_patients'),
-    path('clinics/<int:clinic_id>/', ClinicDetailView.as_view(), name='clinic_detail'),
-    path('auth/personal-data/', UserProfileView.as_view(), name='update_user_profile'),
-    path('setup-clinic/', trigger_add_clinic, name='trigger_add_clinic'),
+    path('data/', get_data)
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

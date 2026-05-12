@@ -1,9 +1,9 @@
 import { useState, useEffect, FormEvent, use } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { apiClient } from '@/app/utils/api';
+import { apiClient } from '@/utils/api';
 import ClinicSearchBar from './ClinicSearchBar';
-import { useLoading } from '@/app/utils/LoadingContext';
-import { useAlert } from '@/app/context/AlertContext';
+import { useLoading } from '@/utils/LoadingContext';
+import { useAlert } from '@/context/AlertContext';
 // Define types
 export type Clinic = {
   id: number | string;
@@ -168,11 +168,11 @@ export default function ScheduleCreationModal({
       };
 
       if (isEditMode && scheduleId) {
-        await apiClient.put(`/auth/update_schedule/${scheduleId}/`, payload);
+        await apiClient.put(`/appointments/update_schedule/${scheduleId}/`, payload);
         showAlert('Schedule updated', 'success');
         onUpdate();
       } else {
-        await apiClient.post('/auth/create_schedule/', payload);
+        await apiClient.post('/appointments/create_schedule/', payload);
         showAlert('Schedule created', 'success');
         onCreate();
       }

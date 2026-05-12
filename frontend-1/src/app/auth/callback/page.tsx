@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { login } from '../../utils/auth';
-import { useLoading } from '../../utils/LoadingContext';
-import Loading from '../../components/LoadingComponent';
+import { login } from '../../../utils/auth';
+import { useLoading } from '../../../utils/LoadingContext';
+import Loading from '../../../components/LoadingComponent';
 
 export default function GoogleCallback() {
   const router = useRouter();

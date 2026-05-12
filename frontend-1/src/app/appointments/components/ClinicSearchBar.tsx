@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { publicApiClient } from "@/app/utils/api";
+import { publicApiClient } from "@/utils/api";
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaMapMarkerAlt, FaTimes } from 'react-icons/fa';
 import { useMediaQuery } from 'react-responsive';
@@ -27,7 +27,7 @@ export default function ClinicSearchBar({ value, onChange, round }: ClinicSearch
     const fetchLocations = async () => {
       setLoading(true);
       try {
-        const response = await publicApiClient.get("/all_clinics/");
+        const response = await publicApiClient.get("search/all_clinics/");
         const clinics: {id: number; name: string;}[] = response.data;
         const mappedClinics: Clinic[] = clinics.map(clinic => ({
           id: clinic.id,

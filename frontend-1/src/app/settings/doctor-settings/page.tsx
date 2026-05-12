@@ -2,15 +2,15 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useLoading } from '@/app/utils/LoadingContext';
+import { useLoading } from '@/utils/LoadingContext';
 import ClinicSearch from './components/clinic/ClinicSearch';
 import { ClinicMenu } from './components/clinic/ClinicMenu';
 import SpecialtySearch from './components/specialty/SpecialtySearch';
 import { SpecialtyMenu } from './components/specialty/SpecialtyMenu';
 import InsuranceSearch from './components/insurance/InsuranceSearch';
 import { InsuranceMenu } from './components/insurance/InsuranceMenu';
-import { apiClient } from '@/app/utils/api';
-import { useAlert } from '@/app/context/AlertContext';
+import { apiClient } from '@/utils/api';
+import { useAlert } from '@/context/AlertContext';
 
 interface FieldProps {
   title: string;
@@ -40,7 +40,7 @@ interface DoctorData {
   exequatur: string;
   experience: number;
   description: string;
-  specialties: { id: number; name: string }[];
+  specializations: { id: number; name: string }[];
   clinics: { id: number; name: string }[];
   ensurances: { id: number; name: string; logo?: string | null }[];
   documents: { id: number; url: string; description: string }[];
@@ -86,7 +86,7 @@ const ModField: React.FC<ModFieldProps> = ({ title, content, bb, onModify, isMod
                 {items.map((item) => (
                   <li key={item.id} className="flex justify-between gap-3 items-center bg-gray-200 px-3 p-1.5 rounded-md">
                     {item.name}
-                    {title === 'Specialties' && (
+                    {title === 'Specializations' && (
                       <SpecialtyMenu
                         specialty={item}
                         onDelete={onReload}
@@ -105,7 +105,7 @@ const ModField: React.FC<ModFieldProps> = ({ title, content, bb, onModify, isMod
                 ))}
               </ul>
             )}
-            {title === 'Specialties' && (
+            {title === 'Specializations' && (
               <SpecialtySearch onSpecialtyAdded={onReload} />
             )}
             {title === 'Clinics' && (
@@ -170,8 +170,9 @@ export default function DoctorSettingsPage() {
   const fetchUser = async () => {
     try {
       setIsLoading(true);
-      const response = await apiClient.get('/auth/personal-data/');
-      setUser(response.data.doctor);
+      const response = await apiClient.get('/users/personal-data/');
+      setUser(response.data);
+      console.log(response.data)
     } catch (error) {
       console.error('Failed to fetch user data:', error);
     } finally {
@@ -198,10 +199,10 @@ export default function DoctorSettingsPage() {
 
   const handleSaveDescription = async (description: string) => {
     try {
-      await apiClient.put('/auth/update_description/', { description });
+      await apiClient.put('/doctors/update_description/', { description });
       showAlert('Description updated successfully', 'success');
       // Refetch user data to update the UI
-      const response = await apiClient.get('/auth/personal-data/');
+      const response = await apiClient.get('/users/personal-data/');
       setUser(response.data.doctor);
       setModifyingField(null);
       onReload();
@@ -210,7 +211,7 @@ export default function DoctorSettingsPage() {
     }
   };
 
-  const specialtiesContent = user?.specialties?.map(s => s.name).join(', ') || 'No specialties';
+  const specializationsContent = user?.specializations?.map(s => s.name).join(', ') || 'No specializations';
   const clinicsContent = user?.clinics?.map(c => c.name).join(', ') || 'No clinics';
   const insurancesContent = user?.ensurances?.map(e => e.name).join(', ') || 'No insurances';
 
@@ -221,12 +222,12 @@ export default function DoctorSettingsPage() {
         <Field title="Exequatur" content={user?.exequatur || '123456789'} wide />
         <Field title="Experience" content={`${user?.experience || 5} years`} wide />
         <ModField
-          title="Specialties"
-          content={specialtiesContent}
-          onModify={() => handleModify('Specialties')}
-          isModifying={modifyingField === 'Specialties'}
+          title="Specializations"
+          content={specializationsContent}
+          onModify={() => handleModify('Specializations')}
+          isModifying={modifyingField === 'Specializations'}
           onCancel={handleCancel}
-          items={user?.specialties || []}
+          items={user?.specializations || []}
           onReload={onReload}
         />
         <ModField

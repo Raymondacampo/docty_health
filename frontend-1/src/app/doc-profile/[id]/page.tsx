@@ -6,8 +6,8 @@ import Locations from "./components/Locations";
 import Reviews from "./components/Reviews";
 import doctors_bg from "@/assets/images/doctors_bg.png";
 import { useEffect, useState } from "react";
-import { publicApiClient, apiClient } from "@/app/utils/api";
-import { isAuthenticated } from "@/app/utils/auth";
+import { publicApiClient, apiClient } from "@/utils/api";
+import { isAuthenticated } from "@/utils/auth";
 
 type UserType = {
   id: number;
@@ -87,7 +87,7 @@ export default function ProfilePage({
         return;
       }
       const nextPage = reviewsData.current_page + 1;
-      const response = await publicApiClient.get(`/reviews/${doctor.id}/`, {
+      const response = await publicApiClient.get(`reviews/reviews/${doctor.id}/`, {
         params: { page: nextPage },
       });
       setReviewsData((prev) => ({
@@ -106,7 +106,7 @@ export default function ProfilePage({
     const fetchDoctor = async () => {
       const { id } = await params;
       try{
-        const response = await apiClient.get(`/doctors/${id}/`);
+        const response = await apiClient.get(`doctors/doctor/${id}/`);
         setDoctor(response.data);
       } catch (error) {
         console.error('Failed to fetch doctor data:', error);
@@ -116,7 +116,7 @@ export default function ProfilePage({
     const fetchReviewData = async () => {
       const { id } = await params;
       try {
-        const response = await publicApiClient.get(`/reviews/${id}/`, {
+        const response = await publicApiClient.get(`reviews/reviews/${id}/`, {
           params: { page },
         });
         setReviewsData({

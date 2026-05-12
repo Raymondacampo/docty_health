@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { apiClient } from '@/app/utils/api';
 import type { ScheduleType } from './EditWeekScheduleModal';
 
 export interface Schedule {
@@ -27,27 +26,6 @@ const ScheduleSelect: React.FC<ScheduleSelectProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Fetch schedules only if not provided via props
-  // useEffect(() => {
-  //   if (propSchedules.length === 0) {
-  //     setIsLoading(true);
-  //     setError(null);
-
-  //     apiClient
-  //       .get('/auth/schedules/')
-  //       .then((response) => {
-  //         setSchedules(response.data.data || response.data);
-  //       })
-  //       .catch((err: any) => {
-  //         console.error('Error fetching schedules:', err);
-  //         setError('Failed to load schedules. Please try again.');
-  //       })
-  //       .finally(() => {
-  //         setIsLoading(false);
-  //       });
-  //   }
-  // }, [propSchedules.length]);
 
   // Sync with prop changes (e.g. when parent re-renders with new data)
   useEffect(() => {
