@@ -20,7 +20,7 @@ interface SearchFiltersProps {
   takes_appointments: boolean;
   onTake:(value: boolean) => void;
   appointmentType?: string | null;
-  onAppointment: (value: string) => void;
+  onAppointment: (value: string | null) => void;
   experienceValue: string;
   setExperienceValue: (value: string) => void;
   onClose: () => void;
