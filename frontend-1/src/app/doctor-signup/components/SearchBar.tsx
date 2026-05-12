@@ -1,5 +1,5 @@
 import { useState, useEffect, ChangeEvent } from "react";
-import { publicApiClient } from "@/app/utils/api";
+import { publicApiClient } from "@/utils/api";
 
 interface SearchBarProps {
   value: string;

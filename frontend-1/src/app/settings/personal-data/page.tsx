@@ -1,8 +1,8 @@
 'use client';
 import { useEffect, useState } from "react";
-import { apiClient } from "../../utils/api";
-import { useLoading } from '../../utils/LoadingContext';
-import { useAlert } from "@/app/context/AlertContext";
+import { apiClient } from "../../../utils/api";
+import { useLoading } from '../../../utils/LoadingContext';
+import { useAlert } from "@/context/AlertContext";
 
 const Field = ({ title, content }: { title: string; content: string }) => {
   return (
@@ -324,7 +324,7 @@ export default function PersonalDataPage() {
 
     const fetchPersonalData = async () => {
       try {
-        const response = await apiClient.get('/auth/personal-data/');
+        const response = await apiClient.get('/users/personal-data/');
         setPersonalData(response.data);
       } catch (error) {
         console.error('Error fetching personal details:', error);
@@ -359,7 +359,7 @@ export default function PersonalDataPage() {
       } else if (typeof value === 'string') {
         updatedData = { ...updatedData, [field]: value };
       }
-      const response = await apiClient.put('/auth/personal-data/', updatedData);
+      const response = await apiClient.put('/users/personal-data/', updatedData);
       showAlert('Personal data updated successfully', 'success');
       setPersonalData(response.data);
       toggleEdit(field === 'fullName' ? 'fullName' : (field as keyof typeof editStates));
@@ -411,7 +411,7 @@ export default function PersonalDataPage() {
           {editStates.phoneNumber ? (
             <EditPhoneNumberField
               value={personalData?.phone_number || ''}
-              onSave={(value) => [handleSave('phone_number', value), toggleEdit('phoneNumber')]}
+              onSave={(value) => handleSave('phone_number', value), toggleEdit('phoneNumber')}
               onCancel={() => toggleEdit('phoneNumber')}
             />
           ) : (
@@ -433,7 +433,7 @@ export default function PersonalDataPage() {
           {editStates.bornDate ? (
             <EditbornDateField
               value={personalData?.born_date || ''}
-              onSave={(value) => [handleSave('born_date', value), toggleEdit('bornDate')]}
+              onSave={(value) => handleSave('born_date', value), toggleEdit('bornDate')}
               onCancel={() => toggleEdit('bornDate')}
             />
           ) : (

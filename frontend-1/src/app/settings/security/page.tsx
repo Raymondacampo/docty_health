@@ -1,7 +1,7 @@
 
 'use client';
 import Link from "next/link";
-import { useLoading } from "@/app/utils/LoadingContext";
+import { useLoading } from "@/utils/LoadingContext";
 import { useEffect } from "react";
 const Field = ({ title, content }: { title: string; content: string }) => {
   return (

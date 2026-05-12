@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, use } from 'react';
-import { apiClient } from '@/app/utils/api';
+import { apiClient } from '@/utils/api';
 // import Schedule from '@/app/availability/page';
 import { s } from 'framer-motion/client';
 
@@ -45,7 +45,7 @@ const ScheduleSelect: React.FC<ScheduleSelectProps> = ({
     setError(null);
 
     apiClient
-      .get('/auth/schedules/')
+      .get('/appointments/schedules/')
       .then((response) => {
         setSchedules(response.data);
       })

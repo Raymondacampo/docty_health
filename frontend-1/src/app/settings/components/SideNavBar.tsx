@@ -4,7 +4,7 @@
 import React, { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { apiClient } from '@/app/utils/api';
+import { apiClient } from '@/utils/api';
 
 interface NavItem {
   id: string;
@@ -20,7 +20,7 @@ const SimpleSideNavbar: React.FC = () => {
 
   useEffect(() => {
     const checkDoctor = async () => {
-      const response = await apiClient.get('/auth/me/');
+      const response = await apiClient.get('users/me/');
       setIsClient(!response.data.is_doctor);
     };
     checkDoctor();

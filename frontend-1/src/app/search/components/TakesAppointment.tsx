@@ -19,6 +19,7 @@ export default function TakesDatesFilter({ taking_appointments, appointment_type
       setIsVirtualChecked(false);
       setIsInPersonChecked(false);
       onChange(false); // No filter applied
+      onAppointment(null)
     } else {
       onChange(true); // Default to just taking_dates=true
     }
@@ -33,7 +34,7 @@ export default function TakesDatesFilter({ taking_appointments, appointment_type
     } else if (isInPersonChecked) {
       onAppointment("virtual");
     } else {
-       onAppointment("virtual");;
+       onAppointment(null);;
     }
   };
 
@@ -46,7 +47,7 @@ export default function TakesDatesFilter({ taking_appointments, appointment_type
     } else if (isVirtualChecked) {
       onAppointment("in_person");
     } else {
-      onAppointment("in_person");
+      onAppointment(null);
     }
   };
 

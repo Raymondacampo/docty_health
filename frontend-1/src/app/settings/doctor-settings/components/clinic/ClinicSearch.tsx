@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { apiClient } from '@/app/utils/api';
+import { apiClient } from '@/utils/api';
 
 interface Clinic {
   id: number;
@@ -23,7 +23,7 @@ export default function ClinicSearch({ onClinicAdded }: ClinicSearchProps) {
     // setLoading(true);
     setError(null);
     try {
-      const { data } = await apiClient.get<Clinic[]>('/auth/available_clinics/');
+      const { data } = await apiClient.get<Clinic[]>('/search/available_clinics/');
       setClinics(data);
     } catch (err) {
       setError('Failed to load clinics');
@@ -35,7 +35,7 @@ export default function ClinicSearch({ onClinicAdded }: ClinicSearchProps) {
 
   const handleAddClinic = async (clinicId: number, name: string) => {
     try {
-      await apiClient.post('/auth/add_clinic/', { clinic_id: clinicId });
+      await apiClient.post('/doctors/add_clinic/', { clinic_id: clinicId });
       setIsOpen(false);
       setSearchTerm('');
       onClinicAdded({ msg: `Clinic ${name} added successfully`, status: 'success' });

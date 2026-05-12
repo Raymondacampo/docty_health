@@ -1,9 +1,9 @@
 // DoctorSchedule.tsx
 import { useState } from 'react';
 import { FaEllipsisV } from 'react-icons/fa';
-import { apiClient } from '@/app/utils/api';
+import { apiClient } from '@/utils/api';
 import ScheduleCreationModal from './ScheduleCreationModal';
-import { useAlert } from '@/app/context/AlertContext';
+import { useAlert } from '@/context/AlertContext';
 // import type { ScheduleType } from '../../settings/appointment-system/page';
 import { ScheduleType } from '../page';
 
@@ -26,7 +26,7 @@ export default function DoctorSchedule({ schedule, onUpdate }: DoctorSchedulePro
     if (!window.confirm('Delete this schedule permanently?')) return;
 
     try {
-      await apiClient.delete(`/auth/delete_schedule/${schedule.id}/`);
+      await apiClient.delete(`/appointments/delete_schedule/${schedule.id}/`);
       showAlert('Schedule deleted', 'success');
       onUpdate();
     } catch (err: any) {

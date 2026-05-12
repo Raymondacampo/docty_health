@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { format, addDays, isSameDay } from 'date-fns';
 import { FaEllipsisV } from 'react-icons/fa';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { apiClient } from '@/app/utils/api';
+import { apiClient } from '@/utils/api';
 import EditWeekScheduleModal from './EditWeekScheduleModal';
-import { useAlert } from '@/app/context/AlertContext';
+import { useAlert } from '@/context/AlertContext';
 import { ScheduleType } from '../page';
 
 interface Clinic {
@@ -54,7 +54,7 @@ export default function WeekSchedulesList({ weekschedules, newSchedule, onAction
       setError(null);
       try {
         const [clinicsResponse] = await Promise.all([
-          apiClient.get('/all_clinics/'),
+          apiClient.get('search/all_clinics/'),
         ]);
 
         const clinicMap: Record<number, string> = {};
@@ -96,7 +96,7 @@ export default function WeekSchedulesList({ weekschedules, newSchedule, onAction
     if (!scheduleToDelete) return;
 
     try {
-      await apiClient.delete(`/auth/delete_weekavailability/${scheduleToDelete}/`);
+      await apiClient.delete(`/appointments/delete_weekavailability/${scheduleToDelete}/`);
       // setWeekSchedules(prev => prev.filter(s => s.week_availability.id !== scheduleToDelete));
       onActionComplete({ message: 'Week schedule deleted successfully!', status: 'success' });
     } catch (err: any) {

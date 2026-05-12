@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { apiClient } from '@/app/utils/api';
+import { apiClient } from '@/utils/api';
 
 interface Insurance {
   id: number;
@@ -23,7 +23,7 @@ export default function InsuranceSearch({ onInsuranceAdded }: InsuranceSearchPro
     setLoading(true);
     setError(null);
     try {
-      const { data } = await apiClient.get<Insurance[]>('/auth/available_insurances/');
+      const { data } = await apiClient.get<Insurance[]>('/doctors/available_insurances/');
       setInsurances(data);
     } catch (err) {
       setError('Failed to load Insurances');
@@ -35,7 +35,7 @@ export default function InsuranceSearch({ onInsuranceAdded }: InsuranceSearchPro
 
   const handleAddInsurance = async (InsuranceId: number, name: string) => {
     try {
-      await apiClient.post('/auth/add_insurance/', { insurance_id: InsuranceId });
+      await apiClient.post('/doctors/add_insurance/', { insurance_id: InsuranceId });
       setIsOpen(false);
       setSearchTerm('');
       onInsuranceAdded({ msg: `Insurance ${name} added successfully`, status: 'success' });

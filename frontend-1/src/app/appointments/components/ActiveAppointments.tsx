@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { apiClient } from "@/app/utils/api";
+import { apiClient } from "@/utils/api";
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { useAlert } from "@/app/context/AlertContext";
+import { useAlert } from "@/context/AlertContext";
 
 export type Appointment = {
   id: number;

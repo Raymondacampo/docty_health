@@ -3,10 +3,10 @@
 
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { publicApiClient } from '@/app/utils/api';
-import { login } from '@/app/utils/auth';
+import { publicApiClient } from '@/utils/api';
+import { login } from '@/utils/auth';
 import SearchBar from './components/SearchBar';
-import Loading from '@/app/components/LoadingComponent';
+import Loading from '@/components/LoadingComponent';
 
 interface FormData {
   first_name: string;
@@ -116,9 +116,9 @@ export default function DoctorSignupPage() {
     try {
       // Fetch reference data
       const [specialtiesRes, clinicsRes, ensurancesRes] = await Promise.all([
-        publicApiClient.get('/all_specialties/'),
-        publicApiClient.get('/all_clinics/'),
-        publicApiClient.get('/all_ensurances/'),
+        publicApiClient.get('search/all_specialties/'),
+        publicApiClient.get('search/all_clinics/'),
+        publicApiClient.get('search/all_ensurances/'),
       ]);
 
       const specialty = specialtiesRes.data.find((s: any) => s.name === formData.specialty);
@@ -143,7 +143,7 @@ export default function DoctorSignupPage() {
         ensurances: ensurance ? [ensurance.id] : [],
       };
 
-      const { data } = await publicApiClient.post('/auth/doctor_signup/', payload);
+      const { data } = await publicApiClient.post('doctors/auth/doctor_signup/', payload);
 
       await login(data.access);
       localStorage.setItem('refresh_token', data.refresh);
@@ -251,7 +251,7 @@ export default function DoctorSignupPage() {
             <SearchBar
               value={formData.specialty}
               onChange={handleSearchChange('specialty')}
-              endpoint="/all_specialties/"
+              endpoint="search/all_specialties/"
               placeholder="Search specialty..."
             />
             {errors.specialty && <p className="text-red-500 text-sm mt-1">{errors.specialty}</p>}
@@ -262,7 +262,7 @@ export default function DoctorSignupPage() {
             <SearchBar
               value={formData.clinic}
               onChange={handleSearchChange('clinic')}
-              endpoint="/all_clinics/"
+              endpoint="search/all_clinics/"
               placeholder="Search clinic..."
             />
             {errors.clinic && <p className="text-red-500 text-sm mt-1">{errors.clinic}</p>}
@@ -274,7 +274,7 @@ export default function DoctorSignupPage() {
               <SearchBar
                 value={formData.ensurance}
                 onChange={handleSearchChange('ensurance')}
-                endpoint="/all_ensurances/"
+                endpoint="search/all_ensurances/"
                 placeholder="Search ensurance..."
               />
             </div>

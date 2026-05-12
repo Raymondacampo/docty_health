@@ -5,10 +5,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { addDays, format } from 'date-fns';
 // import { formatInTimeZone } from 'date-fns-tz';
-import { apiClient } from '@/app/utils/api';
+import { apiClient } from '@/utils/api';
 import ClinicSearchBar from './ClinicSearchBar';
 import ScheduleSelect from './WeekScheduleSelect';
-import { useAlert } from '@/app/context/AlertContext';
+import { useAlert } from '@/context/AlertContext';
 
 
 interface Clinic {
@@ -103,7 +103,7 @@ const CreateWeekScheduleModal: React.FC<CreateWeekScheduleModalProps> = ({ onSch
 
     // Fetch schedules
     setIsLoadingSchedules(true);
-    apiClient.get('/auth/schedules/')
+    apiClient.get('/appointments/schedules/')
       .then(res => {
         // Map 'name' to 'title' for compatibility
         const mappedSchedules = res.data.map((s: any) => ({
@@ -118,7 +118,7 @@ const CreateWeekScheduleModal: React.FC<CreateWeekScheduleModalProps> = ({ onSch
 
     // Fetch available weeks
     setIsLoadingWeeks(true);
-    apiClient.get('/auth/available-weeks/')
+    apiClient.get('/appointments/available-weeks/')
       .then(res => {
         const weeks: WeekOption[] = res.data.available_weeks.map((weekStr: string) => {
           // const [year, month, day] = weekStr.split('-').map(Number);
@@ -230,7 +230,7 @@ const getSelectedWeekText = () => {
       // Or if template has no place, stay virtual
       if (schedule.place) {
         try {
-          const res = await apiClient.get(`/clinics/${schedule.place}/`);
+          const res = await apiClient.get(`search/clinics/${schedule.place}/`);
           setSelectedClinic({ id: res.data.id, name: res.data.name });
         } catch (err) {
           console.error(err);
@@ -309,7 +309,7 @@ const getSelectedWeekText = () => {
         })),
       };
 
-      const res = await apiClient.post('/auth/weekschedule/', payload);
+      const res = await apiClient.post('/appointments/weekschedule/', payload);
       setSaveSuccess('Week schedule created successfully!');
       onScheduleCreated(res.data);
       resetForm();
