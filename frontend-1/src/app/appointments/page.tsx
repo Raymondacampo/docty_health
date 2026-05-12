@@ -2,16 +2,16 @@
 import React, { useEffect, useState } from "react";
 import ActiveAppointments from "./components/ActiveAppointments";
 import UnactiveAppointments from "./components/UnactiveAppointments";
-import { apiClient } from "../utils/api";
-import { isAuthenticated } from "../utils/auth";
-import Loading from "../components/LoadingComponent";
+import { apiClient } from "../../utils/api";
+import { isAuthenticated } from "../../utils/auth";
+import Loading from "../../components/LoadingComponent";
 import dclogo from '@/assets/images/dclogo.png';
 import AppNavbar from "./components/NavBar";
 import type { Appointment } from "./components/ActiveAppointments";
 import type { WeekSchedule } from "./components/WeekScheduleList";
 import ScheduleCreationModal from "./components/ScheduleCreationModal";
 import DoctorSchedule from "./components/DoctorSchedule";
-import { useLoading } from '@/app/utils/LoadingContext';
+import { useLoading } from '@/utils/LoadingContext';
 import CreateWeekScheduleModal from "./components/CreateWeekScheduleModal";
 import WeekSchedulesList from "./components/WeekScheduleList";
 
@@ -137,7 +137,7 @@ export default function AppointmentsPage() {
 
   const fetchAppointments = async () => {
     try {
-      const response = await apiClient.get("appointments/");
+      const response = await apiClient.get("appointments/appointments");
       setAppointments(response.data);
     } catch (err: any) {
       setError(err.response?.data?.error || err.message || "Failed to fetch appointments");
@@ -150,7 +150,7 @@ export default function AppointmentsPage() {
   const fetchSchedules = async () => {
       setError(null);
       try {
-        const response = await apiClient.get<ScheduleType[]>('/auth/my_schedules/');
+        const response = await apiClient.get<ScheduleType[]>('/appointments/my_schedules/');
         setSchedules(response.data);
       } catch (err: any) {
         console.error('Error fetching schedules:', err);
@@ -170,7 +170,7 @@ export default function AppointmentsPage() {
   const fetchWeekSchedules = async () => {
     setError(null);
     try {
-      const response = await apiClient.get('/auth/weekschedules/');
+      const response = await apiClient.get('/appointments/weekschedules/');
       setWeekSchedules(response.data.weekschedules);
     } catch (err: any) {
       console.error('Error fetching week schedules:', err);
@@ -194,7 +194,7 @@ export default function AppointmentsPage() {
 
   const checkUserRole = async () => {
     try {
-      const response = await apiClient.get("/auth/is_doctor");
+      const response = await apiClient.get("/users/is_doctor");
       setIsDoctor(response.data.is_doctor);
     } catch (err) {
       console.error("Error checking user role:", err);

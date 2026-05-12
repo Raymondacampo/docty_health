@@ -2,9 +2,9 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { publicApiClient } from '../utils/api';
-import { login, isAuthenticated } from '../utils/auth';
-import GoogleButton from '../components/GoogleLogin';
+import { publicApiClient } from '../../utils/api';
+import { login, isAuthenticated } from '../../utils/auth';
+import GoogleButton from '../../components/GoogleLogin';
 
 interface Credentials {
   email: string;
@@ -36,7 +36,7 @@ export default function LoginPage() {
     // setLoading(true);
     setError('');
     try {
-      const { data } = await publicApiClient.post('/auth/login/', credentials);
+      const { data } = await publicApiClient.post('/users/auth/login/', credentials);
       localStorage.setItem('refresh_token', data.refresh);
       await login(data.access);
       if (redirect) {

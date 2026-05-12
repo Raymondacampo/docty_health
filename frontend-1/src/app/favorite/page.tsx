@@ -1,10 +1,10 @@
 'use client';
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { apiClient } from "../utils/api";
+import { apiClient } from "../../utils/api";
 import { FaSearch } from 'react-icons/fa';
 import Doctor from "./components/Doctor";
-import Loading from "../components/LoadingComponent";
+import Loading from "../../components/LoadingComponent";
 import Link from "next/dist/client/link";
 import dclogo from '@/assets/images/dclogo.png';
 
@@ -38,7 +38,7 @@ export default function FavoriteDoctors() {
         setError(null);
         // const redirectUrl = router.query.redirect || '/';
         try {
-          const response = await apiClient.get("/auth/personal-data/");
+          const response = await apiClient.get("/users/personal-data/");
           setDoctors(response.data.favorite_doctors || []);
         } catch (err) {
           // router.push(redirectUrl);
@@ -52,7 +52,7 @@ export default function FavoriteDoctors() {
 
   const handleRemove = async (doctorId: number) => {
     try {
-      await apiClient.post(`/auth/toggle_favorite/${doctorId}/`);
+      await apiClient.post(`/users/toggle_favorite/${doctorId}/`);
       setDoctors(doctors.filter((doctor) => doctor.id !== doctorId));
     } catch (err) {
       if (typeof err === "object" && err !== null && "response" in err) {

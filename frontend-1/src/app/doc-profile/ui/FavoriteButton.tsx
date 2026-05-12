@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Heart } from "lucide-react";
-import { apiClient } from "@/app/utils/api";
-import { useAlert } from "@/app/context/AlertContext";
+import { apiClient } from "@/utils/api";
+import { useAlert } from "@/context/AlertContext";
 import { useRouter } from "next/navigation";
 
 export default function FavoriteButton({ doctorId, isUserAuthenticated }: { doctorId: number; isUserAuthenticated: boolean | null }) {
@@ -13,7 +13,7 @@ export default function FavoriteButton({ doctorId, isUserAuthenticated }: { doct
     const fetchFavoriteStatus = async () => {
       if (isUserAuthenticated) {
         try {
-          const isfav = await apiClient.get(`/doctor_in_favorite/${doctorId}/`);
+          const isfav = await apiClient.get(`/users/doctor_in_favorite/${doctorId}/`);
           setFavorited(isfav.data.is_favorite);
         } catch (error) {
           console.error("Failed to fetch favorite status", error);
@@ -30,7 +30,7 @@ export default function FavoriteButton({ doctorId, isUserAuthenticated }: { doct
         router.push(`/login?redirect=${redirectUrl}`);
         return;
       }
-      const response = await apiClient.post(`/auth/toggle_favorite/${doctorId}/`);
+      const response = await apiClient.post(`/users/toggle_favorite/${doctorId}/`);
       setFavorited(response.data.is_favorited);
       showAlert(
         response.data.is_favorited

@@ -1,7 +1,7 @@
 'use client';
 import SimpleSideNavbar from './components/SideNavBar';
-import { LoadingProvider, useLoading } from '../utils/LoadingContext';
-import Loading from '../components/LoadingComponent';
+import { LoadingProvider, useLoading } from '../../utils/LoadingContext';
+import Loading from '../../components/LoadingComponent';
 import { Suspense } from 'react';
 
 function AccountContent({ children }: { children: React.ReactNode }) {

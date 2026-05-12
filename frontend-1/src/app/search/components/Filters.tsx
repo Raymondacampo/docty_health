@@ -1,7 +1,7 @@
 import React from "react";
-import SpecialtySearchBar from "@/app/components/SpecialtySearchbar";
-import InsuranceSearchBar from "@/app/components/InsuranceSearchbar";
-import CityStateSearchBar from "@/app/components/CityStateSearchbar";
+import SpecialtySearchBar from "@/components/SpecialtySearchbar";
+import InsuranceSearchBar from "@/components/InsuranceSearchbar";
+import CityStateSearchBar from "@/components/CityStateSearchbar";
 import SexFilter from "./Sex";
 import TakesDatesFilter from "./TakesAppointment";
 import ExperienceFilter from "./Experience";
@@ -20,7 +20,7 @@ interface SearchFiltersProps {
   takes_appointments: boolean;
   onTake:(value: boolean) => void;
   appointmentType?: string | null;
-  onAppointment: (value: string) => void;
+  onAppointment: (value: string | null) => void;
   experienceValue: string;
   setExperienceValue: (value: string) => void;
   onClose: () => void;
@@ -48,17 +48,7 @@ export default function SearchFilters({
   isXsScreen,
 }: SearchFiltersProps) {
   return (
-    // <AnimatePresence>
-    //   <motion.div
-    //     initial={{ width: 0, opacity: 0, scaleX: 0, transformOrigin: 'left' }}
-    //     animate={{ width: 'auto', opacity: 1, scaleX: 1 }}
-    //     exit={{ opacity: 0 }}
-    //     transition={{ duration: 0.5 }}
-    //     className={`h-[100dvh] w-full inset-0  flex justify-center gap-5
-    //       xl:items-center xl:w-auto xl:h-auto
-    //       sm:max-w-[350px] sm:top-0 sm:left-0 sm:fixed shadow-sm z-60 
-    //       ` + (isXsScreen ? "fixed pb-12" : "xl:relative")}
-    //   >
+
     <div className={`h-[100dvh] w-full inset-0  flex justify-center gap-5
       xl:items-center xl:w-auto xl:h-auto
       sm:max-w-[350px] sm:top-0 sm:left-0 sm:fixed shadow-sm z-60 `+ (isXsScreen ? "fixed pb-12" : "xl:relative")}>

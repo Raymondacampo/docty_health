@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { publicApiClient } from "@/app/utils/api";
-import Pagination from "@/app/components/Pagination";
+import { publicApiClient } from "@/utils/api";
+import Pagination from "@/components/Pagination";
 import Doctor from "./Doctor";
 import dclogo from '@/assets/images/dclogo.png';
-import Loading from "@/app/components/LoadingComponent";
+import Loading from "@/components/LoadingComponent";
 
 interface FiltersProps {
   sortBy: string;
@@ -96,7 +96,7 @@ export default function DoctorsResults({
         if (experienceValue !== "any") paramsObj.experience_min = experienceValue;
         paramsObj.page = currentPage.toString();
         const params = new URLSearchParams(paramsObj);
-        const response = await publicApiClient.get(`/doctors/search/?${params.toString()}`);
+        const response = await publicApiClient.get(`search/doctors/?${params.toString()}`);
         let results = response.data.results;
 
         if (sortBy === "relevance") {

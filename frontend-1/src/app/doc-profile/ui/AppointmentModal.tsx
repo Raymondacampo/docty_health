@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { apiClient, publicApiClient } from '@/app/utils/api';
+import { apiClient, publicApiClient } from '@/utils/api';
 import { format } from 'date-fns';
-import { useAlert } from '@/app/context/AlertContext';
+import { useAlert } from '@/context/AlertContext';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 
@@ -55,7 +55,7 @@ export default function AppointmentModal({ doctor, isAuth }: { doctor: Doctor; i
     setError(null);
     try {
       const response = await publicApiClient.get(
-        `/doctors/${doctor.id}/available_days/`
+        `appointments/doctor/${doctor.id}/available_days/`
       );
       setAvailableDays(response.data.available_days);
     } catch (err: any) {
@@ -98,7 +98,7 @@ export default function AppointmentModal({ doctor, isAuth }: { doctor: Doctor; i
     setSubmitting(true);
 
     try {
-      const response = await apiClient.post<{ message: string }>('/auth/create_appointment/', {
+      const response = await apiClient.post<{ message: string }>('/appointments/create_appointment/', {
         weekday_id: selectedDay.id,
         hour: selectedHour,
       });

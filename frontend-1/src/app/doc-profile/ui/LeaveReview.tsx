@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import Star from "./Star";
-import { apiClient } from "@/app/utils/api";
+import { apiClient } from "@/utils/api";
 import { useRouter } from "next/navigation";
-import { CheckAuth } from "@/app/lib/CheckAuth";
-import { useAlert } from "@/app/context/AlertContext";
+import { CheckAuth } from "@/lib/CheckAuth";
+import { useAlert } from "@/context/AlertContext";
 
 export type Review = {
   id: number;

@@ -1,9 +1,9 @@
 'use client';
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiClient } from '@/app/utils/api';
-import { useLoading } from '@/app/utils/LoadingContext';
-import { useAlert } from '@/app/context/AlertContext';
+import { apiClient } from '@/utils/api';
+import { useLoading } from '@/utils/LoadingContext';
+import { useAlert } from '@/context/AlertContext';
 
 export default function ChangePassword() {
   const [password, setPassword] = useState('');
@@ -32,7 +32,7 @@ export default function ChangePassword() {
     }
 
     try {
-      await apiClient.post('/auth/password_change/', { new_password: password });
+      await apiClient.post('/users/auth/password_change/', { new_password: password });
       setSuccess(true);
       showAlert('Password changed successfully', 'success');
       setTimeout(() => router.push('/settings/security'), 1000);

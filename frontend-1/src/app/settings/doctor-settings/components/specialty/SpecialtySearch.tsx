@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { apiClient } from '@/app/utils/api';
+import { apiClient } from '@/utils/api';
 
 interface Specialty {
   id: number;
@@ -23,7 +23,7 @@ export default function SpecialtySearch({ onSpecialtyAdded }: SpecialtySearchPro
     setLoading(true);
     setError(null);
     try {
-      const { data } = await apiClient.get<Specialty[]>('/auth/available_specialties/');
+      const { data } = await apiClient.get<Specialty[]>('/doctors/available_specialties/');
       setSpecialties(data);
     } catch (err) {
       setError('Failed to load specialties');
@@ -35,7 +35,7 @@ export default function SpecialtySearch({ onSpecialtyAdded }: SpecialtySearchPro
 
   const handleAddSpecialty = async (specialtyId: number, name: string) => {
     try {
-      await apiClient.post('/auth/add_specialty/', { specialty_id: specialtyId });
+      await apiClient.post('/doctors/add_specialty/', { specialty_id: specialtyId });
       setIsOpen(false);
       setSearchTerm('');
       onSpecialtyAdded({ msg: `Specialty ${name} added successfully`, status: 'success' });

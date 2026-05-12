@@ -1,7 +1,7 @@
-import Hero from "./components/Hero";
-import Benefits from "./components/Benefits";
-import Mobile from "./components/Mobile";
-import JoinUs from "./components/JoinUs";
+import Hero from "../components/Hero";
+import Benefits from "../components/Benefits";
+import Mobile from "../components/Mobile";
+import JoinUs from "../components/JoinUs";
 
 export default function Home() {
   return (

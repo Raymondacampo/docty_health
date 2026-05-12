@@ -2,8 +2,8 @@
 
 import { useState, FormEvent, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiClient } from '../utils/api';
-import { login } from '../utils/auth';
+import { apiClient } from '../../utils/api';
+import { login } from '../../utils/auth';
 
 interface FormData {
   first_name: string;
@@ -189,7 +189,7 @@ export default function SignupForm() {
     }
 
     try {
-      const { data } = await apiClient.post('/auth/signup/', formData);
+      const { data } = await apiClient.post('/users/auth/signup/', formData);
       await login(data.access);
       localStorage.setItem('refresh_token', data.refresh);
       setTimeout(() => router.push('/account'), 500); // slight delay for UX
