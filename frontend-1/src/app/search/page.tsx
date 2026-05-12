@@ -147,7 +147,7 @@ export default function Search() {
                 : setTakesDates(value)
             }
             appointmentType={isXsScreen ? tempFilters.appointmentType : appointmentType}
-            onAppointment={(value: string) =>
+            onAppointment={(value: string | null) =>
               isXsScreen
                 ? updateTempFilters({ appointmentType: value })
                 : setAppointmentType(value)
