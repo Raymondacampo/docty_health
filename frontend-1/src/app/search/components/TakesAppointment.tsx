@@ -4,7 +4,7 @@ interface TakesDatesFilterProps {
   taking_appointments: boolean;
   appointment_type?: string | null;
   onChange: (value: boolean) => void;
-  onAppointment: (value: string) => void;
+  onAppointment: (value: string | null) => void;
 }
 
 export default function TakesDatesFilter({ taking_appointments, appointment_type, onChange, onAppointment }: TakesDatesFilterProps) {
