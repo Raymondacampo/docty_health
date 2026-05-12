@@ -259,7 +259,7 @@ export default function DoctorSettingsPage() {
           onReload={onReload}
         />
         <Link
-          href={`/doc-profile/${user?.doctor_id}`}
+          href={`/doc-profile/${user?.id}`}
           className={`
             flex items-center justify-center px-4 py-3 rounded-sm text-sm  transition-colors duration-200 bg-blue-900 text-white w-[100px]
             ${modifyingField === "appointment-system" 
