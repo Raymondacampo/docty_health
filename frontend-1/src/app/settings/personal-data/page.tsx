@@ -411,7 +411,7 @@ export default function PersonalDataPage() {
           {editStates.phoneNumber ? (
             <EditPhoneNumberField
               value={personalData?.phone_number || ''}
-              onSave={(value) => handleSave('phone_number', value), toggleEdit('phoneNumber')}
+              onSave={(value) => { handleSave('phone_number', value); toggleEdit('phoneNumber'); }}
               onCancel={() => toggleEdit('phoneNumber')}
             />
           ) : (
@@ -433,7 +433,7 @@ export default function PersonalDataPage() {
           {editStates.bornDate ? (
             <EditbornDateField
               value={personalData?.born_date || ''}
-              onSave={(value) => handleSave('born_date', value), toggleEdit('bornDate')}
+              onSave={(value) => { handleSave('born_date', value); toggleEdit('bornDate'); }}
               onCancel={() => toggleEdit('bornDate')}
             />
           ) : (
