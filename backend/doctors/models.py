@@ -32,8 +32,9 @@ class Doctor(models.Model):
         db_table = 'api_doctor'
 
     def __str__(self):
-        return f"Dr. {self.user.first_name} {self.user.last_name} - {self.exequatur}"
-
+        if not self.user:
+            return f"Dr. {self.first_name} {self.last_name} - {self.exequatur}"
+        
 # DoctorDocument Upload Path Function
 def doctor_document_upload_path(instance, filename):
     return f"doctor_documents/doctor_{instance.doctor.id}/{timezone.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
