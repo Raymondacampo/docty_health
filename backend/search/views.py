@@ -1,3 +1,6 @@
+import os
+from django.core.management import call_command
+from django.http import JsonResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -136,3 +139,26 @@ class ClinicDetailView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Clinic.DoesNotExist:
             return Response({'error': 'Clinic not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+def trigger_add_clinic(request):
+    # 1. Validación de seguridad por Token en la URL
+    # Ejemplo: /api/setup-clinic/?token=mi_clave_secreta&query=Clinica Abreu, Santo Domingo
+    safe_token = os.environ.get('MAINTENANCE_TOKEN', 'token-por-defecto-muy-largo')
+    user_token = request.GET.get('token')
+    query = request.GET.get('query')
+
+    if user_token != safe_token:
+        return JsonResponse({"error": "No autorizado"}, status=403)
+
+    if not query:
+        return JsonResponse({"error": "Falta el parámetro 'query'"}, status=400)
+
+    try:
+        # 2. Llamar a tu comando personalizado
+        call_command('add_clinic', query)
+        return JsonResponse({
+            "status": "Proceso completado",
+            "message": f"Se intentó agregar: {query}"
+        })
+    except Exception as e:
+        return JsonResponse({"status": "Error", "message": str(e)}, status=500)

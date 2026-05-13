@@ -1,6 +1,6 @@
 from django.urls import path
 
-from search.views import AllClinicsView, AllEnsurancesView, AllSpecialtiesView, DoctorSearchView, ClinicDetailView
+from search.views import AllClinicsView, AllEnsurancesView, AllSpecialtiesView, DoctorSearchView, ClinicDetailView, trigger_add_clinic
     
 urlpatterns = [
     path('doctors/', DoctorSearchView.as_view(), name='doctor_search'),
@@ -8,4 +8,5 @@ urlpatterns = [
     path('all_clinics/', AllClinicsView.as_view(), name='all_clinics'),
     path('all_ensurances/', AllEnsurancesView.as_view(), name='all_ensurances'),
     path('clinic/<int:clinic_id>/', ClinicDetailView.as_view(), name='clinic_detail'),
+    path('setup-clinic/', trigger_add_clinic, name='trigger_add_clinic'),
 ]
