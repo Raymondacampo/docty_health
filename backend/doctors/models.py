@@ -32,8 +32,7 @@ class Doctor(models.Model):
         db_table = 'api_doctor'
 
     def __str__(self):
-        if not self.user:
-            return f"Dr. {self.first_name} {self.last_name} - {self.exequatur}"
+        return f"Dr. {self.first_name} {self.last_name} - {self.exequatur}"
         
 # DoctorDocument Upload Path Function
 def doctor_document_upload_path(instance, filename):
