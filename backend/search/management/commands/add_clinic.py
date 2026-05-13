@@ -1,6 +1,6 @@
-# api/management/commands/add_clinic.py
+# search/management/commands/add_clinic.py
 from django.core.management.base import BaseCommand
-from api.models import Clinic
+from models import Clinic
 import logging
 import requests
 import os
