@@ -126,7 +126,6 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware', # <--- AQUÍ
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'api.middleware.CustomXFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',  # Allows frontend to access API
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
