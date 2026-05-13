@@ -3,7 +3,7 @@ from django.db import models
 import uuid
 import logging
 from geopy import timezone
-from api.utils.image_processing import process_profile_picture
+from .utils.image_processing import process_profile_picture
 
 logger = logging.getLogger(__name__)
 
