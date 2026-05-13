@@ -53,7 +53,6 @@ INSTALLED_APPS = [
     'dj_rest_auth',
     'dj_rest_auth.registration',
     'corsheaders',  # Enables cross-origin requests (CORS)
-    'api',
     'users',
     'appointments',
     'search',

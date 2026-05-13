@@ -143,7 +143,7 @@ class ClinicDetailView(APIView):
 def trigger_add_clinic(request):
     # 1. Validación de seguridad por Token en la URL
     # Ejemplo: /api/setup-clinic/?token=mi_clave_secreta&query=Clinica Abreu, Santo Domingo
-    safe_token = os.environ.get('MAINTENANCE_TOKEN', 'token-por-defecto-muy-largo')
+    safe_token = os.environ.get('MAINTENANCE_TOKEN')
     user_token = request.GET.get('token')
     query = request.GET.get('query')
 
