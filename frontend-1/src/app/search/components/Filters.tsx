@@ -5,7 +5,6 @@ import CityStateSearchBar from "@/components/CityStateSearchbar";
 import SexFilter from "./Sex";
 import TakesDatesFilter from "./TakesAppointment";
 import ExperienceFilter from "./Experience";
-import { motion, AnimatePresence } from 'framer-motion';
 
 
 interface SearchFiltersProps {

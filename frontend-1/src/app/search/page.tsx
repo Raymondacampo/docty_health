@@ -7,6 +7,9 @@ import SearchFilters from "./components/Filters";
 import DoctorsResults from "./components/Results";
 import SearchAdds from "./components/Ads";
 import Loading from "../../components/LoadingComponent";
+import { useLoading } from "@/utils/LoadingContext";
+import { LoadingProvider } from "@/utils/LoadingContext";
+
 
 interface TempFilters {
   specialty: string;
@@ -19,8 +22,9 @@ interface TempFilters {
 }
 
 export default function Search() {
+  const { setIsLoading } = useLoading();
   const router = useRouter();
-  const [loading, setLoading] = useState<boolean>(true);
+  // const [loading, setLoading] = useState<boolean>(true);
   const searchParams = useSearchParams();
   const [specialty, setSpecialty] = useState<string>("");
   const [ensurance, setEnsurance] = useState<string>("");
@@ -85,7 +89,7 @@ export default function Search() {
   }, [specialty, ensurance, location, sex, takesDates, appointmentType, experienceValue, isXsScreen, router]);
 
   useEffect(() => {
-    setLoading(false);
+    setIsLoading(false);
   }, [searchParams]);
 
   const applyFilters = () => {
@@ -102,9 +106,9 @@ export default function Search() {
     setTempFilters((prev) => ({ ...prev, ...newFilters }));
   };
 
-  if (loading) {
-    return <Loading text="Searching for doctors..." />;
-  }
+  // if (Loading) {
+  //   return <Loading text="Searching for doctors..." />;
+  // }
 
   return (
     <div className="w-full mt-[12dvh] sm:mt-[10dvh] flex flex-col mb-16">

@@ -10,6 +10,8 @@ import { apiClient } from '../utils/api';
 import { useLoading } from '../utils/LoadingContext';
 import { UserIcon, Calendar, Heart, SettingsIcon, LogOut, HomeIcon } from 'lucide-react';
 import { Suspense } from 'react';
+import { LoadingProvider } from '../utils/LoadingContext';
+import Loading from './LoadingComponent';
 
 function NavbarContent() {
   const { setIsLoading } = useLoading();
@@ -273,8 +275,10 @@ function NavbarContent() {
 
 export default function Navbar() {
   return (
-    <Suspense fallback={<div className='fixed inset-0 flex items-center justify-center bg-white z-50'><div className='animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#060648]'></div></div>}>
-      <NavbarContent />
-    </Suspense>
+    <LoadingProvider>
+      <Suspense fallback={<Loading />}>
+        <NavbarContent />
+      </Suspense>
+    </LoadingProvider>
   );
 }

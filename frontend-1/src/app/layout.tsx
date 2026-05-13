@@ -1,13 +1,15 @@
-'use client';
 import { Geist, Geist_Mono } from 'next/font/google';
-import './globals.css';
 import Navbar from '../components/NavBar';
 import { FaFacebookF, FaInstagram, FaTwitter } from 'react-icons/fa';
-import { LoadingProvider, useLoading } from '../utils/LoadingContext';
-import Loading from '../components/LoadingComponent';
+import { LoadingProvider } from '../utils/LoadingContext';
 import { Suspense } from 'react';
 import Alert from '../components/Alert';
 import { AlertProvider } from '../context/AlertContext';
+import { Metadata } from 'next'
+import Loading from '@/components/LoadingComponent';
+import './globals.css';
+
+
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -19,12 +21,19 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
+export const metadata: Metadata = {
+  title: 'DoctyHealth - Gestión de Citas Médicas', // El nombre que aparecerá en la pestaña
+  description: 'Plataforma para la búsqueda de doctores y gestión de citas.',
+  icons: {
+      icon: '/icon.png',
+      apple: '/apple-icon.png',
+    },
+}
+
 function AppContent({ children }: { children: React.ReactNode }) {
-  const { isLoading } = useLoading();
 
   return (
     <>
-      {isLoading && <Loading />}
       <AlertProvider>
         <Navbar />
         <Alert />
@@ -63,10 +72,6 @@ function AppContent({ children }: { children: React.ReactNode }) {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang='en'>
-      <head>
-        {/* <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9961121545451444"
-        crossOrigin="anonymous"></script> */}
-      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <LoadingProvider>
           <Suspense fallback={<Loading />}>
